@@ -7,7 +7,9 @@ import { gotoPage } from '../utils';
 /**
  * @description 处理读文章
  */
-const handleReadNews = async (page: pup.Page): Promise<boolean> => {
+const handleReadNews = async (
+  page: pup.Page
+): Promise<{ result: boolean; page: pup.Page }> => {
   // 获取新闻
   const news = await getTodayNews(page);
   // 进度
@@ -20,7 +22,23 @@ const handleReadNews = async (page: pup.Page): Promise<boolean> => {
       } | 标题: ${chalk.blueBright(news[i].title.substring(0, 15))}`
     );
     // 跳转页面
-    await gotoPage(page, news[i].url, { waitUntil: 'domcontentloaded' });
+    const res = await gotoPage(page, news[i].url, {
+      waitUntil: 'domcontentloaded',
+    });
+    // 跳转失败
+    if (!res) {
+      progress.fail(
+        `${chalk.blueBright(Number(i) + 1)} / ${
+          news.length
+        } | 标题: ${chalk.blueBright(
+          news[i].title.substring(0, 15)
+        )} 页面跳转失败!`
+      );
+      // 跳过
+      continue;
+    }
+    // 新页面
+    page = res.page;
     // 看新闻
     await readingNews(page, progress);
     // 任务进度
@@ -33,15 +51,14 @@ const handleReadNews = async (page: pup.Page): Promise<boolean> => {
   // 任务进度
   const taskList = await getTaskList(page);
   // 未完成
-  if (taskList.length && !taskList[0].status) {
+  if (!taskList[0].status) {
     // 继续观看
     return await handleReadNews(page);
   }
-  // 无任务
-  if (!taskList.length) {
-    return false;
-  }
-  return true;
+  return {
+    result: true,
+    page,
+  };
 };
 /**
  * @description 获取当天新闻

@@ -8,10 +8,6 @@ const STUDY_CONFIG = {
    */
   timeout: 30000,
   /**
-   * @description 最大重试跳转次数
-   */
-  maxRetryGotoCount: 3,
-  /**
    * @description 最大登录重试次数
    */
   maxRetryLoginCount: 8,

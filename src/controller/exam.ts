@@ -28,123 +28,121 @@ import {
  * @param page
  * @param type
  */
-const handleExam = async (page: pup.Page, type: number): Promise<boolean> => {
+const handleExam = async (
+  page: pup.Page,
+  type: number
+): Promise<
+  | {
+      page: pup.Page;
+      result: boolean;
+    }
+  | undefined
+> => {
   // 每日答题
   if (type === 0) {
-    const res = await handleExamPractice(page);
-    if (res) {
+    // 跳转每周答题
+    const pageData = await gotoPage(page, URL_CONFIG.examPractice, {
+      waitUntil: 'domcontentloaded',
+    });
+    // 跳转成功
+    if (pageData) {
+      // 页面
+      const { page } = pageData;
       // 开始答题
-      await handleQuestion(page, 0);
+      const { result } = await handleQuestion(page, 0);
       // 任务列表
       const taskList = await getTaskList(page);
       // 继续做
       if (taskList.length && !taskList[2].status) {
+        // 重新答题
         return await handleExam(page, 0);
       }
+      return {
+        page,
+        result,
+      };
     }
   }
   // 每周答题
   if (type === 1) {
-    const res = await handleExamWeekly(page);
-    if (res) {
-      // 开始答题
-      const res = await handleQuestion(page, 1);
-      // 答题结果
-      const { result, title, url } = res;
-      // 成功
-      if (result) {
-        return true;
+    // 查找题号
+    const examWeekly = await findExamWeekly(page);
+    // 存在习题
+    if (examWeekly) {
+      // id
+      const { id } = examWeekly;
+      // 跳转每周答题
+      const pageData = await gotoPage(
+        page,
+        `${URL_CONFIG.examWeekly}?id=${id}`,
+        {
+          waitUntil: 'domcontentloaded',
+        }
+      );
+      // 跳转成功
+      if (pageData) {
+        // 页面
+        const { page } = pageData;
+        // 答题结果
+        const { result, title, url } = await handleQuestion(page, 1);
+        // 答题失败
+        if (!result) {
+          // 推送学习提示
+          pushModal({
+            title: '学习提示',
+            content: [
+              '每周答题, 答错且无答案!',
+              `标题: <span style="color: #1890ff">${title}</span>`,
+              `链接: <span style="color: #1890ff">${url}</span>`,
+            ],
+            type: 'warn',
+          });
+        }
+        return { page, result };
       }
-      // 推送学习提示
-      pushModal({
-        title: '学习提示',
-        content: [
-          '每周答题, 答错且无答案!',
-          `标题: <span style="color: #1890ff">${title}</span>`,
-          `链接: <span style="color: #1890ff">${url}</span>`,
-        ],
-        type: 'warn',
-      });
     }
   }
   // 专项练习
   if (type === 2) {
-    const res = await handleExamPaper(page);
-    if (res) {
-      // 开始答题
-      const res = await handleQuestion(page, 1);
-      // 答题结果
-      const { result, title, url } = res;
-      // 成功
-      if (result) {
-        return true;
+    // 查找题号
+    const examPaper = await findExamPaper(page);
+    // 存在习题
+    if (examPaper) {
+      // id
+      const { id } = examPaper;
+      // 跳转专项练习
+      const pageData = await gotoPage(
+        page,
+        `${URL_CONFIG.examPaper}?id=${id}`,
+        {
+          waitUntil: 'domcontentloaded',
+        }
+      );
+      // 请求成功
+      if (pageData) {
+        // 页面
+        const { page } = pageData;
+        // 答题结果
+        const { result, title, url } = await handleQuestion(page, 1);
+        // 答题失败
+        if (!result) {
+          // 推送学习提示
+          pushModal({
+            title: '学习提示',
+            content: [
+              '专项练习, 答错且无答案!',
+              `标题: <span style="color: #1890ff">${title}</span>`,
+              `链接: <span style="color: #1890ff">${url}</span>`,
+            ],
+            type: 'warn',
+          });
+        }
+        return { page, result };
       }
-      // 推送学习提示
-      pushModal({
-        title: '学习提示',
-        content: [
-          '专项练习, 答错且无答案!',
-          `标题: <span style="color: #1890ff">${title}</span>`,
-          `链接: <span style="color: #1890ff">${url}</span>`,
-        ],
-        type: 'warn',
-      });
-    }
-  }
-  return false;
-};
-/**
- * @description 每日答题
- * @param page
- * @returns
- */
-const handleExamPractice = async (page: pup.Page) => {
-  // 跳转 每日答题
-  const response = await gotoPage(page, URL_CONFIG.examPractice, {
-    waitUntil: 'domcontentloaded',
-  });
-  return !!response;
-};
-/**
- * @description 每周答题
- * @param page
- * @returns
- */
-const handleExamWeekly = async (page: pup.Page) => {
-  // 查找题号
-  const res = await findExamWeekly(page);
-  if (res) {
-    const { id } = res;
-    // 跳转每周答题
-    const response = await gotoPage(page, `${URL_CONFIG.examWeekly}?id=${id}`, {
-      waitUntil: 'domcontentloaded',
-    });
-    // 请求成功
-    if (response) {
-      return res;
     }
   }
 };
-/**
- * @description 专项练习
- * @param page
- * @returns
- */
-const handleExamPaper = async (page: pup.Page) => {
-  // 查找题号
-  const res = await findExamPaper(page);
-  if (res) {
-    const { id } = res;
-    // 跳转专项练习
-    const response = await gotoPage(page, `${URL_CONFIG.examPaper}?id=${id}`, {
-      waitUntil: 'domcontentloaded',
-    });
-    // 请求成功
-    if (response) {
-      return res;
-    }
-  }
-};
+
 /**
  * @description 初始化答题
  * @param page

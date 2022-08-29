@@ -7,7 +7,9 @@ import { gotoPage } from '../utils';
 /**
  * @description 处理看视频
  */
-const handleWatchVideo = async (page: pup.Page): Promise<boolean> => {
+const handleWatchVideo = async (
+  page: pup.Page
+): Promise<{ result: boolean; page: pup.Page }> => {
   // 获取视频
   const videos = await getTodayVideos(page);
   // 进度
@@ -20,18 +22,27 @@ const handleWatchVideo = async (page: pup.Page): Promise<boolean> => {
       } | 标题: ${chalk.blueBright(videos[i].title.substring(0, 15))}`
     );
     // 页面跳转
-    const response = await gotoPage(page, videos[i].url, {
+    const res = await gotoPage(page, videos[i].url, {
       waitUntil: 'domcontentloaded',
     });
     // 跳转失败
-    if (!response) {
-      progress.info('观看页面跳转失败!');
+    if (!res) {
+      progress.fail(
+        `${chalk.blueBright(Number(i) + 1)} / ${
+          videos.length
+        } | 标题: ${chalk.blueBright(
+          videos[i].title.substring(0, 15)
+        )} 页面跳转失败!`
+      );
+      // 跳过
       continue;
     }
+    // 新页面
+    page = res.page;
     // 观看视频
-    const res = await watchVideos(page, progress);
+    const watchResult = await watchVideos(page, progress);
     // 观看失败
-    if (!res) {
+    if (!watchResult) {
       progress.info('观看失败, 跳过此视频!');
       continue;
     }
@@ -45,15 +56,14 @@ const handleWatchVideo = async (page: pup.Page): Promise<boolean> => {
   // 任务进度
   const taskList = await getTaskList(page);
   // 未完成
-  if (taskList.length && !taskList[1].status) {
+  if (!taskList[1].status) {
     // 继续观看
     return await handleWatchVideo(page);
   }
-  // 无任务
-  if (!taskList.length) {
-    return false;
-  }
-  return true;
+  return {
+    page,
+    result: true,
+  };
 };
 /**
  * @description 获取当天视频

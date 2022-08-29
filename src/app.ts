@@ -17,18 +17,18 @@ import { installMouseHelper, pushModal } from './utils';
 // 处理浏览器
 const handleBrowser = async (broswer: pup.Browser) => {
   // 打开新页面
-  const page = await broswer.newPage();
-  // 设置默认导航时间
-  page.setDefaultNavigationTimeout(STUDY_CONFIG.timeout || 3000);
+  let page = await broswer.newPage();
+  // 设置默认时间
+  page.setDefaultTimeout(STUDY_CONFIG.timeout || 3000);
   //调试鼠标轨迹专用
   await installMouseHelper(page);
   // 进度
   const progress = ora();
   progress.info('用户登录');
   // 登录状态
-  const loginStatus = await handleLogin(page);
+  const { result, page: newPage } = await handleLogin(page);
   // 登录失败
-  if (!loginStatus) {
+  if (!result) {
     progress.fail(`超过最大重试次数,${chalk.blueBright('用户登录')}失败!`);
     // 推送学习提示
     pushModal({
@@ -38,6 +38,8 @@ const handleBrowser = async (broswer: pup.Browser) => {
     });
     return;
   }
+  //  新页面
+  page = newPage;
   progress.info('用户基础信息');
   // 用户信息数据
   const userInfo = await renderUserData(page);
@@ -89,48 +91,90 @@ const study = async (page: pup.Page) => {
   const taskList = await getTaskList(page);
   // 进度
   const progress = ora();
+
   // 是否读新闻
   if (STUDY_CONFIG.settings[0] && !taskList[0].status) {
     progress.info(`任务一: ${chalk.blueBright('文章选读')} 开始`);
     // 读新闻
-    await handleReadNews(page);
+    const res = await handleReadNews(page);
+    // 答题结果
+    const { page: newPage } = res;
+    // 可能产生新页面
+    page = newPage;
   }
   progress.succeed(`任务一: ${chalk.blueBright('文章选读')} 已完成!`);
+
   // 是否看视频
   if (STUDY_CONFIG.settings[1] && !taskList[1].status) {
     progress.info(`任务二: ${chalk.blueBright('视听学习')} 开始`);
     // 看视频
-    await handleWatchVideo(page);
+    const res = await handleWatchVideo(page);
+    // 答题结果
+    const { page: newPage } = res;
+    // 可能产生新页面
+    page = newPage;
   }
   progress.succeed(`任务二: ${chalk.blueBright('视听学习')} 已完成!`);
 
-  // // 是否每日答题
+  // 是否每日答题
   if (STUDY_CONFIG.settings[2] && !taskList[2].status) {
     progress.info(`任务三: ${chalk.blueBright('每日答题')} 开始`);
     // 每日答题
     const res = await handleExam(page, 0);
-    if (!res) {
-      progress.fail(`任务三: ${chalk.blueBright('每日答题')} 答题出错!`);
+    // 跳转成功
+    if (res) {
+      // 答题结果
+      const { result, page: newPage } = res;
+      // 可能产生新页面
+      page = newPage;
+      // 答题出错
+      if (result) {
+        progress.fail(`任务三: ${chalk.blueBright('每日答题')} 答题出错!`);
+      }
+    } else {
+      progress.fail(`任务三: ${chalk.blueBright('每日答题')} 答题跳转出错!`);
     }
   }
   progress.succeed(`任务三: ${chalk.blueBright('每日答题')} 已完成!`);
-  // // 是否每日答题
+
+  // 是否每周答题
   if (STUDY_CONFIG.settings[3] && !taskList[3].status) {
     progress.info(`任务四: ${chalk.blueBright('每周答题')} 开始`);
-    // 每日答题
+    // 每周答题
     const res = await handleExam(page, 1);
-    if (!res) {
-      progress.fail(`任务四: ${chalk.blueBright('每周答题')} 答题出错!`);
+    // 跳转成功
+    if (res) {
+      // 答题结果
+      const { result, page: newPage } = res;
+      // 可能产生新页面
+      page = newPage;
+      // 答题出错
+      if (result) {
+        progress.fail(`任务四: ${chalk.blueBright('每周答题')} 答题出错!`);
+      }
+    } else {
+      progress.fail(`任务四: ${chalk.blueBright('每周答题')} 答题跳转出错!`);
     }
   }
   progress.succeed(`任务四: ${chalk.blueBright('每周答题')} 已完成!`);
-  // // 是否每日答题
+
+  // 是否每日答题
   if (STUDY_CONFIG.settings[4] && !taskList[4].status) {
     progress.info(`任务五: ${chalk.blueBright('专项练习')} 开始`);
-    // 每日答题
+    // 专项练习
     const res = await handleExam(page, 2);
-    if (!res) {
-      progress.fail(`任务五: ${chalk.blueBright('专项练习')} 答题出错!`);
+    // 跳转成功
+    if (res) {
+      // 答题结果
+      const { result, page: newPage } = res;
+      // 可能产生新页面
+      page = newPage;
+      // 答题出错
+      if (result) {
+        progress.fail(`任务五: ${chalk.blueBright('专项练习')} 答题出错!`);
+      }
+    } else {
+      progress.fail(`任务五: ${chalk.blueBright('专项练习')} 答题跳转出错!`);
     }
   }
   progress.succeed(`任务五: ${chalk.blueBright('专项练习')} 已完成!`);

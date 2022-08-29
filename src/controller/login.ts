@@ -13,15 +13,25 @@ let currentRetryCount = 0;
  */
 const handleLogin = async (page: pup.Page) => {
   // 获取页面
-  const response = await gotoPage(page, URL_CONFIG.login, {
+  const res = await gotoPage(page, URL_CONFIG.login, {
     waitUntil: 'domcontentloaded',
   });
   // 跳转失败
-  if (!response) {
-    return false;
+  if (!res) {
+    return {
+      page,
+      result: false,
+    };
   }
+  // 新页面
+  page = res.page;
+  // 登录结果
+  const result = await tryLogin(page);
   // 登录
-  return await tryLogin(page);
+  return {
+    page,
+    result,
+  };
 };
 /**
  * @description 获取登录二维码

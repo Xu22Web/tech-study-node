@@ -60,8 +60,12 @@ export const openPage = async (
 ) => {
   // 获取页面
   const page = await broswer.newPage();
+  // 设置默认超时时间
+  page.setDefaultTimeout(STUDY_CONFIG.timeout || 3000);
+  //调试鼠标轨迹专用
+  await installMouseHelper(page);
   // 响应结果
-  const res = await gotoPage(page, url, options);
+  const res = await page.goto(url, options);
   return {
     page,
     response: res,
@@ -96,15 +100,25 @@ export const gotoPage = async (
     referer?: string | undefined;
   }
 ) => {
-  for (let i = 0; i < STUDY_CONFIG.maxRetryGotoCount; i++) {
+  // 捕获异常
+  try {
+    // 跳转
+    const response = await page.goto(url, options);
+    // 响应
+    return {
+      page,
+      response,
+    };
+  } catch (error) {
     // 捕获异常
     try {
-      // 跳转
-      const res = await page.goto(url, options);
-      // 响应
-      if (res) {
-        return res;
-      }
+      // 浏览器
+      const broswer = page.browser();
+      // 关闭页面
+      closePage(page);
+      // 创建新页面，继续跳转
+      const newPage = await openPage(broswer, url, options);
+      return newPage;
     } catch (error) {}
   }
 };
