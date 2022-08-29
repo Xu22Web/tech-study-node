@@ -326,7 +326,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
           // 获取按钮
           btnText = await getNextBtnText(page);
           // 是否答错
-          if (btnText === '下一题') {
+          if (btnText === '下一题' || btnText === '完成') {
             // 是否答错
             const wrong = await isWrong(page);
             // 答错
@@ -415,7 +415,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     // 获取按钮
     btnText = await getNextBtnText(page);
     // 跳转下一题
-    if (btnText === '下一题' || btnText === '交卷') {
+    if (btnText === '下一题' || btnText === '完成' || btnText === '交卷') {
       // 点击
       await clickNextBtn(page);
     }
@@ -442,10 +442,11 @@ const handleQuestion = async (page: pup.Page, type: number) => {
  */
 const isWrong = async (page: pup.Page) => {
   // 答案内容
-  return await page.$eval(
-    '.answer',
-    (node) => !!(node && (<HTMLDivElement>node).innerText.length)
-  );
+  return await page.evaluate(() => {
+    // 答案
+    const answerBox = document.querySelector('.answer');
+    return !!(answerBox && (<HTMLDivElement>answerBox).innerText.length);
+  });
 };
 /**
  * @description 获取下个按钮
