@@ -1,0 +1,32 @@
+{
+  "name": "tech-study-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "bin/index.ts",
+  "scripts": {
+    "start": "ts-node bin/index.ts",
+    "dev": "nodemon bin/index.ts",
+    "test": "vitest"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/blueimp-md5": "^2.18.0",
+    "@types/node": "^18.7.13",
+    "@types/node-schedule": "^2.1.0"
+  },
+  "dependencies": {
+    "axios": "^0.27.2",
+    "blueimp-md5": "^2.19.0",
+    "chalk": "4.1.2",
+    "cron-parser": "^4.6.0",
+    "node-schedule": "^2.1.0",
+    "nodemon": "^2.0.19",
+    "ora": "^5.4.1",
+    "puppeteer-core": "^16.2.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.2",
+    "vitest": "^0.22.1"
+  }
+}
