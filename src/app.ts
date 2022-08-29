@@ -128,7 +128,7 @@ const study = async (page: pup.Page) => {
       // 可能产生新页面
       page = newPage;
       // 答题出错
-      if (result) {
+      if (!result) {
         progress.fail(`任务三: ${chalk.blueBright('每日答题')} 答题出错!`);
       }
     } else {
@@ -149,7 +149,7 @@ const study = async (page: pup.Page) => {
       // 可能产生新页面
       page = newPage;
       // 答题出错
-      if (result) {
+      if (!result) {
         progress.fail(`任务四: ${chalk.blueBright('每周答题')} 答题出错!`);
       }
     } else {
@@ -170,7 +170,7 @@ const study = async (page: pup.Page) => {
       // 可能产生新页面
       page = newPage;
       // 答题出错
-      if (result) {
+      if (!result) {
         progress.fail(`任务五: ${chalk.blueBright('专项练习')} 答题出错!`);
       }
     } else {
