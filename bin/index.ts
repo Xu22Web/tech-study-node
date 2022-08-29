@@ -17,11 +17,18 @@ const main = async () => {
   const browser = await pup.launch(PUP_CONFIG);
   browserProgress.succeed('已打开浏览器!');
 
-  // 处理浏览器
-  await handleBrowser(browser);
-  await browser.close();
-  browserProgress.info('已关闭浏览器!');
-  return;
+  try {
+    // 处理浏览器
+    await handleBrowser(browser);
+    // 关闭浏览器
+    await browser.close();
+    browserProgress.info('已关闭浏览器!');
+  } catch (error: any) {
+    // 关闭浏览器
+    await browser.close();
+    browserProgress.info('已关闭浏览器!');
+    throw new Error(error);
+  }
 };
 // 推送服务提示
 pushModal(
@@ -36,6 +43,7 @@ pushModal(
 
 // 定时任务
 PUSH_CONFIG.list.forEach((sendInfo, i) => {
+  console.log(`${i + 1} / ${PUSH_CONFIG.list.length} 执行定时任务`);
   //执行一个cron任务
   schedule.scheduleJob(sendInfo.cron, async () => {
     console.log(`${i + 1} / ${PUSH_CONFIG.list.length} 正在执行定时任务...`);
@@ -58,16 +66,33 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
         })
         .filter((sendInfo) => !sendInfo.done)
         .sort((a, b) => a.time - b.time);
+      // 存在下次任务
+      if (rest.length) {
+        // 推送服务提示
+        pushModal(
+          {
+            title: '服务提示',
+            content: [
+              `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务已执行完毕!`,
+              `剩余任务数: <span style="color: #1890ff">${rest.length}</span> 个`,
+              '下次任务信息: ',
+              `用户: <span style="color: #1890ff">${rest[0].nick}</span>`,
+              `时间: <span style="color: #1890ff">${rest[0].time}</span>`,
+            ],
+            type: 'info',
+            to: '管理员',
+          },
+          PUSH_CONFIG.toToken
+        );
+        return;
+      }
       // 推送服务提示
       pushModal(
         {
           title: '服务提示',
           content: [
             `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务已执行完毕!`,
-            `剩余任务数: <span style="color: #1890ff">${rest.length}</span> 个`,
-            '下次任务信息: ',
-            `用户: <span style="color: #1890ff">${rest[0].nick}</span>`,
-            `时间: <span style="color: #1890ff">${rest[0].time}</span>`,
+            `所有定时任务均已完成!`,
           ],
           type: 'info',
           to: '管理员',
@@ -75,6 +100,8 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
         PUSH_CONFIG.toToken
       );
     } catch (error: any) {
+      console.log(9999, error);
+
       // 推送服务提示
       pushModal(
         {
