@@ -100,6 +100,8 @@ const handleExam = async (
         }
         return { page, result };
       }
+    } else {
+      return { page, result: true };
     }
   }
   // 专项练习
@@ -139,6 +141,8 @@ const handleExam = async (
         }
         return { page, result };
       }
+    } else {
+      return { page, result: true };
     }
   }
 };
@@ -322,7 +326,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
           // 点击
           await clickNextBtn(page);
           // 等待跳转
-          await sleep(2500);
+          await sleep(3000);
           // 获取按钮
           btnText = await getNextBtnText(page);
           // 是否答错
@@ -411,7 +415,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       };
     }
     // 等待跳转
-    await sleep(2500);
+    await sleep(3000);
     // 获取按钮
     btnText = await getNextBtnText(page);
     // 跳转下一题
@@ -420,7 +424,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       await clickNextBtn(page);
     }
     // 等待跳转
-    await sleep(2500);
+    await sleep(3000);
     // 等待滑动验证
     await handleSildeVerify(page);
   }
@@ -428,7 +432,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
   // 等待结果提交
   await waitResult(page);
   // 等待提交
-  await sleep(2500);
+  await sleep(3000);
   return {
     title,
     url,
