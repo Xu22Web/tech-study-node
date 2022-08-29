@@ -91,7 +91,7 @@ const getTodayVideos = async (page: pup.Page) => {
  */
 const watchVideos = async (page: pup.Page, progress: ora.Ora) => {
   // 视频可以播放
-  const canPlay = await page.evaluate(() => {
+  const canPlay = await page.evaluate((time) => {
     return new Promise<boolean>((resolve) => {
       // 定时器
       const timer = setInterval(() => {
@@ -124,9 +124,9 @@ const watchVideos = async (page: pup.Page, progress: ora.Ora) => {
       const timeout = setTimeout(() => {
         clearInterval(timer);
         resolve(false);
-      }, STUDY_CONFIG.timeout);
+      }, time);
     });
-  });
+  }, STUDY_CONFIG.timeout);
   // 无法播放
   if (!canPlay) {
     progress.fail('当前视频无法播放!');
@@ -134,7 +134,7 @@ const watchVideos = async (page: pup.Page, progress: ora.Ora) => {
   }
 
   // 播放视频
-  const playing = await page.evaluate(async () => {
+  const playing = await page.evaluate(async (time) => {
     return new Promise<boolean>((resolve) => {
       // 定时器
       const timer = setInterval(async () => {
@@ -183,9 +183,9 @@ const watchVideos = async (page: pup.Page, progress: ora.Ora) => {
       const timeout = setTimeout(() => {
         clearInterval(timer);
         resolve(false);
-      }, STUDY_CONFIG.timeout);
+      }, time);
     });
-  });
+  }, STUDY_CONFIG.timeout);
   // 无法播放
   if (!playing) {
     progress.fail('当前视频无法播放!');
