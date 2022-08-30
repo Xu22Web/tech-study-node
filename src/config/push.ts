@@ -15,7 +15,7 @@ const PUSH_CONFIG = {
   /**
    * @description 发送服务消息来源
    */
-  source: '卑微的服务器',
+  from: '卑微的服务器',
   /**
    * @description 自己的token
    */
