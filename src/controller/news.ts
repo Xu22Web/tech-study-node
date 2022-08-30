@@ -96,7 +96,7 @@ const getTodayNews = async (page: pup.Page) => {
  */
 const readingNews = async (page: pup.Page, progress: ora.Ora) => {
   // 看文章时间
-  let duration = ~~(Math.random() * (100 - 80 + 1) + 80);
+  let duration = ~~(Math.random() * 20 + 80);
   // 滚动延迟
   const startScoll = duration - 5;
   const endScoll = 5;

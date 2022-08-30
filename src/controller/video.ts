@@ -211,7 +211,7 @@ const watchVideos = async (page: pup.Page, progress: ora.Ora) => {
  */
 const videoCountDown = (progress: ora.Ora, page: pup.Page) => {
   // 看视频时间
-  let duration = ~~(Math.random() * (250 - 230 + 1) + 230);
+  let duration = ~~(Math.random() * 80 + 100);
   // 滚动延迟
   const startScoll = duration - 5;
   const endScoll = 5;
