@@ -90,7 +90,8 @@ export const getTotalScore = async (page: pup.Page) => {
       // 总分
       const { score } = data;
       return <number>score;
-    } catch (error) {}
+    } catch (error) {
+    }
   }
 };
 /**
@@ -115,9 +116,9 @@ export const getTodayScore = async (page: pup.Page) => {
       // 当天总分
       const { score } = data;
       return <number>score;
-    } catch (error) {}
+    } catch (error) {
+    }
   }
-  return 0;
 };
 /**
  * @description 获取任务列表
@@ -161,7 +162,9 @@ export const getTaskList = async (page: pup.Page) => {
         taskList[4] = taskProgress[5];
         return taskList;
       }
-    } catch (error) {}
+    } catch (error) {
+
+    }
   }
   return [];
 };
