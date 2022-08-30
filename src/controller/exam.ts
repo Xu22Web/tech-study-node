@@ -554,7 +554,7 @@ const handleChoiceBtn = async (page: pup.Page, answers: string[]) => {
             // 无符号选项文本
             const unsignedChoiceText = choiceText.replaceAll(/[、，,。 ]/g, '');
             // 无符号答案
-            const unsignedAnswer = choiceText.replaceAll(/[、，,。 ]/g, '');
+            const unsignedAnswer = answer.replaceAll(/[、，,。 ]/g, '');
             // 存在答案文本
             if (
               choiceText === answer ||
