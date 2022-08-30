@@ -26,7 +26,7 @@ const main = async () => {
   } catch (error: any) {
     // 关闭浏览器
     await browser.close();
-    browserProgress.info('已关闭浏览器!');
+    browserProgress.info('遇到错误，已关闭浏览器!');
     throw new Error(error);
   }
 };
@@ -100,8 +100,6 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
         PUSH_CONFIG.toToken
       );
     } catch (error: any) {
-      console.log(9999, error);
-
       // 推送服务提示
       pushModal(
         {
