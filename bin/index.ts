@@ -1,5 +1,4 @@
 import pup from 'puppeteer-core';
-import ora from 'ora';
 import schedule from 'node-schedule';
 import paser from 'cron-parser';
 import PUP_CONFIG from '../src/config/pup';
@@ -20,23 +19,19 @@ const main = async () => {
     // 关闭浏览器
     await browser.close();
     shared.progress.info('已关闭浏览器!');
-  } catch (e) {
+  } catch (e: any) {
     // 关闭浏览器
     await browser.close();
     shared.progress.info('遇到错误，已关闭浏览器!');
-    throw e;
+    throw new Error(e);
   }
 };
-// 设置token
-shared.setToken('');
-// 昵称
-shared.setNick('');
+
 // 推送服务提示
-shared.pushModal({
+shared.pushModalTips({
   title: '服务提示',
   content: '已运行定时任务!',
   type: 'info',
-  to: '管理员',
 });
 
 // 定时任务
@@ -53,22 +48,13 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
       // 执行主函数
       await main();
     } catch (e) {
-      // 设置token
-      shared.setToken('');
-      // 昵称
-      shared.setNick('');
       // 推送服务提示
-      shared.pushModal({
+      shared.pushModalTips({
         title: '服务提示',
         content: ['发生错误!', String(e)],
         type: 'fail',
-        to: '管理员',
       });
     }
-    // 设置token
-    shared.setToken('');
-    // 昵称
-    shared.setNick('');
     // 剩余任务
     const rest = PUSH_CONFIG.list
       .map((sendInfo) => {
@@ -86,12 +72,8 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
 
     // 存在下次任务
     if (rest.length) {
-      // 设置token
-      shared.setToken('');
-      // 昵称
-      shared.setNick('');
       // 推送服务提示
-      shared.pushModal({
+      shared.pushModalTips({
         title: '服务提示',
         content: [
           `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务已执行完毕!`,
@@ -101,23 +83,17 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
           `时间: <span style="color: #1890ff">${rest[0].timeText}</span>`,
         ],
         type: 'info',
-        to: '管理员',
       });
       return;
     }
-    // 设置token
-    shared.setToken('');
-    // 昵称
-    shared.setNick('');
     // 推送服务提示
-    shared.pushModal({
+    shared.pushModalTips({
       title: '服务提示',
       content: [
         `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务已执行完毕!`,
         `所有定时任务均已完成!`,
       ],
       type: 'info',
-      to: '管理员',
     });
   });
 });
