@@ -22,16 +22,20 @@ const API_CONFIG = {
   /**
    * @description 新闻数据
    */
-  todayNews: [
-    'https://www.xuexi.cn/lgdata/1jscb6pu1n2.json',
+  news: [
+    'https://www.xuexi.cn/lgdata/35il6fpn0ohq.json',
     'https://www.xuexi.cn/lgdata/1ap1igfgdn2.json',
   ],
   /**
    * @description 视频数据
    */
-  todayVideos: [
+  video: [
+    'https://www.xuexi.cn/lgdata/525pi8vcj24p.json',
+    'https://www.xuexi.cn/lgdata/11vku6vt6rgom.json',
+    'https://www.xuexi.cn/lgdata/2qfjjjrprmdh.json',
     'https://www.xuexi.cn/lgdata/3o3ufqgl8rsn.json',
-    'https://www.xuexi.cn/lgdata/1742g60067k.json',
+    'https://www.xuexi.cn/lgdata/591ht3bc22pi.json',
+    'https://www.xuexi.cn/lgdata/591ht3bc22pi.json',
   ],
   /**
    * @description 每周答题列表
@@ -52,8 +56,11 @@ const API_CONFIG = {
   answerSearch: [
     'https://a6.qikekeji.com/txt/data/detail',
     'http://www.syiban.com/search/index/init.html',
-    'https://www.souwen123.com/search/select.php',
   ],
+  /**
+   * @description 推送
+   */
+  push: 'http://www.pushplus.plus/send',
 };
 
 export default API_CONFIG;
