@@ -29,6 +29,8 @@ const main = async () => {
 };
 // 设置token
 shared.setToken('');
+// 昵称
+shared.setNick('');
 // 推送服务提示
 shared.pushModal({
   title: '服务提示',
@@ -53,6 +55,8 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
     } catch (e) {
       // 设置token
       shared.setToken('');
+      // 昵称
+      shared.setNick('');
       // 推送服务提示
       shared.pushModal({
         title: '服务提示',
@@ -63,6 +67,8 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
     }
     // 设置token
     shared.setToken('');
+    // 昵称
+    shared.setNick('');
     // 剩余任务
     const rest = PUSH_CONFIG.list
       .map((sendInfo) => {
@@ -82,6 +88,8 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
     if (rest.length) {
       // 设置token
       shared.setToken('');
+      // 昵称
+      shared.setNick('');
       // 推送服务提示
       shared.pushModal({
         title: '服务提示',
@@ -99,6 +107,8 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
     }
     // 设置token
     shared.setToken('');
+    // 昵称
+    shared.setNick('');
     // 推送服务提示
     shared.pushModal({
       title: '服务提示',
