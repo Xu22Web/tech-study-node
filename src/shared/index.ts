@@ -86,6 +86,10 @@ type Shared = {
    */
   pushModal(options: ModalOptions): Promise<void>;
   /**
+   * @description 服务推送
+   */
+  pushModalTips(options: Omit<ModalOptions, 'to' | 'from'>): Promise<void>;
+  /**
    * @description 设置token
    * @param token
    */
@@ -210,8 +214,32 @@ const shared: Shared = {
       type,
       from = this.from,
     } = options;
-    // 推送
-    await pushModal({ title, subTitle, to, content, type, from }, this.token);
+    // 推送配置
+    const { token, enabled } = PUSH_CONFIG;
+    // 启用推送
+    if (enabled) {
+      // 推送
+      await pushModal(
+        { title, subTitle, to, content, type, from },
+        token,
+        this.token
+      );
+    }
+  },
+  async pushModalTips(options) {
+    // 配置
+    const { title, subTitle = '', content, type } = options;
+    // 服务推送配置
+    const { nick, from, toToken, token, enabled } = PUSH_CONFIG;
+    // 启用推送
+    if (enabled) {
+      // 推送
+      await pushModal(
+        { title, subTitle, to: nick, content, type, from },
+        token,
+        toToken
+      );
+    }
   },
   setToken(token) {
     if (token) {
@@ -225,7 +253,7 @@ const shared: Shared = {
       this.nick = nick;
       return;
     }
-    this.token = PUSH_CONFIG.nick;
+    this.nick = PUSH_CONFIG.nick;
   },
 };
 
