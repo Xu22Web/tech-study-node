@@ -178,35 +178,21 @@ describe('api', () => {
     const res = await getAnswerSearch2('2006年5月20日，经国');
     expect(res).toMatchInlineSnapshot('[]');
   });
-  it.skip('push', async () => {
-    const res = await pushModal(
-      {
-        title: '服务提示',
-        content: ['发生错误!', String(1)],
-        type: 'fail',
-        to: '管理员',
-      },
-      PUSH_CONFIG.toToken
-    );
-    expect(res).toMatchInlineSnapshot(`
-      {
-        "code": 200,
-        "count": null,
-        "data": "xxx",
-        "msg": "请求成功",
-      }
-    `);
-  });
   it.skip('sharedpush', async () => {
-    // 设置token
-    shared.setToken('');
-    // 昵称
-    shared.setNick('');
+    shared.setToken(PUSH_CONFIG.list[0].token)
     const res = await shared.pushModal({
-      title: '服务提示',
+      title: '普通提示',
       content: ['发生错误!', String(1)],
       type: 'fail',
       to: '管理员',
+    });
+    expect(res).toMatchInlineSnapshot('undefined');
+  });
+  it('sharedpushtips', async () => {
+    const res = await shared.pushModalTips({
+      title: '服务提示',
+      content: ['发生错误!', String(1)],
+      type: 'fail',
     });
     expect(res).toMatchInlineSnapshot('undefined');
   });
