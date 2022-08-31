@@ -1,5 +1,4 @@
 import pup from 'puppeteer-core';
-import PUSH_CONFIG from '../config/push';
 import { pushPlus } from '../apis';
 import { Point, Bounds, PushOptions, ModalOptions } from './interface';
 
@@ -18,26 +17,20 @@ export const sleep = (time: number = 1000) => {
 
 /**
  * @description 推送
- * @param title 标题
- * @param content 内容
+ * @param options 选项
  * @returns
  */
 export const pushMessage = async (options: PushOptions) => {
   // 选项
-  const { title, content, template = 'html', to } = options;
-  // 推送配置
-  const { token, enabled } = PUSH_CONFIG;
-  // 启用推送
-  if (enabled) {
-    // 推送
-    const res = await pushPlus(token, title, content, template, to);
-    return res;
-  }
+  const { title, content, template = 'html', toToken, fromToken } = options;
+  // 推送
+  const res = await pushPlus(fromToken, title, content, template, toToken);
+  return res;
 };
 
 /**
  * @description 创建模态框
- * @param config 配置
+ * @param options 选项
  * @returns
  */
 const createModal = (options: ModalOptions) => {
@@ -189,18 +182,24 @@ const createModal = (options: ModalOptions) => {
 };
 /**
  * @description 推送模态框
- * @param config
+ * @param options
+ * @param fromToken
  * @param toToken
  * @returns
  */
-export const pushModal = async (options: ModalOptions, toToken: string) => {
+export const pushModal = async (
+  options: ModalOptions,
+  fromToken: string,
+  toToken: string
+) => {
   // html
   const html = createModal(options);
   // 推送
   const res = await pushMessage({
     title: '消息提示',
     content: html,
-    to: toToken,
+    fromToken,
+    toToken,
   });
   return res;
 };
