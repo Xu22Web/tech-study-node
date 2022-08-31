@@ -1,94 +1,83 @@
 import md5 from 'blueimp-md5';
 import chalk from 'chalk';
-import ora from 'ora';
 import pup from 'puppeteer-core';
-import {
-  getAnswer,
-  getAnswerOthers,
-  getExamPaper,
-  getExamWeekly,
-  getTaskList,
-  saveAnswer,
-} from '../apis';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
+import shared from '../shared';
+import {
+  examPaper,
+  examWeekly,
+  getAnswer1,
+  getAnswer2,
+  postAnswer,
+} from '../apis';
 import {
   createRandomPath,
   createRandomPoint,
   getBatchText,
   getBounds,
+  getCookieIncludesDomain,
   getCount,
   getText,
   sleep,
-  pushModal,
-  gotoPage,
+  stringfyCookie,
+  stringfyData,
 } from '../utils';
+import { getTaskList } from './user';
+
 /**
  * @description 练习测试
- * @param page
  * @param type
  */
-const handleExam = async (
-  page: pup.Page,
-  type: number
-): Promise<
-  | {
-      page: pup.Page;
-      result: boolean;
-    }
-  | undefined
-> => {
+const handleExam = async (type: number): Promise<boolean> => {
   // 每日答题
   if (type === 0) {
     // 跳转每周答题
-    const pageData = await gotoPage(page, URL_CONFIG.examPractice, {
+    const gotoRes = await shared.gotoPage(URL_CONFIG.examPractice, {
       waitUntil: 'domcontentloaded',
     });
+    // 页面
+    const page = shared.getPage();
     // 跳转成功
-    if (pageData) {
-      // 页面
-      const { page } = pageData;
+    if (gotoRes && page) {
       // 开始答题
-      const { result } = await handleQuestion(page, 0);
+      await handleQuestion(page, 0);
       // 任务列表
-      const taskList = await getTaskList(page);
+      const taskList = await getTaskList();
       // 继续做
-      if (taskList.length && !taskList[2].status) {
+      if (taskList && !taskList[2].status) {
         // 重新答题
-        return await handleExam(page, 0);
+        return await handleExam(0);
       }
-      return {
-        page,
-        result,
-      };
+      return true;
     }
+    return false;
   }
   // 每周答题
   if (type === 1) {
     // 查找题号
-    const examWeekly = await findExamWeekly(page);
+    const examWeekly = await findExamWeekly();
     // 存在习题
     if (examWeekly) {
       // id
       const { id } = examWeekly;
       // 跳转每周答题
-      const pageData = await gotoPage(
-        page,
+      const gotoRes = await shared.gotoPage(
         `${URL_CONFIG.examWeekly}?id=${id}`,
         {
           waitUntil: 'domcontentloaded',
         }
       );
+      // 页面
+      const page = shared.getPage();
       // 跳转成功
-      if (pageData) {
-        // 页面
-        const { page } = pageData;
+      if (gotoRes && page) {
         // 答题结果
         const { result, title, url } = await handleQuestion(page, 1);
         // 答题失败
         if (!result) {
           // 推送学习提示
-          pushModal({
+          shared.pushModal({
             title: '学习提示',
             content: [
               '每周答题, 答错且无答案!',
@@ -98,38 +87,37 @@ const handleExam = async (
             type: 'warn',
           });
         }
-        return { page, result };
+        return result;
       }
     } else {
-      return { page, result: true };
+      return true;
     }
   }
   // 专项练习
   if (type === 2) {
     // 查找题号
-    const examPaper = await findExamPaper(page);
+    const examPaper = await findExamPaper();
     // 存在习题
     if (examPaper) {
       // id
       const { id } = examPaper;
       // 跳转专项练习
-      const pageData = await gotoPage(
-        page,
+      const gotoRes = await shared.gotoPage(
         `${URL_CONFIG.examPaper}?id=${id}`,
         {
           waitUntil: 'domcontentloaded',
         }
       );
+      // 页面
+      const page = shared.getPage();
       // 请求成功
-      if (pageData) {
-        // 页面
-        const { page } = pageData;
+      if (gotoRes && page) {
         // 答题结果
         const { result, title, url } = await handleQuestion(page, 1);
         // 答题失败
         if (!result) {
           // 推送学习提示
-          pushModal({
+          shared.pushModal({
             title: '学习提示',
             content: [
               '专项练习, 答错且无答案!',
@@ -139,24 +127,24 @@ const handleExam = async (
             type: 'warn',
           });
         }
-        return { page, result };
+        return result;
       }
     } else {
-      return { page, result: true };
+      return true;
     }
   }
+  return false;
 };
 
 /**
  * @description 初始化答题
- * @param page
  * @returns
  */
-const initExam = async (page: pup.Page, type: number = 0) => {
+const initExam = async (type: number = 0) => {
   // 每周答题
   if (type === 0) {
     // 请求第一页
-    const res = await getExamWeekly(page, 1);
+    const res = await getExamWeekly(1);
     if (res) {
       // 总页数
       const { totalPageCount } = res;
@@ -169,7 +157,7 @@ const initExam = async (page: pup.Page, type: number = 0) => {
   // 专项练习
   if (type === 1) {
     // 请求第一页
-    const res = await getExamPaper(page, 1);
+    const res = await getExamPaper(1);
     if (res) {
       // 总页数
       const { totalPageCount } = res;
@@ -179,20 +167,20 @@ const initExam = async (page: pup.Page, type: number = 0) => {
     }
   }
 };
+
 /**
  * @description 获取每周答题
- * @param page
  * @returns
  */
-const findExamWeekly = async (page: pup.Page) => {
+const findExamWeekly = async () => {
   // 总页数
-  const total = await initExam(page);
+  const total = await initExam(1);
   // 当前页数
   let current = STUDY_CONFIG.weeklyReverse ? total : 1;
   if (total && current) {
     while (current <= total && current) {
       // 当前页数数据
-      const res = await getExamWeekly(page, current);
+      const res = await getExamWeekly(current);
       if (res) {
         const { list } = res;
         for (const i in list) {
@@ -220,20 +208,20 @@ const findExamWeekly = async (page: pup.Page) => {
     return;
   }
 };
+
 /**
  * @description 获取每周答题
- * @param page
  * @returns
  */
-const findExamPaper = async (page: pup.Page) => {
+const findExamPaper = async () => {
   // 总页数
-  const total = await initExam(page, 1);
+  const total = await initExam(1);
   // 当前页数
   let current = STUDY_CONFIG.paperReverse ? total : 1;
   if (total && current) {
     while (current <= total && current) {
       // 当前页数数据
-      const res = await getExamPaper(page, current);
+      const res = await getExamPaper(current);
       if (res) {
         // 专项练习列表
         const examPapers = res.list;
@@ -257,8 +245,12 @@ const findExamPaper = async (page: pup.Page) => {
     }
   }
 };
+
 /**
  * @description 处理练习
+ * @param page
+ * @param type
+ * @returns
  */
 const handleQuestion = async (page: pup.Page, type: number) => {
   // 等待题目加载完成
@@ -266,7 +258,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
   // 支持类型
   const supportType = ['填空题', '单选题', '多选题'];
   // 获取题号
-  const { total } = await getQuestionNum(page);
+  let { total, current } = await getQuestionNum(page);
   // 标题
   const title = await getText(page, '.title');
   // 链接
@@ -274,7 +266,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
   // 总答题结果
   let result = true;
   // 进度
-  const progress = ora('开始答题!');
+  shared.progress.info('开始答题!');
   // 开始答题
   for (let i = 0; i < total; i++) {
     // 获取按钮
@@ -286,11 +278,11 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       break;
     }
     // 获取题号
-    const { current } = await getQuestionNum(page);
+    ({ current } = await getQuestionNum(page));
     // 获取题型
     const questionType = await getQuestionType(page);
     // 显示进度
-    progress.start(
+    shared.progress.start(
       `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
         questionType
       )}`
@@ -314,11 +306,13 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       // 答题成功
       if (res) {
         // 显示进度
-        progress.start(
+        shared.progress.start(
           `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
             questionType
           )} 答题成功!`
         );
+        // 等待跳转
+        await sleep(3000);
         // 获取按钮
         btnText = await getNextBtnText(page);
         // 提交答案
@@ -336,7 +330,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
             // 答错
             if (wrong) {
               // 显示进度
-              progress.start(
+              shared.progress.start(
                 `${chalk.blueBright(
                   current
                 )} / ${total} | 题型: ${chalk.blueBright(
@@ -361,21 +355,12 @@ const handleQuestion = async (page: pup.Page, type: number) => {
                   result,
                 };
               }
-            } else {
-              // 显示进度
-              progress.start(
-                `${chalk.blueBright(
-                  current
-                )} / ${total} | 题型: ${chalk.blueBright(
-                  questionType
-                )} 答题成功, 答案正确!`
-              );
             }
           }
         }
       } else {
         // 显示进度
-        progress.start(
+        shared.progress.start(
           `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
             questionType
           )} 答题失败, 无答案!`
@@ -401,7 +386,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       }
     } else {
       // 显示进度
-      progress.start(
+      shared.progress.start(
         `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
           questionType
         )} 答题失败, 题型错误!`
@@ -414,7 +399,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
         result,
       };
     }
-    // 等待跳转
+    // 等待
     await sleep(3000);
     // 获取按钮
     btnText = await getNextBtnText(page);
@@ -428,7 +413,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     // 等待滑动验证
     await handleSildeVerify(page);
   }
-  progress.succeed(`${chalk.blueBright(total)} / ${total} 答题完成!`);
+  shared.progress.succeed(`${chalk.blueBright(current)} / ${total} 答题完成!`);
   // 等待结果提交
   await waitResult(page);
   // 等待提交
@@ -439,6 +424,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     result,
   };
 };
+
 /**
  * @description 是否答错
  * @param page
@@ -452,6 +438,7 @@ const isWrong = async (page: pup.Page) => {
     return !!(answerBox && (<HTMLDivElement>answerBox).innerText.length);
   });
 };
+
 /**
  * @description 获取下个按钮
  * @param page
@@ -479,13 +466,14 @@ const getNextBtnText = async (page: pup.Page) => {
     });
   });
 };
+
 /**
  * @description 点击下个按钮
  * @param page
  * @returns
  */
 const clickNextBtn = async (page: pup.Page) => {
-  return await page.$$eval('.ant-btn:not([disabled])', (btns) => {
+  return await page.$$eval('.ant-btn', (btns) => {
     // 下一步按钮
     const nextAll = (<HTMLButtonElement[]>btns).filter(
       (next) => next.innerText.length
@@ -504,7 +492,7 @@ const clickNextBtn = async (page: pup.Page) => {
 };
 /**
  * @description 获取题号信息
- * @param page 页面
+ * @param page
  * @returns
  */
 const getQuestionNum = async (page: pup.Page) => {
@@ -517,9 +505,10 @@ const getQuestionNum = async (page: pup.Page) => {
     current,
   };
 };
+
 /**
  * @description 获取题型
- * @param page 页面
+ * @param page
  * @returns
  */
 const getQuestionType = async (page: pup.Page) => {
@@ -529,10 +518,11 @@ const getQuestionType = async (page: pup.Page) => {
   const questionType = questionTypeText.trim().substring(0, 3);
   return <'填空题' | '单选题' | '多选题'>questionType;
 };
+
 /**
  * @description 选择按钮
- * @param page 页面
- * @param answers 答案
+ * @param page
+ * @param answers
  * @returns
  */
 const handleChoiceBtn = async (page: pup.Page, answers: string[]) => {
@@ -550,7 +540,7 @@ const handleChoiceBtn = async (page: pup.Page, answers: string[]) => {
           // 遍历
           choices.forEach((choice) => {
             // 选项文本
-            const choiceText = choice.innerText.trim();
+            const choiceText = choice.innerText.replace(/[A-Z]\./, '').trim();
             // 无符号选项文本
             const unsignedChoiceText = choiceText.replaceAll(/[、，,。 ]/g, '');
             // 无符号答案
@@ -590,10 +580,11 @@ const handleChoiceBtn = async (page: pup.Page, answers: string[]) => {
     answers
   );
 };
+
 /**
  * @description 填空题
- * @param page 页面
- * @param answers 答案
+ * @param page
+ * @param answers
  * @returns
  */
 const handleBlankInput = async (page: pup.Page, answers: string[]) => {
@@ -645,6 +636,7 @@ const handleBlankInput = async (page: pup.Page, answers: string[]) => {
     answers
   );
 };
+
 /**
  * @description 单选题
  * @param page
@@ -662,6 +654,30 @@ const handleSingleChoice = async (page: pup.Page) => {
       if (res) {
         return true;
       }
+      // 判断题
+      // 选项
+      const choicesText = await getBatchText(page, '.q-answer');
+      // 判断题
+      const exists = choicesText
+        .map((choice) => choice.replace(/[A-Z]\./, '').trim())
+        .some((choice) => keys.includes(choice));
+      // 关键词
+      const keys = ['对', '错', '正确', '错误'];
+      // 题目内容
+      const content = await getText(page, '.q-body');
+      // 题目包含答案
+      if (content.includes(answers[0]) && choicesText.length === 2 && exists) {
+        //答案
+        const answersLike = ['对', '正确'];
+        // 尝试查找点击
+        for (const i in answersLike) {
+          // 尝试查找点击
+          const res = await handleChoiceBtn(page, [answersLike[i]]);
+          if (res) {
+            return true;
+          }
+        }
+      }
     } else {
       // 多答案单选项
       // 可能分隔符
@@ -674,6 +690,17 @@ const handleSingleChoice = async (page: pup.Page) => {
         for (const i in answersLike) {
           // 尝试查找点击
           const res = await handleChoiceBtn(page, [answersLike[i]]);
+          if (res) {
+            return true;
+          }
+        }
+      }
+      // 答案存在
+      if (answers.every((answer) => answer.length)) {
+        // 可能答案是否正确
+        for (const i in answers) {
+          // 尝试查找点击
+          const res = await handleChoiceBtn(page, [answers[i]]);
           if (res) {
             return true;
           }
@@ -713,9 +740,10 @@ const handleSingleChoice = async (page: pup.Page) => {
   }
   return false;
 };
+
 /**
  * @description 多选题
- * @param page 页面
+ * @param page
  * @returns
  */
 const handleMutiplyChoice = async (page: pup.Page) => {
@@ -771,6 +799,7 @@ const handleMutiplyChoice = async (page: pup.Page) => {
   }
   return false;
 };
+
 /**
  * @description 填空题
  * @param page
@@ -799,14 +828,17 @@ const handleFillBlanks = async (page: pup.Page) => {
   }
   return false;
 };
+
 /**
  * @description 通过提示获取答案
- * @param page 页面
+ * @param page
  * @returns
  */
 const getAnswerByTips = async (page: pup.Page) => {
   // 点击提示
-  await page.click('.tips');
+  await page.$eval('.tips', (node) => {
+    (<HTMLButtonElement>node).click();
+  });
   // 获取答案
   return await (
     await getBatchText(page, '.line-feed font[color=red]')
@@ -823,19 +855,20 @@ const getAnswerByNetwork = async (page: pup.Page) => {
   // md5加密
   const key = await getKey(page);
   // 获取答案
-  const answers = await getAnswer(key);
-  if (answers.length) {
-    return answers;
+  const answers1 = await getAnswer1(key);
+  if (answers1.length) {
+    return answers1;
   }
   // 答案
   const questionClip = content.substring(0, 10);
-  // 获取其他答案
-  const otherAnsers = await getAnswerOthers(questionClip);
-  if (otherAnsers.length) {
-    return otherAnsers;
+  // 获取答案
+  const answers2 = await getAnswer2(questionClip);
+  if (answers2.length) {
+    return answers2;
   }
   return [];
 };
+
 /**
  * @description 获取密钥
  * @param page
@@ -848,6 +881,7 @@ const getKey = async (page: pup.Page) => {
   const key = md5(content);
   return key;
 };
+
 /**
  * @description 通过错题上传答案
  * @param page
@@ -863,31 +897,19 @@ const saveAnswerFromWrong = async (page: pup.Page) => {
   // 答案存在
   if (answer && answer.length) {
     const key = await getKey(page);
-    // 上传答案
-    saveAnswer(key, answer);
-    return true;
+    if (key) {
+      // 上传答案
+      saveAnswer(key, answer);
+      return true;
+    }
   }
   return false;
 };
-// /**
-//  * @description 通过手动答题上传答案
-//  * @param page
-//  * @returns
-//  */
-// const saveAnswerFromManual = async (page: pup.Page) => {
-//   // 答案内容
-//   const answersText = await getBatchText(page, '.q-answer.chosen');
-//   // 从字符串中拿出答案
-//   const answer = answersText.map((ans) => ans.split('.')[1].trim()).join(';');
-//   if (answer && answer.length) {
-//     const key = await getKey(page);
-//     // 上传答案
-//     await saveAnswer(key, answer);
-//     return true;
-//   }
-//   return false;
-// };
-// 处理滑块验证
+
+/**
+ * @description 处理滑块验证
+ * @param page
+ */
 const handleSildeVerify = async (page: pup.Page) => {
   // 是否滑块
   const exists = await page.$eval('#nc_mask', (node) => {
@@ -933,6 +955,7 @@ const handleSildeVerify = async (page: pup.Page) => {
     }
   }
 };
+
 /**
  * @description 等待结果提交
  * @param page
@@ -959,6 +982,7 @@ const waitResult = async (page: pup.Page) => {
     resolve(true);
   });
 };
+
 /**
  * @description 随机答题
  * @param page
@@ -996,4 +1020,190 @@ const handleRandAnswers = async (page: pup.Page, questionType: string) => {
     return await handleBlankInput(page, answers);
   }
 };
+
+/**
+ * @description 答案数据
+ */
+export type AnswerData = {
+  status: number;
+  data: {
+    txt_content: string;
+  };
+  error: string;
+};
+/**
+ * @description 答题
+ */
+type ExamPractices = {
+  id: number;
+  questionNum: number;
+  alreadyAnswerNum: number;
+  tipScore: number;
+  name: string;
+  status: number;
+  startDate: string;
+}[];
+
+/**
+ * @description 答案数据
+ */
+type answerData = {
+  status: number;
+  data: { txt_content: string; txt_name: string };
+};
+
+/**
+ * @description 每周答题数据
+ * @param pageNo
+ * @returns
+ */
+export const getExamWeekly = async (pageNo: number) => {
+  // 获取页面
+  const page = shared.getPage();
+  if (!page) {
+    return;
+  }
+  try {
+    // 获取 cookies
+    const cookies = await getCookieIncludesDomain(page, '.xuexi.cn');
+    // cookie
+    const cookie = stringfyCookie(cookies);
+    // 每周答题
+    const data = await examWeekly(cookie, pageNo);
+    // 答题数据
+    const paperJson = decodeURIComponent(
+      escape(atob(data.data_str.replace(/-/g, '+').replace(/_/g, '/')))
+    );
+    // JSON格式化
+    const paper = <
+      {
+        list: {
+          practices: ExamPractices;
+        }[];
+        totalPageCount: number;
+      }
+    >JSON.parse(paperJson);
+    return paper;
+  } catch (e) {}
+};
+
+/**
+ * @description 专项练习数据
+ * @param pageNo
+ * @returns
+ */
+export const getExamPaper = async (pageNo: number) => {
+  // 获取页面
+  const page = shared.getPage();
+  if (!page) {
+    return;
+  }
+  try {
+    // 获取 cookies
+    const cookies = await getCookieIncludesDomain(page, '.xuexi.cn');
+    // cookie
+    const cookie = stringfyCookie(cookies);
+    // 获取专项练习
+    const data = await examPaper(cookie, pageNo);
+    // 答题数据
+    const paperJson = decodeURIComponent(
+      escape(atob(data.data_str.replace(/-/g, '+').replace(/_/g, '/')))
+    );
+    // JSON格式化
+    const paper = <
+      {
+        list: ExamPractices;
+        totalPageCount: number;
+      }
+    >JSON.parse(paperJson);
+    return paper;
+  } catch (e) {}
+};
+
+/**
+ * @description 保存答案
+ * @param key
+ * @param value
+ * @returns
+ */
+export const saveAnswer = async (key: string, value: string) => {
+  try {
+    // 内容
+    const content = JSON.stringify([{ title: key, content: value }]);
+    // 数据
+    const data = {
+      txt_name: key,
+      txt_content: content,
+      password: '',
+      v_id: '',
+    };
+    // 请求体
+    const body = stringfyData(data);
+    // 保存答案
+    const res = await postAnswer(body);
+    return res;
+  } catch (e) {}
+};
+
+/**
+ * @description 获取答案
+ * @param key
+ * @returns
+ */
+export const getAnswerSearch1 = async (key: string) => {
+  try {
+    // 数据
+    const data = {
+      txt_name: key,
+      password: '',
+    };
+    // 请求体
+    const body = stringfyData(data);
+    // 保存答案
+    const res = await getAnswer1(body);
+    if (res) {
+      // 结果
+      const { status, data } = <answerData>res;
+      if (status !== 0) {
+        // 答案列表
+        const answerList: { content: string; title: string }[] = JSON.parse(
+          data.txt_content
+        );
+        // 答案
+        const answers = answerList[0].content.split(';');
+        return answers;
+      }
+    }
+  } catch (e) {}
+};
+
+/**
+ * @description 获取答案
+ * @param question
+ * @returns
+ */
+export const getAnswerSearch2 = async (question: string) => {
+  try {
+    // 保存答案
+    const res = await getAnswer2(question);
+    // 请求成功
+    if (res) {
+      // 答案
+      const answerList =
+        (<string>res).match(/(?<=答案：.*[A-Z][.、：])[^<]+/g) ||
+        (<string>res).match(/(?<=答案：.*)[^<A-Z]+/g);
+      if (answerList && answerList.length) {
+        // 答案文本
+        const answerText = answerList[0];
+        // 答案
+        const answers = answerText
+          .split(/[,，][A-Z][.、：]/)
+          .map((ans) => ans.trim());
+        return answers;
+      }
+    }
+  } catch (e) {}
+  return [];
+};
+
 export default handleExam;
