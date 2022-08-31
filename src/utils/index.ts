@@ -1,127 +1,7 @@
-import axios from 'axios';
 import pup from 'puppeteer-core';
 import PUSH_CONFIG from '../config/push';
-import STUDY_CONFIG from '../config/study';
-/**
- * @description 点
- */
-type Point = { x: number; y: number };
-
-/**
- * @description 范围
- */
-type Bounds = { x: number; y: number; width: number; height: number };
-
-/**
- * @description 消息模板类型
- */
-type TemplateType = 'html' | 'txt' | 'json' | 'markdown' | 'cloudMonitor';
-
-/**
- * @description 推送选项
- */
-type PushOptions = {
-  title: string;
-  content: string;
-  template?: TemplateType;
-  to?: string;
-};
-
-/**
- * @description 模态框
- */
-type ModalOptions = {
-  title: string;
-  subTitle?: string;
-  content: string | string[];
-  to?: string;
-  from?: string;
-  type: ModalType;
-};
-
-/**
- * @description 类型
- */
-type ModalType = 'info' | 'warn' | 'fail' | 'success';
-
-/**
- * @description 打开新页面
- * @param broswer 浏览器
- * @param url 链接
- * @param options 选项
- * @returns
- */
-export const openPage = async (
-  broswer: pup.Browser,
-  url: string,
-  options?: pup.WaitForOptions & {
-    referer?: string | undefined;
-  }
-) => {
-  // 获取页面
-  const page = await broswer.newPage();
-  // 设置默认超时时间
-  page.setDefaultTimeout(STUDY_CONFIG.timeout || 3000);
-  //调试鼠标轨迹专用
-  await installMouseHelper(page);
-  // 响应结果
-  const res = await page.goto(url, options);
-  return {
-    page,
-    response: res,
-  };
-};
-
-/**
- * @description 关闭页面
- * @param page 页面
- * @returns
- */
-export const closePage = async (page: pup.Page) => {
-  if (!page.isClosed) {
-    // 关闭页面
-    await page.close();
-    return true;
-  }
-  return false;
-};
-
-/**
- * @description 跳转网页
- * @param page
- * @param url
- * @param options
- * @returns
- */
-export const gotoPage = async (
-  page: pup.Page,
-  url: string,
-  options?: pup.WaitForOptions & {
-    referer?: string | undefined;
-  }
-) => {
-  // 捕获异常
-  try {
-    // 跳转
-    const response = await page.goto(url, options);
-    // 响应
-    return {
-      page,
-      response,
-    };
-  } catch (error) {
-    // 捕获异常
-    try {
-      // 浏览器
-      const broswer = page.browser();
-      // 关闭页面
-      closePage(page);
-      // 创建新页面，继续跳转
-      const newPage = await openPage(broswer, url, options);
-      return newPage;
-    } catch (error) {}
-  }
-};
+import { pushPlus } from '../apis';
+import { Point, Bounds, PushOptions, ModalOptions } from './interface';
 
 /**
  * @description 延迟
@@ -136,21 +16,6 @@ export const sleep = (time: number = 1000) => {
   });
 };
 
-// 当前用户信息
-let currentUser = {
-  token: PUSH_CONFIG.toToken,
-  nick: PUSH_CONFIG.nick,
-};
-
-/**
- * @description 初始化
- */
-export const initMessage = (token: string, nick: string) => {
-  if (token) {
-    currentUser = { token, nick };
-  }
-};
-
 /**
  * @description 推送
  * @param title 标题
@@ -159,27 +24,13 @@ export const initMessage = (token: string, nick: string) => {
  */
 export const pushMessage = async (options: PushOptions) => {
   // 选项
-  const { title, content, template = 'html', to = currentUser.token } = options;
+  const { title, content, template = 'html', to } = options;
   // 推送配置
   const { token, enabled } = PUSH_CONFIG;
   // 启用推送
   if (enabled) {
     // 推送
-    const res = await axios.post(
-      'http://www.pushplus.plus/send',
-      {
-        token,
-        title,
-        content,
-        template,
-        to,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    const res = await pushPlus(token, title, content, template, to);
     return res;
   }
 };
@@ -191,14 +42,7 @@ export const pushMessage = async (options: PushOptions) => {
  */
 const createModal = (options: ModalOptions) => {
   // 配置
-  const {
-    title,
-    subTitle = '',
-    to = currentUser.nick,
-    content,
-    type,
-    from = PUSH_CONFIG.source,
-  } = options;
+  const { title, subTitle = '', to, content, type, from } = options;
   // 内容文本
   let contentText = '';
   if (Array.isArray(content)) {
@@ -349,7 +193,7 @@ const createModal = (options: ModalOptions) => {
  * @param toToken
  * @returns
  */
-export const pushModal = async (options: ModalOptions, toToken?: string) => {
+export const pushModal = async (options: ModalOptions, toToken: string) => {
   // html
   const html = createModal(options);
   // 推送
@@ -434,6 +278,26 @@ export const stringfyCookie = (cookies: pup.Protocol.Network.Cookie[]) => {
     return cookie;
   }
   return '';
+};
+
+/**
+ * @description 字符串化请求数据
+ * @param data
+ * @returns
+ */
+export const stringfyData = (data: object) => {
+  // 数据键
+  const dataKeys = Object.keys(data);
+  // 请求体
+  const dataText = dataKeys
+    .map((key) => {
+      return `${encodeURIComponent(key)}=${encodeURIComponent(
+        data[<keyof typeof data>key]
+      )}`;
+    })
+    .join('&');
+
+  return dataText;
 };
 
 /**
