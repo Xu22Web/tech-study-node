@@ -38,76 +38,78 @@ shared.pushModal({
 });
 
 // 定时任务
-// PUSH_CONFIG.list.forEach((sendInfo, i) => {
-//   console.log(`${i + 1} / ${PUSH_CONFIG.list.length} 执行定时任务`);
-//   //执行一个cron任务
-//   schedule.scheduleJob(sendInfo.cron, async () => {
-//     console.log(`${i + 1} / ${PUSH_CONFIG.list.length} 正在执行定时任务...`);
-//     // 初始化消息当前用户token
-//     shared.setToken(sendInfo.token);
-//     try {
-//       // 执行主函数
-//       await main();
-//     } catch (e) {
-//       // 设置token
-//       shared.setToken('');
-//       // 推送服务提示
-//       shared.pushModal({
-//         title: '服务提示',
-//         content: ['发生错误!', String(e)],
-//         type: 'fail',
-//         to: '管理员',
-//       });
-//     }
-//     // 设置token
-//     shared.setToken('');
-//     // 剩余任务
-//     const rest = PUSH_CONFIG.list
-//       .map((sendInfo) => {
-//         // 任务时间
-//         const time = paser.parseExpression(sendInfo.cron);
-//         return {
-//           ...sendInfo,
-//           done: time.hasNext(),
-//           timeText: formatDate(time.next().toDate()),
-//           time: time.next().toDate().getTime(),
-//         };
-//       })
-//       .filter((sendInfo) => !sendInfo.done)
-//       .sort((a, b) => a.time - b.time);
+PUSH_CONFIG.list.forEach((sendInfo, i) => {
+  console.log(`${i + 1} / ${PUSH_CONFIG.list.length} 执行定时任务`);
+  //执行一个cron任务
+  schedule.scheduleJob(sendInfo.cron, async () => {
+    console.log(`${i + 1} / ${PUSH_CONFIG.list.length} 正在执行定时任务...`);
+    // 初始化消息当前用户token
+    shared.setToken(sendInfo.token);
+    // 昵称
+    shared.setNick(sendInfo.nick);
+    try {
+      // 执行主函数
+      await main();
+    } catch (e) {
+      // 设置token
+      shared.setToken('');
+      // 推送服务提示
+      shared.pushModal({
+        title: '服务提示',
+        content: ['发生错误!', String(e)],
+        type: 'fail',
+        to: '管理员',
+      });
+    }
+    // 设置token
+    shared.setToken('');
+    // 剩余任务
+    const rest = PUSH_CONFIG.list
+      .map((sendInfo) => {
+        // 任务时间
+        const time = paser.parseExpression(sendInfo.cron);
+        return {
+          ...sendInfo,
+          done: time.hasNext(),
+          timeText: formatDate(time.next().toDate()),
+          time: time.next().toDate().getTime(),
+        };
+      })
+      .filter((sendInfo) => !sendInfo.done)
+      .sort((a, b) => a.time - b.time);
 
-//     // 存在下次任务
-//     if (rest.length) {
-//       // 设置token
-//       shared.setToken('');
-//       // 推送服务提示
-//       shared.pushModal({
-//         title: '服务提示',
-//         content: [
-//           `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务已执行完毕!`,
-//           `剩余任务数: <span style="color: #1890ff">${rest.length}</span> 个`,
-//           '下次任务信息: ',
-//           `用户: <span style="color: #1890ff">${rest[0].nick}</span>`,
-//           `时间: <span style="color: #1890ff">${rest[0].timeText}</span>`,
-//         ],
-//         type: 'info',
-//         to: '管理员',
-//       });
-//       return;
-//     }
-//     // 设置token
-//     shared.setToken('');
-//     // 推送服务提示
-//     shared.pushModal({
-//       title: '服务提示',
-//       content: [
-//         `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务已执行完毕!`,
-//         `所有定时任务均已完成!`,
-//       ],
-//       type: 'info',
-//       to: '管理员',
-//     });
-//   });
-// });
+    // 存在下次任务
+    if (rest.length) {
+      // 设置token
+      shared.setToken('');
+      // 推送服务提示
+      shared.pushModal({
+        title: '服务提示',
+        content: [
+          `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务已执行完毕!`,
+          `剩余任务数: <span style="color: #1890ff">${rest.length}</span> 个`,
+          '下次任务信息: ',
+          `用户: <span style="color: #1890ff">${rest[0].nick}</span>`,
+          `时间: <span style="color: #1890ff">${rest[0].timeText}</span>`,
+        ],
+        type: 'info',
+        to: '管理员',
+      });
+      return;
+    }
+    // 设置token
+    shared.setToken('');
+    // 推送服务提示
+    shared.pushModal({
+      title: '服务提示',
+      content: [
+        `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务已执行完毕!`,
+        `所有定时任务均已完成!`,
+      ],
+      type: 'info',
+      to: '管理员',
+    });
+  });
+});
 
 // main();

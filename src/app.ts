@@ -45,6 +45,8 @@ const handleBrowser = async (browser: pup.Browser) => {
   let taskList = await getTaskList();
 
   if (userInfo && total !== undefined && score !== undefined && taskList) {
+    // 昵称
+    shared.setNick(userInfo.nick);
     shared.progress.info('用户基础信息');
     // 用户信息数据
     await renderUserData(userInfo);
