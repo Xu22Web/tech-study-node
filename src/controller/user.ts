@@ -30,7 +30,7 @@ export type TaskList = {
  * @param userInfo
  * @returns
  */
-export const renderUserData = async (userInfo: UserInfo) => {
+export const renderUserData = (userInfo: UserInfo) => {
   shared.progress.warn(`用户信息`);
   shared.progress.info(`昵称: ${chalk.yellow(userInfo.nick)}\n`);
 };
@@ -39,7 +39,7 @@ export const renderUserData = async (userInfo: UserInfo) => {
  * @description 渲染用户积分数据
  * @returns
  */
-export const renderScoreData = async (score: number, total: number) => {
+export const renderScoreData = (score: number, total: number) => {
   shared.progress.warn(`积分信息`);
   shared.progress.info(
     `当天积分: ${chalk.yellow(score)} 分 | 总积分: ${chalk.yellow(total)} 分\n`
@@ -49,7 +49,7 @@ export const renderScoreData = async (score: number, total: number) => {
  * @description 渲染用户任务数据
  * @param taskList
  */
-export const renderTasksData = async (taskList: TaskList) => {
+export const renderTasksData = (taskList: TaskList) => {
   shared.progress.warn(`任务进度`);
   shared.progress.info(`文章选读: ${chalk.yellow(taskList[0].rate)} %`);
   shared.progress.info(`视听学习: ${chalk.yellow(taskList[1].rate)} %`);

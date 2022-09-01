@@ -26,7 +26,7 @@ const handleBrowser = async (browser: pup.Browser) => {
   const status = await handleLogin();
   // 登录失败
   if (!status) {
-    shared.progress.fail('超过最大重试次数,登录失败!');
+    shared.progress.fail('超过重试次数,登录失败!');
     // 推送学习提示
     shared.pushModal({
       title: '学习提示',
@@ -35,15 +35,20 @@ const handleBrowser = async (browser: pup.Browser) => {
     });
     return;
   }
+  shared.progress.start('正在获取用户信息...');
   // 用户信息
   const userInfo = await getUserInfo();
+  shared.progress.succeed('获取用户信息成功!');
+  shared.progress.start('正在获取积分信息...');
   // 总分
   let total = await getTotalScore();
   // 当天
   let score = await getTodayScore();
+  shared.progress.succeed('获取积分信息成功!');
+  shared.progress.start('正在获取任务进度...');
   // 任务进度
   let taskList = await getTaskList();
-
+  shared.progress.succeed('获取任务进度成功!');
   if (userInfo && total !== undefined && score !== undefined && taskList) {
     // 昵称
     shared.setNick(userInfo.nick);
@@ -52,6 +57,8 @@ const handleBrowser = async (browser: pup.Browser) => {
     await renderUserData(userInfo);
     // 用户积分数据
     await renderScoreData(score, total);
+    // 用户任务进度数据
+    await renderTasksData(taskList);
     // 推送学习提示
     shared.pushModal({
       title: '学习提示',
@@ -59,18 +66,23 @@ const handleBrowser = async (browser: pup.Browser) => {
         '学习强国, 登录成功!',
         `当天积分:  <span style="color: #1890ff">${score}</span> 分`,
         `总积分: <span style="color: #1890ff">${total}</span> 分`,
+        `文章选读: <span style="color: #1890ff">${taskList[0].rate}</span> %`,
+        `视听学习: <span style="color: #1890ff">${taskList[1].rate}</span> %`,
+        `每日答题: <span style="color: #1890ff">${taskList[2].rate}</span> %`,
+        `每周答题: <span style="color: #1890ff">${taskList[3].rate}</span> %`,
+        `专项练习: <span style="color: #1890ff">${taskList[4].rate}</span> %`,
       ],
       type: 'success',
     });
-    // 用户任务进度数据
-    await renderTasksData(taskList);
     // 学习
     await study();
     // 总分
     total = await getTotalScore();
     // 当天
     score = await getTodayScore();
-    if (total !== undefined && score !== undefined) {
+    // 任务进度
+    taskList = await getTaskList();
+    if (total !== undefined && score !== undefined && taskList) {
       // 推送学习提示
       shared.pushModal({
         title: '学习提示',
@@ -78,6 +90,11 @@ const handleBrowser = async (browser: pup.Browser) => {
           '学习强国, 学习完成!',
           `当天积分:  <span style="color: #1890ff">${score}</span> 分`,
           `总积分: <span style="color: #1890ff">${total}</span> 分`,
+          `文章选读: <span style="color: #1890ff">${taskList[0].rate}</span> %`,
+          `视听学习: <span style="color: #1890ff">${taskList[1].rate}</span> %`,
+          `每日答题: <span style="color: #1890ff">${taskList[2].rate}</span> %`,
+          `每周答题: <span style="color: #1890ff">${taskList[3].rate}</span> %`,
+          `专项练习: <span style="color: #1890ff">${taskList[4].rate}</span> %`,
         ],
         type: 'success',
       });
