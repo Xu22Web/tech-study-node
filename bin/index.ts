@@ -60,14 +60,23 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
       .map((sendInfo) => {
         // 任务时间
         const time = paser.parseExpression(sendInfo.cron);
+        // 下次任务时间
+        const nextTime = time.next().toDate();
+        // 当前时间
+        const date = new Date();
+        // 当前任务是否结束
+        const done = !time.hasNext();
+        // 下个任务是否在今天
+        const isToday = !done && nextTime.getDate() === date.getDate();
         return {
           ...sendInfo,
-          done: !time.hasNext(),
-          timeText: formatDate(time.next().toDate()),
-          time: time.next().toDate().getTime(),
+          isToday,
+          done,
+          timeText: formatDate(nextTime),
+          time: nextTime.getTime(),
         };
       })
-      .filter((sendInfo) => !sendInfo.done)
+      .filter((sendInfo) => sendInfo.isToday)
       .sort((a, b) => a.time - b.time);
 
     // 存在下次任务
@@ -77,7 +86,7 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
         title: '服务提示',
         content: [
           `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务已执行完毕!`,
-          `剩余任务数: <span style="color: #1890ff">${rest.length}</span> 个`,
+          `今天剩余任务数: <span style="color: #1890ff">${rest.length}</span> 个`,
           '下次任务信息: ',
           `用户: <span style="color: #1890ff">${rest[0].nick}</span>`,
           `时间: <span style="color: #1890ff">${rest[0].timeText}</span>`,
