@@ -62,7 +62,7 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
         const time = paser.parseExpression(sendInfo.cron);
         return {
           ...sendInfo,
-          done: time.hasNext(),
+          done: !time.hasNext(),
           timeText: formatDate(time.next().toDate()),
           time: time.next().toDate().getTime(),
         };
