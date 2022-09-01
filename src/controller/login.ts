@@ -1,3 +1,4 @@
+import pup from 'puppeteer-core';
 import shared from '../shared';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
@@ -16,12 +17,14 @@ const handleLogin = async () => {
   const res = await shared.gotoPage(URL_CONFIG.login, {
     waitUntil: 'domcontentloaded',
   });
+  // 页面
+  const page = shared.getPage();
   // 跳转失败
-  if (!res) {
+  if (!res || !page) {
     return false;
   }
   // 登录结果
-  const result = await tryLogin();
+  const result = await tryLogin(page);
   // 登录
   return result;
 };
@@ -30,13 +33,7 @@ const handleLogin = async () => {
  * @description 获取登录二维码
  * @returns
  */
-const getLoginQRCode = async () => {
-  // 页面
-  const page = shared.getPage();
-  // 页面不存在
-  if (!page) {
-    return;
-  }
+const getLoginQRCode = async (page: pup.Page) => {
   // 等待加载完毕
   await page.waitForFunction(() => {
     const loading = document.querySelector<HTMLDivElement>('.login_loading');
@@ -67,10 +64,8 @@ const getLoginQRCode = async () => {
  * @description 获取登录状态
  * @returns
  */
-const getLoginStatus = () => {
+const getLoginStatus = (page: pup.Page) => {
   return new Promise<boolean>((resolve) => {
-    // 页面
-    const page = shared.getPage();
     // 页面不存在
     if (!page) {
       resolve(false);
@@ -102,9 +97,9 @@ const getLoginStatus = () => {
 /**
  * @description 登录
  */
-const tryLogin = async (): Promise<boolean> => {
+const tryLogin = async (page: pup.Page): Promise<boolean> => {
   // 获取二维码
-  const qrData = await getLoginQRCode();
+  const qrData = await getLoginQRCode(page);
   if (qrData) {
     // 二维码信息
     const { src } = qrData;
@@ -132,7 +127,7 @@ const tryLogin = async (): Promise<boolean> => {
       type: 'info',
     });
     // 登录状态
-    const res = await getLoginStatus();
+    const res = await getLoginStatus(page);
     // 登录失败
     if (!res) {
       // 登录次数
@@ -140,7 +135,7 @@ const tryLogin = async (): Promise<boolean> => {
       // 允许重试次数内
       if (retryCount <= STUDY_CONFIG.maxRetryLoginCount) {
         // 登录重试
-        return await tryLogin();
+        return await tryLogin(page);
       }
       return false;
     }
