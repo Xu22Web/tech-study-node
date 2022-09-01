@@ -844,6 +844,7 @@ const getAnswerByTips = async (page: pup.Page) => {
     await getBatchText(page, '.line-feed font[color=red]')
   ).map((ans) => ans.trim());
 };
+
 /**
  * @description 通过网络获取答案
  * @param page
@@ -855,14 +856,14 @@ const getAnswerByNetwork = async (page: pup.Page) => {
   // md5加密
   const key = await getKey(page);
   // 获取答案
-  const answers1 = await getAnswer1(key);
+  const answers1 = await getAnswerSearch1(key);
   if (answers1.length) {
     return answers1;
   }
   // 答案
   const questionClip = content.substring(0, 10);
   // 获取答案
-  const answers2 = await getAnswer2(questionClip);
+  const answers2 = await getAnswerSearch2(questionClip);
   if (answers2.length) {
     return answers2;
   }
@@ -1175,6 +1176,7 @@ export const getAnswerSearch1 = async (key: string) => {
       }
     }
   } catch (e) {}
+  return [];
 };
 
 /**
