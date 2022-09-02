@@ -1,9 +1,8 @@
-import { pushModal } from './../src/utils/index';
 import { describe, expect, it } from 'vitest';
 import pup from 'puppeteer-core';
 import PUP_CONFIG from '../src/config/pup';
 import shared from '../src/shared';
-import { getAnswerSearch1, getAnswerSearch2 } from './../src/controller/exam';
+import { getAnswerSearch1, getAnswerSearch2 } from '../src/controller/exam';
 import { getVideos, getNews } from '../src/controller/watch';
 import {
   getTodayScore,
