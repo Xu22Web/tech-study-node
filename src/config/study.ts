@@ -16,6 +16,22 @@ const STUDY_CONFIG = {
    */
   loginTimeout: 60000,
   /**
+   * @description 登录二维码保存路径
+   */
+  qrCodePath: 'src/qrcode/',
+  /**
+   * @description 登录结束自动清理二维码
+   */
+  qrCodeAutoClean: true,
+  /**
+   * @description 日志保存路径
+   */
+  logsPath: 'src/logs/',
+  /**
+   * @description 日志自动清理间隔天数
+   */
+  logsAutoCleanInterval: 7,
+  /**
    * @description 单次最大新闻数
    */
   maxNewsNum: 6,

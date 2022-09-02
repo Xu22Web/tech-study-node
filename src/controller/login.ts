@@ -1,5 +1,7 @@
 import pup from 'puppeteer-core';
 import shared from '../shared';
+import fs from 'fs';
+import path from 'path';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import { getCookie } from '../utils';
@@ -7,6 +9,10 @@ import { getCookie } from '../utils';
  * @descrtion 重试次数
  */
 let retryCount = 0;
+/**
+ * @description 二维码保存位置
+ */
+const qrCodePath = path.join(STUDY_CONFIG.qrCodePath, 'login.png');
 
 /**
  * @description 处理登录
@@ -34,6 +40,28 @@ const handleLogin = async () => {
  * @returns
  */
 const getLoginQRCode = async (page: pup.Page) => {
+  // 刷新二维码
+  await RefreshQRCode(page);
+  // 图片源
+  const imgSrc = await page.$eval(
+    '.login_qrcode_content img',
+    (node) => (<HTMLImageElement>node).src
+  );
+  // 数据
+  const base64Data = imgSrc.replace(/^data:image\/\w+;base64,/, '');
+  // buffer
+  const dataBuffer = Buffer.from(base64Data, 'base64');
+  // 写入文件
+  fs.writeFileSync(qrCodePath, dataBuffer);
+  shared.log.info(`登录二维码保存路径: ${qrCodePath}`);
+  return { src: imgSrc, buffer: dataBuffer };
+};
+
+/**
+ * @description 刷新登录二维码
+ * @param page
+ */
+const RefreshQRCode = async (page: pup.Page) => {
   // 等待加载完毕
   await page.waitForFunction(() => {
     const loading = document.querySelector<HTMLDivElement>('.login_loading');
@@ -44,20 +72,13 @@ const getLoginQRCode = async (page: pup.Page) => {
     '.login_qrcode_refresh',
     (node) => (<HTMLDivElement>node).style.display !== 'none'
   );
-  // 刷新
+  // 需要刷新
   if (needFresh) {
     // 点击刷新
-    await page.click('.login_qrcode_refresh span');
+    await page.$eval('.login_qrcode_refresh span', (node) => {
+      (<HTMLElement>node).click();
+    });
   }
-  // 图片源
-  const imgSrc = await page.$eval(
-    '.login_qrcode_content img',
-    (node) => (<HTMLImageElement>node).src
-  );
-  // 数据
-  const base64Data = imgSrc.replace(/^data:image\/\w+;base64,/, '');
-  const dataBuffer = Buffer.from(base64Data, 'base64');
-  return { src: imgSrc, buffer: dataBuffer };
 };
 
 /**
@@ -66,12 +87,7 @@ const getLoginQRCode = async (page: pup.Page) => {
  */
 const getLoginStatus = (page: pup.Page) => {
   return new Promise<boolean>((resolve) => {
-    // 页面不存在
-    if (!page) {
-      resolve(false);
-      return;
-    }
-    shared.progress.start('等待登录中...');
+    shared.log.loading('等待登录中...');
     // 定时
     const timer = setInterval(async () => {
       // 获取 cookie
@@ -81,14 +97,24 @@ const getLoginStatus = (page: pup.Page) => {
         clearInterval(timer);
         // 清除超时延迟
         clearTimeout(timeout);
-        shared.progress.succeed('登录成功!');
+        shared.log.success('登录成功!');
+        // 是否删除二维码
+        if (STUDY_CONFIG.qrCodeAutoClean) {
+          // 删除二维码
+          fs.unlink(qrCodePath, () => {
+            shared.log.success('登录二维码已删除!');
+          });
+        }
         resolve(true);
+        return;
       }
+      // 刷新二维码
+      await RefreshQRCode(page);
     }, 500);
     // 超时延迟
     const timeout = setTimeout(() => {
       clearInterval(timer);
-      shared.progress.fail('登录超时,请重试!');
+      shared.log.fail('登录超时, 请重试!');
       resolve(false);
     }, STUDY_CONFIG.loginTimeout);
   });
@@ -136,6 +162,13 @@ const tryLogin = async (page: pup.Page): Promise<boolean> => {
       if (retryCount <= STUDY_CONFIG.maxRetryLoginCount) {
         // 登录重试
         return await tryLogin(page);
+      }
+      // 是否删除二维码
+      if (STUDY_CONFIG.qrCodeAutoClean) {
+        // 删除二维码
+        fs.unlink(qrCodePath, () => {
+          shared.log.success('登录二维码已删除!');
+        });
       }
       return false;
     }
