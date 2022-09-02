@@ -32,7 +32,7 @@ const handleReadNews = async () => {
     });
     //  跳过跳转失败
     if (!res) {
-      shared.progress.fail(
+      shared.log.fail(
         `${chalk.blueBright(Number(i) + 1)} / ${
           news.length
         } | 标题: ${chalk.blueBright(
@@ -41,7 +41,7 @@ const handleReadNews = async () => {
       );
       continue;
     }
-    shared.progress.info(
+    shared.log.info(
       `${chalk.blueBright(Number(i) + 1)} / ${
         news.length
       } | 标题: ${chalk.blueBright(news[i].title.substring(0, 15))}`
@@ -52,10 +52,10 @@ const handleReadNews = async () => {
     await countDown(duration, (duration) => {
       // 倒计时存在
       if (duration) {
-        shared.progress.start(`观看剩余时间: ${chalk.blueBright(duration)} s`);
+        shared.log.loading(`观看剩余时间: ${chalk.blueBright(duration)} s`);
         return;
       }
-      shared.progress.succeed('已观看完当前新闻!');
+      shared.log.success('已观看完当前新闻!');
     });
     // 任务进度
     const taskList = await getTaskList();
@@ -68,7 +68,7 @@ const handleReadNews = async () => {
   const taskList = await getTaskList();
   // 未完成
   if (taskList && !taskList[0].status) {
-    shared.progress.info('未完成任务, 继续看新闻!');
+    shared.log.info('未完成任务, 继续看新闻!');
     // 继续观看
     await handleReadNews();
   }
@@ -88,7 +88,7 @@ const handleWatchVideo = async () => {
     });
     // 跳转失败
     if (!gotoRes) {
-      shared.progress.fail(
+      shared.log.fail(
         `${chalk.blueBright(Number(i) + 1)} / ${
           videos.length
         } | 标题: ${chalk.blueBright(
@@ -98,7 +98,7 @@ const handleWatchVideo = async () => {
       // 跳过
       continue;
     }
-    shared.progress.info(
+    shared.log.info(
       `${chalk.blueBright(Number(i) + 1)} / ${
         videos.length
       } | 标题: ${chalk.blueBright(videos[i].title.substring(0, 15))}`
@@ -107,7 +107,7 @@ const handleWatchVideo = async () => {
     const waitRes = await waitVideos();
     // 播放失败
     if (!waitRes) {
-      shared.progress.info('观看失败, 跳过此视频!');
+      shared.log.info('观看失败, 跳过此视频!');
       continue;
     }
     // 看视频时间
@@ -116,10 +116,10 @@ const handleWatchVideo = async () => {
     await countDown(duration, (duration) => {
       // 倒计时存在
       if (duration) {
-        shared.progress.start(`观看剩余时间: ${chalk.blueBright(duration)} s`);
+        shared.log.loading(`观看剩余时间: ${chalk.blueBright(duration)} s`);
         return;
       }
-      shared.progress.succeed('已观看完当前视频!');
+      shared.log.success('已观看完当前视频!');
     });
     // 任务进度
     const taskList = await getTaskList();
@@ -132,7 +132,7 @@ const handleWatchVideo = async () => {
   const taskList = await getTaskList();
   // 未完成
   if (taskList && !taskList[1].status) {
-    shared.progress.info('未完成任务, 继续看视频!');
+    shared.log.info('未完成任务, 继续看视频!');
     // 继续观看
     await handleWatchVideo();
   }

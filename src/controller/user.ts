@@ -31,8 +31,8 @@ export type TaskList = {
  * @returns
  */
 export const renderUserData = (userInfo: UserInfo) => {
-  shared.progress.warn(`用户信息`);
-  shared.progress.info(`昵称: ${chalk.yellow(userInfo.nick)}\n`);
+  shared.log.warn(`用户信息`);
+  shared.log.info(`昵称: ${chalk.yellow(userInfo.nick)}\n`);
 };
 
 /**
@@ -40,8 +40,8 @@ export const renderUserData = (userInfo: UserInfo) => {
  * @returns
  */
 export const renderScoreData = (score: number, total: number) => {
-  shared.progress.warn(`积分信息`);
-  shared.progress.info(
+  shared.log.warn(`积分信息`);
+  shared.log.info(
     `当天积分: ${chalk.yellow(score)} 分 | 总积分: ${chalk.yellow(total)} 分\n`
   );
 };
@@ -50,12 +50,12 @@ export const renderScoreData = (score: number, total: number) => {
  * @param taskList
  */
 export const renderTasksData = (taskList: TaskList) => {
-  shared.progress.warn(`任务进度`);
-  shared.progress.info(`文章选读: ${chalk.yellow(taskList[0].rate)} %`);
-  shared.progress.info(`视听学习: ${chalk.yellow(taskList[1].rate)} %`);
-  shared.progress.info(`每日答题: ${chalk.yellow(taskList[2].rate)} %`);
-  shared.progress.info(`每周答题: ${chalk.yellow(taskList[3].rate)} %`);
-  shared.progress.info(`专项练习: ${chalk.yellow(taskList[4].rate)} %\n`);
+  shared.log.warn(`任务进度`);
+  shared.log.info(`文章选读: ${chalk.yellow(taskList[0].rate)} %`);
+  shared.log.info(`视听学习: ${chalk.yellow(taskList[1].rate)} %`);
+  shared.log.info(`每日答题: ${chalk.yellow(taskList[2].rate)} %`);
+  shared.log.info(`每周答题: ${chalk.yellow(taskList[3].rate)} %`);
+  shared.log.info(`专项练习: ${chalk.yellow(taskList[4].rate)} %\n`);
 };
 
 /**

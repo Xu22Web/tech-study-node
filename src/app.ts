@@ -21,12 +21,12 @@ const handleBrowser = async (browser: pup.Browser) => {
   shared.setBrowser(browser);
   // 打开页面
   await shared.openPage();
-  shared.progress.info('用户登录');
+  shared.log.info('用户登录\n');
   // 登录状态
   const status = await handleLogin();
   // 登录失败
   if (!status) {
-    shared.progress.fail('超过重试次数,登录失败!');
+    shared.log.fail('超过重试次数,登录失败!');
     // 推送学习提示
     shared.pushModal({
       title: '学习提示',
@@ -35,24 +35,24 @@ const handleBrowser = async (browser: pup.Browser) => {
     });
     return;
   }
-  shared.progress.start('正在获取用户信息...');
+  shared.log.loading('正在获取用户信息...');
   // 用户信息
   const userInfo = await getUserInfo();
-  shared.progress.succeed('获取用户信息成功!');
-  shared.progress.start('正在获取积分信息...');
+  shared.log.success('获取用户信息成功!');
+  shared.log.loading('正在获取积分信息...');
   // 总分
   let total = await getTotalScore();
   // 当天
   let score = await getTodayScore();
-  shared.progress.succeed('获取积分信息成功!');
-  shared.progress.start('正在获取任务进度...');
+  shared.log.success('获取积分信息成功!');
+  shared.log.loading('正在获取任务进度...');
   // 任务进度
   let taskList = await getTaskList();
-  shared.progress.succeed('获取任务进度成功!');
+  shared.log.success('获取任务进度成功!');
   if (userInfo && total !== undefined && score !== undefined && taskList) {
     // 昵称
     shared.setNick(userInfo.nick);
-    shared.progress.info('用户基础信息');
+    shared.log.info('用户基础信息\n');
     // 用户信息数据
     await renderUserData(userInfo);
     // 用户积分数据
@@ -113,61 +113,61 @@ const study = async () => {
   if (taskList) {
     // 是否读新闻
     if (STUDY_CONFIG.settings[0] && !taskList[0].status) {
-      shared.progress.info(`任务一: ${chalk.blueBright('文章选读')} 开始`);
+      shared.log.info(`任务一: ${chalk.blueBright('文章选读')} 开始`);
       // 读新闻
       await handleWatch(0);
     }
-    shared.progress.succeed(`任务一: ${chalk.blueBright('文章选读')} 已完成!`);
+    shared.log.success(`任务一: ${chalk.blueBright('文章选读')} 已完成!`);
 
     // 是否看视频
     if (STUDY_CONFIG.settings[1] && !taskList[1].status) {
-      shared.progress.info(`任务二: ${chalk.blueBright('视听学习')} 开始`);
+      shared.log.info(`任务二: ${chalk.blueBright('视听学习')} 开始`);
       // 看视频
       await handleWatch(1);
     }
-    shared.progress.succeed(`任务二: ${chalk.blueBright('视听学习')} 已完成!`);
+    shared.log.success(`任务二: ${chalk.blueBright('视听学习')} 已完成!`);
 
     // 是否每日答题
     if (STUDY_CONFIG.settings[2] && !taskList[2].status) {
-      shared.progress.info(`任务三: ${chalk.blueBright('每日答题')} 开始`);
+      shared.log.info(`任务三: ${chalk.blueBright('每日答题')} 开始`);
       // 每日答题
       const res = await handleExam(0);
       // 答题出错
       if (!res) {
-        shared.progress.fail(
+        shared.log.fail(
           `任务三: ${chalk.blueBright('每日答题')} 答题出错!`
         );
       }
     }
-    shared.progress.succeed(`任务三: ${chalk.blueBright('每日答题')} 已完成!`);
+    shared.log.success(`任务三: ${chalk.blueBright('每日答题')} 已完成!`);
 
     // 是否每周答题
     if (STUDY_CONFIG.settings[3] && !taskList[3].status) {
-      shared.progress.info(`任务四: ${chalk.blueBright('每周答题')} 开始`);
+      shared.log.info(`任务四: ${chalk.blueBright('每周答题')} 开始`);
       // 每周答题
       const res = await handleExam(1);
       // 答题出错
       if (!res) {
-        shared.progress.fail(
+        shared.log.fail(
           `任务四: ${chalk.blueBright('每周答题')} 答题出错!`
         );
       }
     }
-    shared.progress.succeed(`任务四: ${chalk.blueBright('每周答题')} 已完成!`);
+    shared.log.success(`任务四: ${chalk.blueBright('每周答题')} 已完成!`);
 
     // 是否每日答题
     if (STUDY_CONFIG.settings[4] && !taskList[4].status) {
-      shared.progress.info(`任务五: ${chalk.blueBright('专项练习')} 开始`);
+      shared.log.info(`任务五: ${chalk.blueBright('专项练习')} 开始`);
       // 专项练习
       const res = await handleExam(2);
       // 答题出错
       if (!res) {
-        shared.progress.fail(
+        shared.log.fail(
           `任务五: ${chalk.blueBright('专项练习')} 答题出错!`
         );
       }
     }
-    shared.progress.succeed(`任务五: ${chalk.blueBright('专项练习')} 已完成!`);
+    shared.log.success(`任务五: ${chalk.blueBright('专项练习')} 已完成!`);
   }
 };
 

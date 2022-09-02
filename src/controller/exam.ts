@@ -266,7 +266,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
   // 总答题结果
   let result = true;
   // 进度
-  shared.progress.info('开始答题!');
+  shared.log.info('开始答题!');
   // 开始答题
   for (let i = 0; i < total; i++) {
     // 获取按钮
@@ -282,7 +282,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     // 获取题型
     const questionType = await getQuestionType(page);
     // 显示进度
-    shared.progress.start(
+    shared.log.loading(
       `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
         questionType
       )}`
@@ -306,7 +306,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       // 答题成功
       if (res) {
         // 显示进度
-        shared.progress.start(
+        shared.log.loading(
           `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
             questionType
           )} 答题成功!`
@@ -330,7 +330,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
             // 答错
             if (wrong) {
               // 显示进度
-              shared.progress.start(
+              shared.log.loading(
                 `${chalk.blueBright(
                   current
                 )} / ${total} | 题型: ${chalk.blueBright(
@@ -360,7 +360,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
         }
       } else {
         // 显示进度
-        shared.progress.start(
+        shared.log.loading(
           `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
             questionType
           )} 答题失败, 无答案!`
@@ -386,7 +386,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       }
     } else {
       // 显示进度
-      shared.progress.start(
+      shared.log.loading(
         `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
           questionType
         )} 答题失败, 题型错误!`
@@ -413,7 +413,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     // 等待滑动验证
     await handleSildeVerify(page);
   }
-  shared.progress.succeed(`${chalk.blueBright(current)} / ${total} 答题完成!`);
+  shared.log.success(`${chalk.blueBright(current)} / ${total} 答题完成!`);
   // 等待结果提交
   await waitResult(page);
   // 等待提交

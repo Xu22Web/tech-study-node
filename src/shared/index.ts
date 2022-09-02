@@ -1,7 +1,7 @@
-import ora from 'ora';
 import pup from 'puppeteer-core';
 import PUSH_CONFIG from '../config/push';
 import STUDY_CONFIG from '../config/study';
+import { log, Log } from '../controller/logs';
 import { installMouseHelper, pushModal } from '../utils';
 import { ModalOptions } from '../utils/interface';
 
@@ -32,7 +32,7 @@ type Shared = {
   /**
    * @description 进度
    */
-  progress: ora.Ora;
+  log: Log;
   /**
    * @description 获取浏览器
    */
@@ -109,7 +109,7 @@ const shared: Shared = {
   token: PUSH_CONFIG.toToken,
   nick: PUSH_CONFIG.nick,
   from: PUSH_CONFIG.from,
-  progress: ora(),
+  log: log(),
   getBrowser() {
     if (this.broswer && this.broswer.isConnected()) {
       return this.broswer;
