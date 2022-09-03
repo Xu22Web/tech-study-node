@@ -640,12 +640,12 @@ const handleSingleChoice = async (page: pup.Page) => {
       // 判断题
       // 选项
       const choicesText = await getBatchText(page, '.q-answer');
+      // 关键词
+      const keys = ['正确', '错误'];
       // 判断题
       const exists = choicesText
         .map((choice) => choice.replace(/[A-Z]\./, '').trim())
         .some((choice) => keys.includes(choice));
-      // 关键词
-      const keys = ['对', '错', '正确', '错误'];
       // 题目内容
       const content = await getText(page, '.q-body');
       // 题目包含答案
