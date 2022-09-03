@@ -2,7 +2,11 @@ import { describe, expect, it } from 'vitest';
 import pup from 'puppeteer-core';
 import PUP_CONFIG from '../src/config/pup';
 import shared from '../src/shared';
-import { getAnswerSearch1, getAnswerSearch2 } from '../src/controller/exam';
+import {
+  getAnswerSearch1,
+  getAnswerSearch2,
+  getAnswerSearch3,
+} from '../src/controller/exam';
 import { getVideos, getNews } from '../src/controller/watch';
 import {
   getTodayScore,
@@ -174,11 +178,23 @@ describe('api', () => {
     `);
   });
   it.skip('answer2', async () => {
-    const res = await getAnswerSearch2('2006年5月20日，经国');
-    expect(res).toMatchInlineSnapshot('[]');
+    const res = await getAnswerSearch2('世界是可以被认');
+    expect(res).toMatchInlineSnapshot(`
+      [
+        "实践-认识-实践",
+      ]
+    `);
+  });
+  it.skip('answer3', async () => {
+    const res = await getAnswerSearch3('世界是可以被认');
+    expect(res).toMatchInlineSnapshot(`
+      [
+        "实践-认识-实践",
+      ]
+    `);
   });
   it.skip('sharedpush', async () => {
-    shared.setToken(PUSH_CONFIG.list[0].token)
+    shared.setToken(PUSH_CONFIG.list[0].token);
     const res = await shared.pushModal({
       title: '普通提示',
       content: ['发生错误!', String(1)],
