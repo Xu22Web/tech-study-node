@@ -651,7 +651,7 @@ const handleSingleChoice = async (page: pup.Page) => {
       // 题目包含答案
       if (content.includes(answers[0]) && choicesText.length === 2 && exists) {
         //答案
-        const answersLike = ['对', '正确'];
+        const answersLike = ['正确'];
         // 尝试查找点击
         for (const i in answersLike) {
           // 尝试查找点击
@@ -911,11 +911,9 @@ const handleSildeVerify = async (page: pup.Page) => {
     // 等待
     await sleep(3000);
     // 等待加载
-    await page.waitForSelector('.nc-container', { timeout: 5000 });
+    await page.waitForSelector('.nc_scale');
     // 等待加载
-    await page.waitForSelector('.nc_scale', { timeout: 5000 });
-    // 等待加载
-    await page.waitForSelector('.btn_slide', { timeout: 5000 });
+    await page.waitForSelector('.btn_slide');
     // 轨道
     const track = await getBounds(page, '.nc_scale');
     // 滑块
