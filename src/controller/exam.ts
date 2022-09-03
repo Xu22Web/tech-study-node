@@ -255,7 +255,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
   // 总答题结果
   let result = true;
   // 等待题目
-  await sleep(2500);
+  await sleep(3000);
   // 等待题目加载完成
   const res = await page.evaluate((time) => {
     return new Promise<boolean>((resolve) => {
@@ -908,8 +908,14 @@ const handleSildeVerify = async (page: pup.Page) => {
   });
   // 存在滑块
   if (exists) {
+    // 等待
+    await sleep(3000);
     // 等待加载
-    await page.waitForSelector('.nc-container');
+    await page.waitForSelector('.nc-container', { timeout: 5000 });
+    // 等待加载
+    await page.waitForSelector('.nc_scale', { timeout: 5000 });
+    // 等待加载
+    await page.waitForSelector('.btn_slide', { timeout: 5000 });
     // 轨道
     const track = await getBounds(page, '.nc_scale');
     // 滑块
