@@ -61,28 +61,27 @@ const handleExam = async (type: number): Promise<boolean> => {
     // 存在习题
     if (examWeekly) {
       // id
-      const { id } = examWeekly;
+      const { id, name } = examWeekly;
+      // 每周答题链接
+      const url = `${URL_CONFIG.examWeekly}?id=${id}`;
       // 跳转每周答题
-      const gotoRes = await shared.gotoPage(
-        `${URL_CONFIG.examWeekly}?id=${id}`,
-        {
-          waitUntil: 'domcontentloaded',
-        }
-      );
+      const gotoRes = await shared.gotoPage(url, {
+        waitUntil: 'domcontentloaded',
+      });
       // 页面
       const page = shared.getPage();
       // 跳转成功
       if (gotoRes && page) {
         // 答题结果
-        const { result, title, url } = await handleQuestion(page, 1);
+        const result = await handleQuestion(page, 1);
         // 答题失败
         if (!result) {
           // 推送学习提示
           shared.pushModal({
             title: '学习提示',
             content: [
-              '每周答题, 答错且无答案!',
-              `标题: <span style="color: #1890ff">${title}</span>`,
+              '每周答题, 答题失败!',
+              `标题: <span style="color: #1890ff">${name}</span>`,
               `链接: <span style="color: #1890ff">${url}</span>`,
             ],
             type: 'warn',
@@ -101,28 +100,27 @@ const handleExam = async (type: number): Promise<boolean> => {
     // 存在习题
     if (examPaper) {
       // id
-      const { id } = examPaper;
+      const { id, name } = examPaper;
+      // 专项练习链接
+      const url = `${URL_CONFIG.examPaper}?id=${id}`;
       // 跳转专项练习
-      const gotoRes = await shared.gotoPage(
-        `${URL_CONFIG.examPaper}?id=${id}`,
-        {
-          waitUntil: 'domcontentloaded',
-        }
-      );
+      const gotoRes = await shared.gotoPage(url, {
+        waitUntil: 'domcontentloaded',
+      });
       // 页面
       const page = shared.getPage();
       // 请求成功
       if (gotoRes && page) {
         // 答题结果
-        const { result, title, url } = await handleQuestion(page, 1);
+        const result = await handleQuestion(page, 2);
         // 答题失败
         if (!result) {
           // 推送学习提示
           shared.pushModal({
             title: '学习提示',
             content: [
-              '专项练习, 答错且无答案!',
-              `标题: <span style="color: #1890ff">${title}</span>`,
+              '专项练习, 答题失败!',
+              `标题: <span style="color: #1890ff">${name}</span>`,
               `链接: <span style="color: #1890ff">${url}</span>`,
             ],
             type: 'warn',
@@ -254,16 +252,40 @@ const findExamPaper = async () => {
  * @returns
  */
 const handleQuestion = async (page: pup.Page, type: number) => {
-  // 等待题目加载完成
-  await page.waitForSelector('.question');
-  // 获取题号
-  let { total, current } = await getQuestionNum(page);
-  // 标题
-  const title = await getText(page, '.title');
-  // 链接
-  const url = page.target().url();
   // 总答题结果
   let result = true;
+  // 等待题目
+  await sleep(2500);
+  // 等待题目加载完成
+  const res = await page.evaluate((time) => {
+    return new Promise<boolean>((resolve) => {
+      // 定时器
+      const timer = setInterval(() => {
+        // 题目
+        const question = document.querySelector('.question');
+        // 视频可播放
+        if (question) {
+          // 清除计时器
+          clearInterval(timer);
+          // 清除倒计时
+          clearInterval(timeout);
+          resolve(true);
+        }
+      }, 100);
+      // 超时
+      const timeout = setTimeout(() => {
+        clearInterval(timer);
+        resolve(false);
+      }, time);
+    });
+  }, STUDY_CONFIG.timeout);
+  // 题目加载失败
+  if (!res) {
+    result = false;
+    return result;
+  }
+  // 获取题号
+  let { total, current } = await getQuestionNum(page);
   // 进度
   shared.log.info('开始答题!');
   // 开始答题
@@ -319,18 +341,10 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       // 可能答错且无答案
       result = false;
       if (type === 1 && STUDY_CONFIG.weeklyExitAfterWrong) {
-        return {
-          title,
-          url,
-          result,
-        };
+        return result;
       }
       if (type === 2 && STUDY_CONFIG.paperExitAfterWrong) {
-        return {
-          title,
-          url,
-          result,
-        };
+        return result;
       }
       // 随机答题
       await handleRandAnswers(page, questionType);
@@ -364,18 +378,10 @@ const handleQuestion = async (page: pup.Page, type: number) => {
           // 可能答错
           result = false;
           if (type === 1 && STUDY_CONFIG.weeklyExitAfterWrong) {
-            return {
-              title,
-              url,
-              result,
-            };
+            return result;
           }
           if (type === 2 && STUDY_CONFIG.paperExitAfterWrong) {
-            return {
-              title,
-              url,
-              result,
-            };
+            return result;
           }
         }
       }
@@ -399,11 +405,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
   await waitResult(page);
   // 等待提交
   await sleep(3000);
-  return {
-    title,
-    url,
-    result,
-  };
+  return result;
 };
 
 /**
