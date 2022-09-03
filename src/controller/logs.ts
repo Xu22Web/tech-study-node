@@ -185,7 +185,7 @@ export class Log {
             // 过去日期
             const oldDate = new Date(fileDate);
             // 当前时间
-            const newDate = new Date();
+            const newDate = new Date(formatDate());
             // 相差天数
             const days =
               (newDate.getTime() - oldDate.getTime()) / 1000 / 60 / 60 / 24;
