@@ -56,6 +56,7 @@ const API_CONFIG = {
   answerSearch: [
     'https://a6.qikekeji.com/txt/data/detail',
     'http://www.syiban.com/search/index/init.html',
+    'https://www.hysgn.com/e/search/index.php'
   ],
   /**
    * @description 推送
