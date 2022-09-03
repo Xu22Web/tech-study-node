@@ -111,7 +111,7 @@ const handleWatchVideo = async () => {
       continue;
     }
     // 看视频时间
-    const duration = ~~(Math.random() * 80 + 100);
+    const duration = ~~(Math.random() * 50 + 100);
     // 倒计时
     await countDown(duration, (duration) => {
       // 倒计时存在
