@@ -1,5 +1,6 @@
 import axios from 'axios';
 import API_CONFIG from '../config/api';
+import { stringfyData } from '../utils';
 
 /**
  * @description 用户信息
@@ -210,8 +211,10 @@ export const postAnswer = async (body: string) => {
  * @param body
  * @returns
  */
-export const getAnswer1 = async (body: string) => {
+export const getAnswer1 = async (data: object) => {
   try {
+    // 请求体
+    const body = stringfyData(data);
     // 保存答案
     const res = await axios.post(API_CONFIG.answerSearch[0], body, {
       headers: {
@@ -238,6 +241,29 @@ export const getAnswer2 = async (question: string) => {
       params: {
         modelid: 1,
         q: question,
+      },
+    });
+    // 请求成功
+    if (res.status === 200) {
+      const { data } = res;
+      return data;
+    }
+  } catch (e) {}
+};
+
+/**
+ * @description 获取答案
+ * @param question
+ * @returns
+ */
+export const getAnswer3 = async (data: object) => {
+  try {
+    // 请求体
+    const body = stringfyData(data);
+    // 搜索答案
+    const res = await axios.post(API_CONFIG.answerSearch[2], body, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
       },
     });
     // 请求成功
