@@ -230,13 +230,15 @@ pnpm install
 
    2. 查看更改 `Study 配置` ，需要注意的配置项
 
+      - `qrcodeLocalEnabled` 登录二维码本地保存，便于在无头模式登录，开启推送后可以关闭
+
       - `weeklyReverse` 每周答题的顺序
 
       - `paperReverse` 专项练习的顺序
 
-      - `weeklyExitExamAfterWrong` 每周答题，答题失败退出不提交
+      - `weeklyExitAfterWrong` 每周答题，答题失败退出不提交
 
-      - `paperExitExamAfterWrong` 专项练习，答题失败退出不提交
+      - `paperExitAfterWrong` 专项练习，答题失败退出不提交
 
       - `settings` 配置需要进行的学习项目
 
@@ -246,7 +248,7 @@ pnpm install
 
       - 编辑 `PushPlus 配置` ，包含 `enabled` 、自己的 `token` 、好友消息的 `token` 以及定时任务的 `cron` 表达式等
 
-      - 默认采用 `微信公众号` 推送，官方也支持第三方 `webhook` 服务（企业微信机器人、钉钉机器人、飞书机器人等）；企业微信应用；邮件。
+      - 默认采用 `微信公众号` 推送，官方也支持第三方 `webhook` 服务（企业微信机器人、钉钉机器人、飞书机器人等）、企业微信应用、邮件等。
 
 5. 运行
 
@@ -277,3 +279,7 @@ pnpm start
   - `exam` 每日答题, 每周答题, 专项练习
 
   - `error` 错误测试 `gotoPage` 跳转超时等
+
+  - `api` 测试 API 可用性
+
+  - `log` 测试日志生成保存和自动删除
