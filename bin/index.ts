@@ -37,7 +37,7 @@ shared.pushModalTips({
 // 执行清除日志任务
 schedule.scheduleJob('0 0 0 * * ?', () => {
   // 清除日志
-  shared.log.clean();
+  shared.log.autoClean();
 });
 
 // 定时任务

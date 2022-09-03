@@ -35,7 +35,7 @@ describe('log', () => {
   it.skip('clear', () => {
     shared.log.clear();
   });
-  it.skip('clean', () => {
-    shared.log.clean();
+  it.skip('autoClean', () => {
+    shared.log.autoClean();
   });
 });

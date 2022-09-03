@@ -94,7 +94,7 @@ export class Log {
     this.ora.warn(text);
   }
   /**
-   * @description 成功日志
+   * @description 失败日志
    * @param text
    */
   fail(text?: string) {
@@ -166,7 +166,7 @@ export class Log {
   /**
    * @description 自动删除日志
    */
-  clean() {
+  autoClean() {
     // 文件
     fs.readdir(logsPath, (err, files) => {
       if (err) {
