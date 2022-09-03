@@ -9,6 +9,7 @@ import {
   examWeekly,
   getAnswer1,
   getAnswer2,
+  getAnswer3,
   postAnswer,
 } from '../apis';
 import {
@@ -255,8 +256,6 @@ const findExamPaper = async () => {
 const handleQuestion = async (page: pup.Page, type: number) => {
   // 等待题目加载完成
   await page.waitForSelector('.question');
-  // 支持类型
-  const supportType = ['填空题', '单选题', '多选题'];
   // 获取题号
   let { total, current } = await getQuestionNum(page);
   // 标题
@@ -287,117 +286,99 @@ const handleQuestion = async (page: pup.Page, type: number) => {
         questionType
       )}`
     );
-    // 验证题型
-    if (supportType.includes(questionType)) {
-      // 默认值
-      let res = false;
-      // 单选题
-      if (questionType === '单选题') {
-        res = await handleSingleChoice(page);
-      }
-      // 多选题
-      if (questionType === '多选题') {
-        res = await handleMutiplyChoice(page);
-      }
-      // 填空题
-      if (questionType === '填空题') {
-        res = await handleFillBlanks(page);
-      }
-      // 答题成功
-      if (res) {
-        // 显示进度
-        shared.log.loading(
-          `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
-            questionType
-          )} 答题成功!`
-        );
-        // 等待跳转
-        await sleep(3000);
-        // 获取按钮
-        btnText = await getNextBtnText(page);
-        // 提交答案
-        if (btnText === '确定') {
-          // 点击
-          await clickNextBtn(page);
-          // 等待跳转
-          await sleep(3000);
-          // 获取按钮
-          btnText = await getNextBtnText(page);
-          // 是否答错
-          if (btnText === '下一题' || btnText === '完成') {
-            // 是否答错
-            const wrong = await isWrong(page);
-            // 答错
-            if (wrong) {
-              // 显示进度
-              shared.log.loading(
-                `${chalk.blueBright(
-                  current
-                )} / ${total} | 题型: ${chalk.blueBright(
-                  questionType
-                )} 答题成功, 答案错误!`
-              );
-              // 上传答案
-              await saveAnswerFromWrong(page);
-              // 可能答错
-              result = false;
-              if (type === 1 && STUDY_CONFIG.weeklyExitExamAfterWrong) {
-                return {
-                  title,
-                  url,
-                  result,
-                };
-              }
-              if (type === 2 && STUDY_CONFIG.paperExitExamAfterWrong) {
-                return {
-                  title,
-                  url,
-                  result,
-                };
-              }
-            }
-          }
-        }
-      } else {
-        // 显示进度
-        shared.log.loading(
-          `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
-            questionType
-          )} 答题失败, 无答案!`
-        );
-        // 可能答错且无答案
-        result = false;
-        if (type === 1 && STUDY_CONFIG.weeklyExitExamAfterWrong) {
-          return {
-            title,
-            url,
-            result,
-          };
-        }
-        if (type === 2 && STUDY_CONFIG.paperExitExamAfterWrong) {
-          return {
-            title,
-            url,
-            result,
-          };
-        }
-        // 随机答题
-        await handleRandAnswers(page, questionType);
-      }
+
+    // 默认值
+    let res = false;
+    // 单选题
+    if (questionType === '单选题') {
+      res = await handleSingleChoice(page);
+    }
+    // 多选题
+    if (questionType === '多选题') {
+      res = await handleMutiplyChoice(page);
+    }
+    // 填空题
+    if (questionType === '填空题') {
+      res = await handleFillBlanks(page);
+    }
+    // 答题成功
+    if (res) {
+      // 显示进度
+      shared.log.loading(
+        `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
+          questionType
+        )} 答题成功!`
+      );
     } else {
       // 显示进度
       shared.log.loading(
         `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
           questionType
-        )} 答题失败, 题型错误!`
+        )} 答题失败, 无答案!`
       );
-      // 题型错误,取消答题
+      // 可能答错且无答案
       result = false;
-      return {
-        title,
-        url,
-        result,
-      };
+      if (type === 1 && STUDY_CONFIG.weeklyExitAfterWrong) {
+        return {
+          title,
+          url,
+          result,
+        };
+      }
+      if (type === 2 && STUDY_CONFIG.paperExitAfterWrong) {
+        return {
+          title,
+          url,
+          result,
+        };
+      }
+      // 随机答题
+      await handleRandAnswers(page, questionType);
+    }
+    // 等待跳转
+    await sleep(3000);
+    // 获取按钮
+    btnText = await getNextBtnText(page);
+    // 提交答案
+    if (btnText === '确定') {
+      // 点击
+      await clickNextBtn(page);
+      // 等待跳转
+      await sleep(3000);
+      // 获取按钮
+      btnText = await getNextBtnText(page);
+      // 是否答错
+      if (btnText === '下一题' || btnText === '完成') {
+        // 是否答错
+        const wrong = await isWrong(page);
+        // 答错
+        if (wrong) {
+          // 显示进度
+          shared.log.loading(
+            `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
+              questionType
+            )} 答题成功, 答案错误!`
+          );
+          // 上传答案
+          await saveAnswerFromWrong(page);
+          // 可能答错
+          result = false;
+          if (type === 1 && STUDY_CONFIG.weeklyExitAfterWrong) {
+            return {
+              title,
+              url,
+              result,
+            };
+          }
+          if (type === 2 && STUDY_CONFIG.paperExitAfterWrong) {
+            return {
+              title,
+              url,
+              result,
+            };
+          }
+        }
+      }
     }
     // 等待
     await sleep(3000);
@@ -540,7 +521,7 @@ const handleChoiceBtn = async (page: pup.Page, answers: string[]) => {
           // 遍历
           choices.forEach((choice) => {
             // 选项文本
-            const choiceText = choice.innerText.replace(/[A-Z]\./, '').trim();
+            const choiceText = choice.innerText.trim();
             // 无符号选项文本
             const unsignedChoiceText = choiceText.replaceAll(/[、，,。 ]/g, '');
             // 无符号答案
@@ -766,7 +747,8 @@ const handleMutiplyChoice = async (page: pup.Page) => {
     // 填空数量、选项数量、答案数量相同 | 选项全文等于答案全文
     if (
       (choiceBtnCount === answers.length && blanks.length === answers.length) ||
-      answers.join('') === choicesContent
+      answers.join('') === choicesContent ||
+      choiceBtnCount === 2
     ) {
       // 全选
       await page.$$eval('.q-answer', (nodes) => {
@@ -866,6 +848,11 @@ const getAnswerByNetwork = async (page: pup.Page) => {
   const answers2 = await getAnswerSearch2(questionClip);
   if (answers2.length) {
     return answers2;
+  }
+  // 获取答案
+  const answers3 = await getAnswerSearch3(questionClip);
+  if (answers3.length) {
+    return answers3;
   }
   return [];
 };
@@ -1158,10 +1145,8 @@ export const getAnswerSearch1 = async (key: string) => {
       txt_name: key,
       password: '',
     };
-    // 请求体
-    const body = stringfyData(data);
     // 保存答案
-    const res = await getAnswer1(body);
+    const res = await getAnswer1(data);
     if (res) {
       // 结果
       const { status, data } = <answerData>res;
@@ -1202,6 +1187,59 @@ export const getAnswerSearch2 = async (question: string) => {
           .split(/[,，][A-Z][.、：]/)
           .map((ans) => ans.trim());
         return answers;
+      }
+    }
+  } catch (e) {}
+  return [];
+};
+
+/**
+ * @description 获取答案
+ * @param question
+ * @returns
+ */
+export const getAnswerSearch3 = async (question: string) => {
+  try {
+    // 数据
+    const data = {
+      keyboard: question,
+      show: 'title',
+      tempid: 1,
+      tbname: 'news',
+    };
+    // 保存答案
+    const res = await getAnswer3(data);
+    // 请求成功
+    if (res) {
+      // 答案和题目
+      const answerAndChoice = (<string>res).match(
+        /(?<=<p>)(.*)<\/p>\s*<p>答案：<b style="color:#f00">(.*)(?=<\/b><\/p>)/
+      );
+      // 答案和选项存在
+      if (answerAndChoice && answerAndChoice.length) {
+        // 选项
+        const choicesText = answerAndChoice[1]
+          .split(/[A-Z][.、：]/)
+          .map((choice) => choice.trim())
+          .filter((choice) => choice.length);
+        // 答案
+        const answerText = answerAndChoice[2].trim();
+        // 选择正则
+        const choiceRegexp = /[A-Z]/;
+        // 选择题
+        if (choiceRegexp.test(answerText) && choicesText.length) {
+          //  答案选项
+          const choiceIndex = answerText.charCodeAt(0) - 65;
+          // 答案
+          const answers = [choicesText[choiceIndex]];
+          return answers;
+        }
+        // 填空题
+        if (answerText.length) {
+          // 答案
+          const answers = [answerText];
+          return answers;
+        }
       }
     }
   } catch (e) {}
