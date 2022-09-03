@@ -2,40 +2,40 @@ import { describe, expect, it } from 'vitest';
 import shared from '../src/shared';
 
 describe('log', () => {
-  it('info', () => {
+  it.skip('info', () => {
     shared.log.start();
     shared.log.info('测试');
     shared.log.finish();
   });
-  it('success', () => {
+  it.skip('success', () => {
     shared.log.start();
     shared.log.success('测试');
     shared.log.finish();
   });
-  it('loading', () => {
+  it.skip('loading', () => {
     shared.log.start();
     shared.log.loading('测试');
     shared.log.finish();
   });
-  it('loaded', () => {
+  it.skip('loaded', () => {
     shared.log.start();
     shared.log.loaded('测试');
     shared.log.finish();
   });
-  it('fail', () => {
+  it.skip('fail', () => {
     shared.log.start();
     shared.log.fail('测试');
     shared.log.finish();
   });
-  it('warn', () => {
+  it.skip('warn', () => {
     shared.log.start();
     shared.log.warn('测试');
     shared.log.finish();
   });
-  it('clear', () => {
+  it.skip('clear', () => {
     shared.log.clear();
   });
-  it('clean', () => {
+  it.skip('clean', () => {
     shared.log.clean();
   });
 });
