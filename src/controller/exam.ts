@@ -334,17 +334,11 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     // 答题成功
     if (res) {
       // 显示进度
-      shared.log.loading(
-        `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
-          questionType
-        )} 答题成功!`
-      );
+      shared.log.loading(`${chalk.blueBright(current)} / ${total} 答题成功!`);
     } else {
       // 显示进度
       shared.log.loading(
-        `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
-          questionType
-        )} 答题失败, 无答案!`
+        `${chalk.blueBright(current)} / ${total} 答题失败, 无答案!`
       );
       // 可能答错且无答案
       result = false;
@@ -377,9 +371,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
         if (wrong) {
           // 显示进度
           shared.log.loading(
-            `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
-              questionType
-            )} 答题成功, 答案错误!`
+            `${chalk.blueBright(current)} / ${total} 答题成功, 答案错误!`
           );
           // 上传答案
           await saveAnswerFromWrong(page);
