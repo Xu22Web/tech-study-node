@@ -759,7 +759,7 @@ const handleMutiplyChoice = async (page: pup.Page) => {
     const blanks = question.match(/（）/g) || [];
     // 填空数量、选项数量、答案数量相同 | 选项全文等于答案全文
     if (
-      (choiceBtnCount === answers.length && blanks.length === answers.length) ||
+      choiceBtnCount === blanks.length ||
       answers.join('') === choicesContent ||
       choiceBtnCount === 2
     ) {
