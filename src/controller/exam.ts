@@ -58,78 +58,84 @@ const handleExam = async (type: number): Promise<boolean> => {
   if (type === 1) {
     // 查找题号
     const examWeekly = await findExamWeekly();
-    // 存在习题
-    if (examWeekly) {
-      // id
-      const { id, name } = examWeekly;
-      // 每周答题链接
-      const url = `${URL_CONFIG.examWeekly}?id=${id}`;
-      // 跳转每周答题
-      const gotoRes = await shared.gotoPage(url, {
-        waitUntil: 'domcontentloaded',
-      });
-      // 页面
-      const page = shared.getPage();
-      // 跳转成功
-      if (gotoRes && page) {
-        // 答题结果
-        const result = await handleQuestion(page, 1);
-        // 答题失败
-        if (!result) {
-          // 推送学习提示
-          shared.pushModal({
-            title: '学习提示',
-            content: [
-              '每周答题, 答题失败!',
-              `标题: <span style="color: #1890ff">${name}</span>`,
-              `链接: <span style="color: #1890ff">${url}</span>`,
-            ],
-            type: 'warn',
-          });
-        }
-        return result;
-      }
-    } else {
+    // 不存在习题
+    if (!examWeekly) {
       return true;
+    }
+    // id
+    const { id, name } = examWeekly;
+    // 每周答题链接
+    const url = `${URL_CONFIG.examWeekly}?id=${id}`;
+    shared.log.warn('每周答题, 题目信息');
+    shared.log.info(`标题: <span style="color: #1890ff">${name}</span>`);
+    shared.log.info(`链接: <span style="color: #1890ff">${url}</span>`);
+    // 跳转每周答题
+    const gotoRes = await shared.gotoPage(url, {
+      waitUntil: 'domcontentloaded',
+    });
+    // 页面
+    const page = shared.getPage();
+    // 跳转成功
+    if (gotoRes && page) {
+      // 答题结果
+      const result = await handleQuestion(page, 1);
+      // 答题失败
+      if (!result) {
+        shared.log.fail('每周答题, 答题错误或失败!');
+        // 推送学习提示
+        shared.pushModal({
+          title: '学习提示',
+          content: [
+            '每周答题, 答题错误或失败!',
+            `标题: <span style="color: #1890ff">${name}</span>`,
+            `链接: <span style="color: #1890ff">${url}</span>`,
+          ],
+          type: 'fail',
+        });
+      }
+      return result;
     }
   }
   // 专项练习
   if (type === 2) {
     // 查找题号
     const examPaper = await findExamPaper();
-    // 存在习题
-    if (examPaper) {
-      // id
-      const { id, name } = examPaper;
-      // 专项练习链接
-      const url = `${URL_CONFIG.examPaper}?id=${id}`;
-      // 跳转专项练习
-      const gotoRes = await shared.gotoPage(url, {
-        waitUntil: 'domcontentloaded',
-      });
-      // 页面
-      const page = shared.getPage();
-      // 请求成功
-      if (gotoRes && page) {
-        // 答题结果
-        const result = await handleQuestion(page, 2);
-        // 答题失败
-        if (!result) {
-          // 推送学习提示
-          shared.pushModal({
-            title: '学习提示',
-            content: [
-              '专项练习, 答题失败!',
-              `标题: <span style="color: #1890ff">${name}</span>`,
-              `链接: <span style="color: #1890ff">${url}</span>`,
-            ],
-            type: 'warn',
-          });
-        }
-        return result;
-      }
-    } else {
+    // 不存在习题
+    if (!examPaper) {
       return true;
+    }
+    // id
+    const { id, name } = examPaper;
+    // 专项练习链接
+    const url = `${URL_CONFIG.examPaper}?id=${id}`;
+    shared.log.warn('专项练习, 题目信息');
+    shared.log.info(`标题: <span style="color: #1890ff">${name}</span>`);
+    shared.log.info(`链接: <span style="color: #1890ff">${url}</span>`);
+    // 跳转专项练习
+    const gotoRes = await shared.gotoPage(url, {
+      waitUntil: 'domcontentloaded',
+    });
+    // 页面
+    const page = shared.getPage();
+    // 请求成功
+    if (gotoRes && page) {
+      // 答题结果
+      const result = await handleQuestion(page, 2);
+      // 答题失败
+      if (!result) {
+        shared.log.fail('专项练习, 答题错误或失败!');
+        // 推送学习提示
+        shared.pushModal({
+          title: '学习提示',
+          content: [
+            '专项练习, 答题错误或失败!',
+            `标题: <span style="color: #1890ff">${name}</span>`,
+            `链接: <span style="color: #1890ff">${url}</span>`,
+          ],
+          type: 'fail',
+        });
+      }
+      return result;
     }
   }
   return false;
@@ -139,7 +145,7 @@ const handleExam = async (type: number): Promise<boolean> => {
  * @description 初始化答题
  * @returns
  */
-const initExam = async (type: number = 0) => {
+const initExam = async (type: number) => {
   // 每周答题
   if (type === 0) {
     // 请求第一页
@@ -247,8 +253,8 @@ const findExamPaper = async () => {
 
 /**
  * @description 处理练习
- * @param page
- * @param type
+ * @param page 页面
+ * @param type 类型
  * @returns
  */
 const handleQuestion = async (page: pup.Page, type: number) => {
@@ -302,11 +308,13 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     ({ current } = await getQuestionNum(page));
     // 获取题型
     const questionType = await getQuestionType(page);
+    // 题目
+    const question = await getQuestion(page);
     // 显示进度
     shared.log.loading(
       `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
         questionType
-      )}`
+      )} | 题目: ${question.slice(0, 10)}`
     );
 
     // 默认值
@@ -410,7 +418,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
 
 /**
  * @description 是否答错
- * @param page
+ * @param page 页面
  * @returns
  */
 const isWrong = async (page: pup.Page) => {
@@ -424,7 +432,7 @@ const isWrong = async (page: pup.Page) => {
 
 /**
  * @description 获取下个按钮
- * @param page
+ * @param page 页面
  * @returns
  */
 const getNextBtnText = async (page: pup.Page) => {
@@ -452,7 +460,7 @@ const getNextBtnText = async (page: pup.Page) => {
 
 /**
  * @description 点击下个按钮
- * @param page
+ * @param page 页面
  * @returns
  */
 const clickNextBtn = async (page: pup.Page) => {
@@ -475,7 +483,7 @@ const clickNextBtn = async (page: pup.Page) => {
 };
 /**
  * @description 获取题号信息
- * @param page
+ * @param page 页面
  * @returns
  */
 const getQuestionNum = async (page: pup.Page) => {
@@ -490,8 +498,19 @@ const getQuestionNum = async (page: pup.Page) => {
 };
 
 /**
+ * @description 获取题目
+ * @param page 页面
+ * @returns
+ */
+const getQuestion = async (page: pup.Page) => {
+  // 题目内容
+  const content = await getText(page, '.q-body');
+  return content.trim();
+};
+
+/**
  * @description 获取题型
- * @param page
+ * @param page 页面
  * @returns
  */
 const getQuestionType = async (page: pup.Page) => {
@@ -504,7 +523,7 @@ const getQuestionType = async (page: pup.Page) => {
 
 /**
  * @description 选择按钮
- * @param page
+ * @param page 页面
  * @param answers
  * @returns
  */
@@ -566,7 +585,7 @@ const handleChoiceBtn = async (page: pup.Page, answers: string[]) => {
 
 /**
  * @description 填空题
- * @param page
+ * @param page 页面
  * @param answers
  * @returns
  */
@@ -622,7 +641,7 @@ const handleBlankInput = async (page: pup.Page, answers: string[]) => {
 
 /**
  * @description 单选题
- * @param page
+ * @param page 页面
  * @returns
  */
 const handleSingleChoice = async (page: pup.Page) => {
@@ -647,9 +666,9 @@ const handleSingleChoice = async (page: pup.Page) => {
         .map((choice) => choice.replace(/[A-Z]\./, '').trim())
         .some((choice) => keys.includes(choice));
       // 题目内容
-      const content = await getText(page, '.q-body');
+      const question = await getQuestion(page);
       // 题目包含答案
-      if (content.includes(answers[0]) && choicesText.length === 2 && exists) {
+      if (question.includes(answers[0]) && choicesText.length === 2 && exists) {
         //答案
         const answersLike = ['正确'];
         // 尝试查找点击
@@ -726,7 +745,7 @@ const handleSingleChoice = async (page: pup.Page) => {
 
 /**
  * @description 多选题
- * @param page
+ * @param page 页面
  * @returns
  */
 const handleMutiplyChoice = async (page: pup.Page) => {
@@ -737,7 +756,7 @@ const handleMutiplyChoice = async (page: pup.Page) => {
   // 存在答案
   if (answers.length) {
     // 题目内容
-    const content = await getText(page, '.q-body');
+    const question = await getQuestion(page);
     // 选项文本
     const choicesText = await getBatchText(page, '.q-answer');
     // 选项内容
@@ -745,7 +764,7 @@ const handleMutiplyChoice = async (page: pup.Page) => {
       .map((choiceText) => choiceText.split(/[A-Z]./)[1].trim())
       .join('');
     // 填空
-    const blanks = content.match(/（）/g) || [];
+    const blanks = question.match(/（）/g) || [];
     // 填空数量、选项数量、答案数量相同 | 选项全文等于答案全文
     if (
       (choiceBtnCount === answers.length && blanks.length === answers.length) ||
@@ -786,7 +805,7 @@ const handleMutiplyChoice = async (page: pup.Page) => {
 
 /**
  * @description 填空题
- * @param page
+ * @param page 页面
  * @returns
  */
 const handleFillBlanks = async (page: pup.Page) => {
@@ -815,7 +834,7 @@ const handleFillBlanks = async (page: pup.Page) => {
 
 /**
  * @description 通过提示获取答案
- * @param page
+ * @param page 页面
  * @returns
  */
 const getAnswerByTips = async (page: pup.Page) => {
@@ -831,12 +850,12 @@ const getAnswerByTips = async (page: pup.Page) => {
 
 /**
  * @description 通过网络获取答案
- * @param page
+ * @param page 页面
  * @returns
  */
 const getAnswerByNetwork = async (page: pup.Page) => {
   // 题目内容
-  const content = await getText(page, '.q-body');
+  const question = await getQuestion(page);
   // md5加密
   const key = await getKey(page);
   // 获取答案
@@ -845,7 +864,7 @@ const getAnswerByNetwork = async (page: pup.Page) => {
     return answers1;
   }
   // 答案
-  const questionClip = content.substring(0, 10);
+  const questionClip = question.substring(0, 10);
   // 获取答案
   const answers2 = await getAnswerSearch2(questionClip);
   if (answers2.length) {
@@ -861,20 +880,20 @@ const getAnswerByNetwork = async (page: pup.Page) => {
 
 /**
  * @description 获取密钥
- * @param page
+ * @param page 页面
  * @returns
  */
 const getKey = async (page: pup.Page) => {
   // 题目内容
-  const content = await getText(page, '.q-body');
+  const question = await getQuestion(page);
   // md5加密
-  const key = md5(content);
+  const key = md5(question);
   return key;
 };
 
 /**
  * @description 通过错题上传答案
- * @param page
+ * @param page 页面
  * @returns
  */
 const saveAnswerFromWrong = async (page: pup.Page) => {
@@ -898,7 +917,7 @@ const saveAnswerFromWrong = async (page: pup.Page) => {
 
 /**
  * @description 处理滑块验证
- * @param page
+ * @param page 页面
  */
 const handleSildeVerify = async (page: pup.Page) => {
   // 是否滑块
@@ -952,7 +971,7 @@ const handleSildeVerify = async (page: pup.Page) => {
 
 /**
  * @description 等待结果提交
- * @param page
+ * @param page 页面
  * @returns
  */
 const waitResult = async (page: pup.Page) => {
@@ -979,8 +998,8 @@ const waitResult = async (page: pup.Page) => {
 
 /**
  * @description 随机答题
- * @param page
- * @param questionType
+ * @param page 页面
+ * @param questionType 题型
  * @returns
  */
 const handleRandAnswers = async (page: pup.Page, questionType: string) => {
@@ -1048,7 +1067,7 @@ type answerData = {
 
 /**
  * @description 每周答题数据
- * @param pageNo
+ * @param pageNo 页码
  * @returns
  */
 export const getExamWeekly = async (pageNo: number) => {
@@ -1083,7 +1102,7 @@ export const getExamWeekly = async (pageNo: number) => {
 
 /**
  * @description 专项练习数据
- * @param pageNo
+ * @param pageNo 页码
  * @returns
  */
 export const getExamPaper = async (pageNo: number) => {
@@ -1116,8 +1135,8 @@ export const getExamPaper = async (pageNo: number) => {
 
 /**
  * @description 保存答案
- * @param key
- * @param value
+ * @param key 密钥
+ * @param value 答案值
  * @returns
  */
 export const saveAnswer = async (key: string, value: string) => {
@@ -1141,7 +1160,7 @@ export const saveAnswer = async (key: string, value: string) => {
 
 /**
  * @description 获取答案
- * @param key
+ * @param key 查询密钥
  * @returns
  */
 export const getAnswerSearch1 = async (key: string) => {
@@ -1172,7 +1191,7 @@ export const getAnswerSearch1 = async (key: string) => {
 
 /**
  * @description 获取答案
- * @param question
+ * @param question 题目
  * @returns
  */
 export const getAnswerSearch2 = async (question: string) => {
@@ -1201,7 +1220,7 @@ export const getAnswerSearch2 = async (question: string) => {
 
 /**
  * @description 获取答案
- * @param question
+ * @param question 题目
  * @returns
  */
 export const getAnswerSearch3 = async (question: string) => {
