@@ -62,13 +62,13 @@ const handleExam = async (type: number): Promise<boolean> => {
     if (!examWeekly) {
       return true;
     }
-    // id
+    // 题号 名称
     const { id, name } = examWeekly;
     // 每周答题链接
     const url = `${URL_CONFIG.examWeekly}?id=${id}`;
     shared.log.warn('每周答题, 题目信息');
-    shared.log.info(`标题: <span style="color: #1890ff">${name}</span>`);
-    shared.log.info(`链接: <span style="color: #1890ff">${url}</span>`);
+    shared.log.info(`标题: ${chalk.yellow(name)}`);
+    shared.log.info(`链接: ${chalk.yellow(url)}`);
     // 跳转每周答题
     const gotoRes = await shared.gotoPage(url, {
       waitUntil: 'domcontentloaded',
@@ -104,13 +104,13 @@ const handleExam = async (type: number): Promise<boolean> => {
     if (!examPaper) {
       return true;
     }
-    // id
+    // 题号 名称
     const { id, name } = examPaper;
     // 专项练习链接
     const url = `${URL_CONFIG.examPaper}?id=${id}`;
     shared.log.warn('专项练习, 题目信息');
-    shared.log.info(`标题: <span style="color: #1890ff">${name}</span>`);
-    shared.log.info(`链接: <span style="color: #1890ff">${url}</span>`);
+    shared.log.info(`标题: ${chalk.yellow(name)}`);
+    shared.log.info(`链接: ${chalk.yellow(url)}`);
     // 跳转专项练习
     const gotoRes = await shared.gotoPage(url, {
       waitUntil: 'domcontentloaded',
