@@ -35,6 +35,7 @@ export class Log {
   logs: string[];
   /**
    * @description 启用日志
+   * @example true 启用 false 禁用
    */
   enabled: boolean;
   constructor(text?: string) {
@@ -57,17 +58,22 @@ export class Log {
    * @description 等待日志
    * @param text
    */
-  loading(text?: string) {
+  loading(text?: string | string[]) {
     if (this.enabled && text) {
+      // 数组
+      if (Array.isArray(text)) {
+        this.ora.start(text.join('\n'));
+      } else {
+        this.ora.start(text);
+      }
       this.collect('loading', text);
     }
-    this.ora.start(text);
   }
   /**
    * @description 等待完毕日志
    * @param text
    */
-  loaded(text?: string) {
+  loaded(text?: string | string[]) {
     if (this.enabled && text) {
       this.collect('loaded', text);
     }
@@ -77,47 +83,73 @@ export class Log {
    * @description 通知日志
    * @param text
    */
-  info(text?: string) {
+  info(text?: string | string[]) {
     if (this.enabled && text) {
+      if (Array.isArray(text)) {
+        this.ora.info(text.join('\n'));
+      } else {
+        this.ora.info(text);
+      }
       this.collect('info', text);
     }
-    this.ora.info(text);
   }
   /**
    * @description 警告日志
    * @param text
    */
-  warn(text?: string) {
+  warn(text?: string | string[]) {
     if (this.enabled && text) {
+      // 数组
+      if (Array.isArray(text)) {
+        this.ora.warn(text.join('\n'));
+      } else {
+        this.ora.warn(text);
+      }
       this.collect('warn', text);
     }
-    this.ora.warn(text);
   }
   /**
    * @description 失败日志
    * @param text
    */
-  fail(text?: string) {
+  fail(text?: string | string[]) {
     if (this.enabled && text) {
+      // 数组
+      if (Array.isArray(text)) {
+        this.ora.fail(text.join('\n'));
+      } else {
+        this.ora.fail(text);
+      }
       this.collect('fail', text);
     }
-    this.ora.fail(text);
   }
   /**
    * @description 成功日志
    * @param text
    */
-  success(text?: string) {
+  success(text?: string | string[]) {
     if (this.enabled && text) {
+      // 数组
+      if (Array.isArray(text)) {
+        this.ora.succeed(text.join('\n'));
+      } else {
+        this.ora.succeed(text);
+      }
       this.collect('success', text);
     }
-    this.ora.succeed(text);
   }
   /**
    * @description 收集日志
    * @param data
    */
-  collect(type: LogType, data: string) {
+  collect(type: LogType, data: string | string[]) {
+    // 数组
+    if (Array.isArray(data)) {
+      // 数据文本
+      const dataText = this.format(data.join('\n'));
+      this.logs.push(`[${formatDateTime()} ${type}] ${dataText}`);
+      return;
+    }
     // 数据文本
     const dataText = this.format(data);
     this.logs.push(`[${formatDateTime()} ${type}] ${dataText}`);
