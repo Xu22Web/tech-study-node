@@ -197,16 +197,16 @@ describe('api', () => {
     shared.setToken(PUSH_CONFIG.list[0].token);
     const res = await shared.pushModal({
       title: '普通提示',
-      content: ['发生错误!', String(1)],
+      content: ['发生错误!', '测试'],
       type: 'fail',
-      to: '管理员',
+      to: '用户',
     });
     expect(res).toMatchInlineSnapshot('undefined');
   });
-  it('sharedpushtips', async () => {
+  it.skip('sharedpushtips', async () => {
     const res = await shared.pushModalTips({
       title: '服务提示',
-      content: ['发生错误!', String(1)],
+      content: ['发生错误!', '测试'],
       type: 'fail',
     });
     expect(res).toMatchInlineSnapshot('undefined');
