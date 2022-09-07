@@ -31,6 +31,13 @@ const handleLogin = async () => {
   }
   // 登录结果
   const result = await tryLogin(page);
+  // 是否删除二维码
+  if (STUDY_CONFIG.qrcodeLocalEnabled && STUDY_CONFIG.qrcodeAutoClean) {
+    // 删除二维码
+    fs.unlink(qrcodePath, () => {
+      shared.log.success('登录二维码已删除!');
+    });
+  }
   // 登录
   return result;
 };
@@ -69,7 +76,7 @@ const RefreshQRCode = async (page: pup.Page) => {
   await page.waitForFunction(() => {
     const loading = document.querySelector<HTMLDivElement>('.login_loading');
     return loading && loading.style.display === 'none';
-  }, {});
+  });
   // 需要刷新
   const needFresh = await page.$eval(
     '.login_qrcode_refresh',
@@ -101,13 +108,6 @@ const getLoginStatus = (page: pup.Page) => {
         // 清除超时延迟
         clearTimeout(timeout);
         shared.log.success('登录成功!');
-        // 是否删除二维码
-        if (STUDY_CONFIG.qrcodeLocalEnabled && STUDY_CONFIG.qrcodeAutoClean) {
-          // 删除二维码
-          fs.unlink(qrcodePath, () => {
-            shared.log.success('登录二维码已删除!');
-          });
-        }
         resolve(true);
         return;
       }
@@ -165,13 +165,6 @@ const tryLogin = async (page: pup.Page): Promise<boolean> => {
       if (retryCount <= STUDY_CONFIG.maxRetryLoginCount) {
         // 登录重试
         return await tryLogin(page);
-      }
-      // 是否删除二维码
-      if (STUDY_CONFIG.qrcodeAutoClean) {
-        // 删除二维码
-        fs.unlink(qrcodePath, () => {
-          shared.log.success('登录二维码已删除!');
-        });
       }
       return false;
     }
