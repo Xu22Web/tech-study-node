@@ -2,7 +2,7 @@ import pup from 'puppeteer-core';
 import PUSH_CONFIG from '../config/push';
 import STUDY_CONFIG from '../config/study';
 import { log, Log } from '../controller/logs';
-import { installMouseHelper, pushModal } from '../utils';
+import { installMouseHelper, installRemoveDialog, pushModal } from '../utils';
 import { ModalOptions } from '../utils/interface';
 
 /**
@@ -148,6 +148,8 @@ const shared: Shared = {
         page.setDefaultTimeout(STUDY_CONFIG.timeout || 3000);
         //调试鼠标轨迹专用
         await installMouseHelper(page);
+        // 移除弹出对话框
+        await installRemoveDialog(page);
         // 设置页面
         this.setPage(page);
         return true;

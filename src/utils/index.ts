@@ -208,7 +208,7 @@ export const pushModal = async (
  * @description 格式化日期时间
  * @param time
  * @returns
- * @example 
+ * @example
  * formatDateTime() -> "2022-09-01 08:00:00"
  * formatDateTime(new Date()) -> "2022-09-01 08:00:00"
  * formatDateTime(Date.now()) -> "2022-09-01 08:00:00"
@@ -239,7 +239,7 @@ export const formatDateTime = (time: Date | string | number = Date.now()) => {
  * @param time
  * @returns
  * @example
- * @example 
+ * @example
  * formatDate() -> "2022-09-01"
  * formatDate(new Date()) -> "2022-09-01"
  * formatDate(Date.now()) -> "2022-09-01"
@@ -262,7 +262,7 @@ export const formatDate = (time: Date | string | number = Date.now()) => {
  * @description 格式化时间
  * @param time
  * @returns
- * @example 
+ * @example
  * formatTime() -> "08:00:00"
  * formatTime(new Date()) -> "08:00:00"
  * formatTime(Date.now()) -> "08:00:00"
@@ -605,5 +605,17 @@ export const installMouseHelper = async (page: pup.Page) => {
       },
       false
     );
+  });
+};
+
+/**
+ * @description 移除对话框
+ * @param page
+ */
+export const installRemoveDialog = async (page: pup.Page) => {
+  // 监听对话框弹出
+  await page.on('dialog', async (dialog) => {
+    // 移除对话框
+    await dialog.dismiss();
   });
 };
