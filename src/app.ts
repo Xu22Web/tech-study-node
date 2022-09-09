@@ -52,7 +52,7 @@ const handleBrowser = async (browser: pup.Browser) => {
   if (userInfo && total !== undefined && score !== undefined && taskList) {
     // 昵称
     shared.setNick(userInfo.nick);
-    shared.log.info('用户基础信息\n');
+    shared.log.info('学习开始!\n');
     // 用户信息数据
     await renderUserData(userInfo);
     // 用户积分数据
@@ -83,6 +83,13 @@ const handleBrowser = async (browser: pup.Browser) => {
     // 任务进度
     taskList = await getTaskList();
     if (total !== undefined && score !== undefined && taskList) {
+      shared.log.info('学习完成!\n');
+      // 用户信息数据
+      await renderUserData(userInfo);
+      // 用户积分数据
+      await renderScoreData(score, total);
+      // 用户任务进度数据
+      await renderTasksData(taskList);
       // 推送学习提示
       shared.pushModal({
         title: '学习提示',
@@ -134,9 +141,7 @@ const study = async () => {
       const res = await handleExam(0);
       // 答题出错
       if (!res) {
-        shared.log.fail(
-          `任务三: ${chalk.blueBright('每日答题')} 答题出错!`
-        );
+        shared.log.fail(`任务三: ${chalk.blueBright('每日答题')} 答题出错!`);
       }
     }
     shared.log.success(`任务三: ${chalk.blueBright('每日答题')} 已完成!`);
@@ -148,25 +153,21 @@ const study = async () => {
       const res = await handleExam(1);
       // 答题出错
       if (!res) {
-        shared.log.fail(
-          `任务四: ${chalk.blueBright('每周答题')} 答题出错!`
-        );
+        shared.log.fail(`任务四: ${chalk.blueBright('每周答题')} 答题出错!`);
       }
     }
     shared.log.success(`任务四: ${chalk.blueBright('每周答题')} 已完成!`);
 
     // 是否每日答题
-    if (STUDY_CONFIG.settings[4] && !taskList[4].status) {
-      shared.log.info(`任务五: ${chalk.blueBright('专项练习')} 开始`);
-      // 专项练习
-      const res = await handleExam(2);
-      // 答题出错
-      if (!res) {
-        shared.log.fail(
-          `任务五: ${chalk.blueBright('专项练习')} 答题出错!`
-        );
-      }
+    // if (STUDY_CONFIG.settings[4] && !taskList[4].status) {
+    shared.log.info(`任务五: ${chalk.blueBright('专项练习')} 开始`);
+    // 专项练习
+    const res = await handleExam(2);
+    // 答题出错
+    if (!res) {
+      shared.log.fail(`任务五: ${chalk.blueBright('专项练习')} 答题出错!`);
     }
+    // }
     shared.log.success(`任务五: ${chalk.blueBright('专项练习')} 已完成!`);
   }
 };

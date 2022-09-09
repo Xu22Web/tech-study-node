@@ -3,9 +3,7 @@ import pup from 'puppeteer-core';
 import PUP_CONFIG from '../src/config/pup';
 import shared from '../src/shared';
 import {
-  getAnswerSearch1,
-  getAnswerSearch2,
-  getAnswerSearch3,
+  getAnswerSearch,
 } from '../src/controller/exam';
 import { getVideos, getNews } from '../src/controller/watch';
 import {
@@ -169,27 +167,15 @@ describe('api', () => {
       ]
     `);
   });
-  it.skip('answer1', async () => {
-    const res = await getAnswerSearch1('b0f6c22ae12f43c1107a9ca604fcc10d');
+  it('answer', async () => {
+    const res = await getAnswerSearch('新时期要注重选拔任用（）、（）、（）、（）、（）的干部，对政治不合格的干部实行“一票否决”，已经在领导岗位的坚决调整。');
     expect(res).toMatchInlineSnapshot(`
       [
-        "选举诉讼",
-      ]
-    `);
-  });
-  it.skip('answer2', async () => {
-    const res = await getAnswerSearch2('世界是可以被认');
-    expect(res).toMatchInlineSnapshot(`
-      [
-        "实践-认识-实践",
-      ]
-    `);
-  });
-  it.skip('answer3', async () => {
-    const res = await getAnswerSearch3('世界是可以被认');
-    expect(res).toMatchInlineSnapshot(`
-      [
-        "实践-认识-实践",
+        "牢固树立“四个意识”",
+        "自觉坚定“四个自信”",
+        "坚决做到“两个维护”",
+        "全面贯彻执行党的理论",
+        "忠诚干净担当",
       ]
     `);
   });

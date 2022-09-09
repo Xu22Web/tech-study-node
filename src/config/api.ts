@@ -53,11 +53,7 @@ const API_CONFIG = {
   /**
    * @description 答案搜素
    */
-  answerSearch: [
-    'https://a6.qikekeji.com/txt/data/detail',
-    'http://www.syiban.com/search/index/init.html',
-    'https://www.hysgn.com/e/search/index.php'
-  ],
+  answerSearch: 'https://api.answer.uu988.xyz:4545/answer/search',
   /**
    * @description 推送
    */
