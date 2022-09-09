@@ -4,14 +4,7 @@ import pup from 'puppeteer-core';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
-import {
-  examPaper,
-  examWeekly,
-  getAnswer1,
-  getAnswer2,
-  getAnswer3,
-  postAnswer,
-} from '../apis';
+import { examPaper, examWeekly, getAnswer, postAnswer } from '../apis';
 import {
   createRandomPath,
   createRandomPoint,
@@ -656,20 +649,17 @@ const handleSingleChoice = async (page: pup.Page) => {
       // 判断题
       const exists = choicesText
         .map((choice) => choice.replace(/[A-Z]\./, '').trim())
-        .some((choice) => keys.includes(choice));
+        .every((choice) => keys.includes(choice));
       // 题目内容
       const question = await getQuestion(page);
       // 题目包含答案
       if (question.includes(answers[0]) && choicesText.length === 2 && exists) {
         //答案
-        const answersLike = ['正确'];
+        const answer = '正确';
         // 尝试查找点击
-        for (const i in answersLike) {
-          // 尝试查找点击
-          const res = await handleChoiceBtn(page, [answersLike[i]]);
-          if (res) {
-            return true;
-          }
+        const res = await handleChoiceBtn(page, [answer]);
+        if (res) {
+          return true;
         }
       }
     } else {
@@ -702,7 +692,7 @@ const handleSingleChoice = async (page: pup.Page) => {
       }
     }
   }
-  // 提示答案不存在 | 提示答案不对应选项
+  // 异常判断: 提示答案不存在 | 提示答案不对应选项
   const answersNetwork = await getAnswerByNetwork(page);
   // 存在答案
   if (answersNetwork.length) {
@@ -743,38 +733,36 @@ const handleSingleChoice = async (page: pup.Page) => {
 const handleMutiplyChoice = async (page: pup.Page) => {
   // 获取答案
   const answers = await getAnswerByTips(page);
-  // 选项数
-  const choiceBtnCount = await getCount(page, '.q-answer');
-  // 存在答案
-  if (answers.length) {
-    // 题目内容
-    const question = await getQuestion(page);
-    // 选项文本
-    const choicesText = await getBatchText(page, '.q-answer');
-    // 选项内容
-    const choicesContent = choicesText
-      .map((choiceText) => choiceText.split(/[A-Z]./)[1].trim())
-      .join('');
-    // 填空
-    const blanks = question.match(/（）/g) || [];
-    // 填空数量、选项数量、答案数量相同 | 选项全文等于答案全文
-    if (
-      choiceBtnCount === blanks.length ||
-      answers.join('') === choicesContent ||
-      choiceBtnCount === 2
-    ) {
-      // 全选
-      await page.$$eval('.q-answer', (nodes) => {
-        (<HTMLButtonElement[]>nodes).forEach((btn) => {
-          if (!btn.classList.contains('chosen')) {
-            btn.click();
-          }
-        });
+  // 选项文本
+  const choicesText = await getBatchText(page, '.q-answer');
+  // 选项内容
+  const choicesContent = choicesText.map((choiceText) =>
+    choiceText.split(/[A-Z]\./)[1].trim()
+  );
+  // 题目内容
+  const question = await getQuestion(page);
+  // 填空
+  const blanks = question.match(/（）/g) || [];
+  // 简单判断: 填空数===选项数 | 选项数===2 | 选项全文===答案全文
+  if (
+    choicesText.length === blanks.length ||
+    choicesText.length === 2 ||
+    answers.join('') === choicesContent.join('')
+  ) {
+    // 全选
+    await page.$$eval('.q-answer', (nodes) => {
+      (<HTMLButtonElement[]>nodes).forEach((btn) => {
+        if (!btn.classList.contains('chosen')) {
+          btn.click();
+        }
       });
-      return true;
-    }
-    // 选项数量大于等于答案数量
-    if (choiceBtnCount >= answers.length) {
+    });
+    return true;
+  }
+  // 复杂判断: 存在答案
+  if (answers.length) {
+    // 选项数量>=答案数量
+    if (choicesText.length >= answers.length) {
       // 尝试查找点击
       const res = await handleChoiceBtn(page, answers);
       if (res) {
@@ -782,7 +770,7 @@ const handleMutiplyChoice = async (page: pup.Page) => {
       }
     }
   }
-  // 提示答案不存在 | 提示答案不对应选项 | 填空数量小于选项数量
+  // 异常判断: 提示答案不存在 | 提示答案不对应选项 | 填空数量<选项数量
   const answersNetwork = await getAnswerByNetwork(page);
   // 存在答案
   if (answersNetwork.length) {
@@ -803,7 +791,7 @@ const handleMutiplyChoice = async (page: pup.Page) => {
 const handleFillBlanks = async (page: pup.Page) => {
   // 获取答案
   const answers = await getAnswerByTips(page);
-  // 答案存在
+  // 复杂判断: 答案存在
   if (answers.length) {
     // 尝试填空
     const res = await handleBlankInput(page, answers);
@@ -811,7 +799,7 @@ const handleFillBlanks = async (page: pup.Page) => {
       return true;
     }
   }
-  // 提示答案不存在 | 提示答案不对应选项
+  // 异常判断: 提示答案不存在 | 提示答案不对应填空
   const answersNetwork = await getAnswerByNetwork(page);
   // 答案存在
   if (answersNetwork.length) {
@@ -836,7 +824,7 @@ const getAnswerByTips = async (page: pup.Page) => {
   });
   // 获取答案
   return await (
-    await getBatchText(page, '.line-feed font[color=red]')
+    await getBatchText(page, '.line-feed font[color]')
   ).map((ans) => ans.trim());
 };
 
@@ -851,21 +839,9 @@ const getAnswerByNetwork = async (page: pup.Page) => {
   // md5加密
   const key = await getKey(page);
   // 获取答案
-  const answers1 = await getAnswerSearch1(key);
-  if (answers1.length) {
-    return answers1;
-  }
-  // 答案
-  const questionClip = question.substring(0, 10);
-  // 获取答案
-  const answers2 = await getAnswerSearch2(questionClip);
-  if (answers2.length) {
-    return answers2;
-  }
-  // 获取答案
-  const answers3 = await getAnswerSearch3(questionClip);
-  if (answers3.length) {
-    return answers3;
+  const answers = await getAnswerSearch(question);
+  if (answers.length) {
+    return answers;
   }
   return [];
 };
@@ -1032,9 +1008,12 @@ const handleRandAnswers = async (page: pup.Page, questionType: string) => {
 export type AnswerData = {
   status: number;
   data: {
-    txt_content: string;
+    question: string;
+    answers: string[];
+    from: string;
   };
-  error: string;
+  message: string;
+  errno: number;
 };
 /**
  * @description 答题
@@ -1048,14 +1027,6 @@ type ExamPractices = {
   status: number;
   startDate: string;
 }[];
-
-/**
- * @description 答案数据
- */
-type answerData = {
-  status: number;
-  data: { txt_content: string; txt_name: string };
-};
 
 /**
  * @description 每周答题数据
@@ -1152,111 +1123,20 @@ export const saveAnswer = async (key: string, value: string) => {
 
 /**
  * @description 获取答案
- * @param key 查询密钥
+ * @param question 题目
  * @returns
  */
-export const getAnswerSearch1 = async (key: string) => {
+export const getAnswerSearch = async (question: string) => {
   try {
-    // 数据
-    const data = {
-      txt_name: key,
-      password: '',
-    };
     // 保存答案
-    const res = await getAnswer1(data);
+    const res = await getAnswer(question);
     if (res) {
       // 结果
-      const { status, data } = <answerData>res;
-      if (status !== 0) {
+      const { status, data } = <AnswerData>res;
+      if (status !== -1) {
         // 答案列表
-        const answerList: { content: string; title: string }[] = JSON.parse(
-          data.txt_content
-        );
-        // 答案
-        const answers = answerList[0].content.split(';');
+        const { answers } = data;
         return answers;
-      }
-    }
-  } catch (e) {}
-  return [];
-};
-
-/**
- * @description 获取答案
- * @param question 题目
- * @returns
- */
-export const getAnswerSearch2 = async (question: string) => {
-  try {
-    // 保存答案
-    const res = await getAnswer2(question);
-    // 请求成功
-    if (res) {
-      // 答案
-      const answerList =
-        (<string>res).match(/(?<=答案：.*[A-Z][.、：])[^<]+/g) ||
-        (<string>res).match(/(?<=答案：.*)[^<A-Z]+/g);
-      if (answerList && answerList.length) {
-        // 答案文本
-        const answerText = answerList[0];
-        // 答案
-        const answers = answerText
-          .split(/[,，][A-Z][.、：]/)
-          .map((ans) => ans.trim());
-        return answers;
-      }
-    }
-  } catch (e) {}
-  return [];
-};
-
-/**
- * @description 获取答案
- * @param question 题目
- * @returns
- */
-export const getAnswerSearch3 = async (question: string) => {
-  try {
-    // 数据
-    const data = {
-      keyboard: question,
-      show: 'title',
-      tempid: 1,
-      tbname: 'news',
-    };
-    // 保存答案
-    const res = await getAnswer3(data);
-    // 请求成功
-    if (res) {
-      // 答案和题目
-      const answerAndChoice = (<string>res).match(
-        /(?<=<p>)(.*)<\/p>\s*<p>答案：<b style="color:#f00">(.*)(?=<\/b><\/p>)/
-      );
-      // 答案和选项存在
-      if (answerAndChoice && answerAndChoice.length) {
-        // 选项
-        const choicesText = answerAndChoice[1]
-          .split(/[A-Z][.、：]/)
-          .map((choice) => choice.trim())
-          .filter((choice) => choice.length);
-        // 答案
-        const answerText = answerAndChoice[2].trim();
-        // 选择正则
-        const choiceRegexp = /[A-Z]/;
-        // 选择题
-        if (choiceRegexp.test(answerText) && choicesText.length) {
-          //  答案选项
-          const choiceIndex = answerText.charCodeAt(0) - 65;
-          // 答案
-          const answers = [choicesText[choiceIndex]];
-          return answers;
-        }
-        // 填空题
-        if (answerText.length) {
-          // 答案
-          const answers = [answerText];
-          return answers;
-        }
       }
     }
   } catch (e) {}
