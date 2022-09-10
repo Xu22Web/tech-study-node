@@ -201,30 +201,33 @@ export class Log {
   autoClean() {
     // 文件
     fs.readdir(logsPath, (err, files) => {
+      // 错误
       if (err) {
         return;
       }
       // 存在文件
       if (files.length) {
+        // 遍历文件
         for (const i in files) {
           // 文件名
           const fileName = files[i];
           // 获取后缀
           const extname = path.extname(fileName);
           if (extname === '.log') {
+            // 日志文件路径
+            const filePath = path.join(logsPath, fileName);
+            // 文件信息
+            const fileInfo = fs.statSync(filePath);
             // 获取日志时间
-            const fileDate = fileName.substring(0, fileName.lastIndexOf('.'));
-            // 过去日期
-            const oldDate = new Date(fileDate);
+            const logDate = new Date(formatDate(fileInfo.mtime));
             // 当前时间
-            const newDate = new Date(formatDate());
+            const nowDate = new Date(formatDate());
             // 相差天数
             const days =
-              (newDate.getTime() - oldDate.getTime()) / 1000 / 60 / 60 / 24;
+              (nowDate.getTime() - logDate.getTime()) / 1000 / 60 / 60 / 24;
+            console.log(days);
             // 相差超过间隔
             if (days >= STUDY_CONFIG.logsAutoCleanInterval) {
-              // 日志文件路径
-              const filePath = path.join(logsPath, fileName);
               // 删除日志
               fs.unlink(filePath, () => {
                 this.start();
