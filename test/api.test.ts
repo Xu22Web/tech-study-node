@@ -167,7 +167,7 @@ describe('api', () => {
       ]
     `);
   });
-  it('answer', async () => {
+  it.skip('answer', async () => {
     const res = await getAnswerSearch('新时期要注重选拔任用（）、（）、（）、（）、（）的干部，对政治不合格的干部实行“一票否决”，已经在领导岗位的坚决调整。');
     expect(res).toMatchInlineSnapshot(`
       [
