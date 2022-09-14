@@ -129,8 +129,6 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
     }
     // 结束日志
     shared.log.finish();
-    // 清除缓存
-    shared.log.clear();
   });
 });
 

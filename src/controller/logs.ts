@@ -160,9 +160,6 @@ export class Log {
   finish() {
     // 关闭启用的日志
     if (this.enabled) {
-      // 关闭日志
-      this.enabled = false;
-      this.collect('finish', '关闭日志!');
       // 当天时间
       const date = new Date();
       // 文件路径
@@ -177,6 +174,11 @@ export class Log {
       }
       // 写入文件
       fs.writeFileSync(filePath, logsData);
+      // 清除缓存日志
+      this.clear();
+      this.collect('finish', '关闭日志!');
+      // 关闭日志
+      this.enabled = false;
     }
   }
   /**
@@ -225,7 +227,6 @@ export class Log {
             // 相差天数
             const days =
               (nowDate.getTime() - logDate.getTime()) / 1000 / 60 / 60 / 24;
-            console.log(days);
             // 相差超过间隔
             if (days >= STUDY_CONFIG.logsAutoCleanInterval) {
               // 删除日志
