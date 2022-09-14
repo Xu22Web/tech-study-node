@@ -6,10 +6,6 @@ import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import { getCookie } from '../utils';
 /**
- * @descrtion 重试次数
- */
-let retryCount = 0;
-/**
  * @description 二维码保存位置
  */
 const qrcodePath = path.join(STUDY_CONFIG.qrcodePath, 'login.png');
@@ -29,8 +25,24 @@ const handleLogin = async () => {
   if (!res || !page) {
     return false;
   }
+  // 重试次数
+  let retryCount = 0;
   // 登录结果
-  const result = await tryLogin(page);
+  let result = false;
+  // 允许重试次数内
+  while (retryCount <= STUDY_CONFIG.maxRetryLoginCount) {
+    // 尝试登录
+    await tryLogin(page);
+    // 登录状态
+    const loginStatus = await getLoginStatus(page);
+    // 登录成功
+    if (loginStatus) {
+      result = true;
+      break;
+    }
+    // 登录次数
+    retryCount++;
+  }
   // 是否删除二维码
   if (STUDY_CONFIG.qrcodeLocalEnabled && STUDY_CONFIG.qrcodeAutoClean) {
     // 删除二维码
@@ -126,7 +138,7 @@ const getLoginStatus = (page: pup.Page) => {
 /**
  * @description 登录
  */
-const tryLogin = async (page: pup.Page): Promise<boolean> => {
+const tryLogin = async (page: pup.Page) => {
   // 获取二维码
   const qrData = await getLoginQRCode(page);
   if (qrData) {
@@ -155,22 +167,7 @@ const tryLogin = async (page: pup.Page): Promise<boolean> => {
       content: ['扫一扫, 登录学习强国!', imgWrap],
       type: 'info',
     });
-    // 登录状态
-    const res = await getLoginStatus(page);
-    // 登录失败
-    if (!res) {
-      // 登录次数
-      retryCount++;
-      // 允许重试次数内
-      if (retryCount <= STUDY_CONFIG.maxRetryLoginCount) {
-        // 登录重试
-        return await tryLogin(page);
-      }
-      return false;
-    }
-    return true;
   }
-  return false;
 };
 
 export default handleLogin;
