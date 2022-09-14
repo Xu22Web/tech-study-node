@@ -205,6 +205,15 @@ export const pushModal = async (
 };
 
 /**
+ * @description 格式化日期时间数字
+ * @param num
+ * @returns
+ */
+ const formatDateNum = (num: number) => {
+  return num < 10 ? `0${num}` : `${num}`;
+};
+
+/**
  * @description 格式化日期时间
  * @param time
  * @returns
@@ -221,10 +230,6 @@ export const formatDateTime = (time: Date | string | number = Date.now()) => {
   const d = date.getDate();
   const m = date.getMonth() + 1;
   const y = date.getFullYear();
-  // 格式化时间
-  const formatDateNum = (num: number) => {
-    return num < 10 ? `0${num}` : String(num);
-  };
   // 日期
   const dateText = [y, m, d].map(formatDateNum).join('-');
   // 时间
@@ -249,10 +254,6 @@ export const formatDate = (time: Date | string | number = Date.now()) => {
   const d = date.getDate();
   const m = date.getMonth() + 1;
   const y = date.getFullYear();
-  // 格式化时间
-  const formatDateNum = (num: number) => {
-    return num < 10 ? `0${num}` : String(num);
-  };
   // 日期
   const dateText = [y, m, d].map(formatDateNum).join('-');
   return dateText;
@@ -272,20 +273,11 @@ export const formatTime = (time: Date | string | number = Date.now()) => {
   const s = date.getSeconds();
   const min = date.getMinutes();
   const h = date.getHours();
-
   // 时间
   const timeText = [h, min, s].map(formatDateNum).join(':');
   return timeText;
 };
 
-/**
- * @description 格式化时间数字
- * @param num
- * @returns
- */
-const formatDateNum = (num: number) => {
-  return num < 10 ? `0${num}` : String(num);
-};
 
 /**
  * @description 获取 cookie
