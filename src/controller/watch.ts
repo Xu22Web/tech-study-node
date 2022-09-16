@@ -113,10 +113,10 @@ const handleWatchVideo = async () => {
     // 看视频时间
     const duration = ~~(Math.random() * 50 + 100);
     // 倒计时
-    await countDown(duration, (duration) => {
+    await countDown(duration, (current) => {
       // 倒计时存在
-      if (duration) {
-        shared.log.loading(`观看剩余时间: ${chalk.blueBright(duration)} s`);
+      if (current) {
+        shared.log.loading(`观看剩余时间: ${chalk.blueBright(current)} s`);
         return;
       }
       shared.log.success('已观看完当前视频!');
@@ -136,7 +136,6 @@ const handleWatchVideo = async () => {
     // 继续观看
     await handleWatchVideo();
   }
-  return true;
 };
 
 /**
