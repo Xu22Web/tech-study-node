@@ -346,9 +346,10 @@ const countDown = (duration: number, callback: (duration: number) => void) => {
   return new Promise<boolean>((resolve) => {
     // 定时器
     const timer = setInterval(async () => {
+      // 倒计时回调
       callback(duration);
+      // 倒计时结束
       if (!duration) {
-        callback(duration);
         clearInterval(timer);
         resolve(true);
       }
