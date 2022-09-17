@@ -174,9 +174,10 @@ export class Log {
       }
       // 写入文件
       fs.writeFileSync(filePath, logsData);
+      // 关闭日志
+      this.collect('finish', '关闭日志!');
       // 清除缓存日志
       this.clear();
-      this.collect('finish', '关闭日志!');
       // 关闭日志
       this.enabled = false;
     }
