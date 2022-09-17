@@ -619,16 +619,25 @@ export const installRemoveDialog = async (page: pup.Page) => {
  */
 export const getProgressHTML = (title: string, percent: number) => {
   // html
-  const progressHTML = `<div style="display: flex; align-items: center">
-  <span>${title}</span>
+  const progressHTML = `<div>
+  <div
+    style="
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding-bottom: 2px;
+    "
+  >
+    <span>${title}</span>
+    <span>${getHighlightHTML(percent)}%</span>
+  </div>
   <div
     style="
       background: white;
       border-radius: 10px;
       height: 10px;
       border: 1px solid #eee;
-      flex: 1;
-      margin: 0 10px;
+      flex-shrink: 1;
     "
   >
     <div
@@ -640,7 +649,6 @@ export const getProgressHTML = (title: string, percent: number) => {
       "
     ></div>
   </div>
-  <span>${getHighlightHTML(percent)}%</span>
 </div>`;
   return progressHTML;
 };
