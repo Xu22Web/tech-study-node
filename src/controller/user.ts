@@ -23,6 +23,7 @@ export type TaskList = {
   rate: number;
   need: number;
   status: boolean;
+  title: string;
 }[];
 
 /**
@@ -158,19 +159,36 @@ export const getTaskList = async () => {
           const taskProgress = progess.map(formatTask);
           // 任务列表
           const taskList: TaskList = [];
-          taskList[0] = taskProgress[0];
-          // 合并 视听学习 视听学习时长
-          const currentTemp =
-            taskProgress[1].currentScore + taskProgress[3].currentScore;
-          const maxTemp =
-            taskProgress[1].dayMaxScore + taskProgress[3].dayMaxScore;
-          taskList[1] = formatTask({
-            currentScore: currentTemp,
-            dayMaxScore: maxTemp,
-          });
-          taskList[2] = taskProgress[6];
-          taskList[3] = taskProgress[2];
-          taskList[4] = taskProgress[5];
+          // 文章选读
+          taskList[0] = {
+            title: '文章选读',
+            ...taskProgress[0],
+          };
+          // 视听学习
+          taskList[1] = {
+            title: '视听学习',
+            ...formatTask({
+              currentScore:
+                taskProgress[1].currentScore + taskProgress[3].currentScore,
+              dayMaxScore:
+                taskProgress[1].dayMaxScore + taskProgress[3].dayMaxScore,
+            }),
+          };
+          // 每日答题
+          taskList[2] = {
+            title: '每日答题',
+            ...taskProgress[6],
+          };
+          // 每周答题
+          taskList[3] = {
+            title: '每周答题',
+            ...taskProgress[2],
+          };
+          // 专项练习
+          taskList[4] = {
+            title: '专项练习',
+            ...taskProgress[5],
+          };
           return taskList;
         }
       }
