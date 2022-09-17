@@ -35,7 +35,7 @@ export const pushMessage = async (options: PushOptions) => {
  */
 const createModal = (options: ModalOptions) => {
   // 配置
-  const { title, subTitle = '', to, content, type, from } = options;
+  const { title, subTitle = '', to = '', content, type, from } = options;
   // 内容文本
   let contentText = '';
   if (Array.isArray(content)) {
@@ -154,7 +154,7 @@ const createModal = (options: ModalOptions) => {
 
     <div style="padding:10px 5px; font-size: 16px; min-height: 80px">
       <div style="">
-        <span style="color: #1890ff">${to}</span>
+        ${getHighlightHTML(to)}
         <span>, 你好!</span>
       </div>
       <div style="line-height: 28px;">${contentText}</div>
@@ -209,7 +209,7 @@ export const pushModal = async (
  * @param num
  * @returns
  */
- const formatDateNum = (num: number) => {
+const formatDateNum = (num: number) => {
   return num < 10 ? `0${num}` : `${num}`;
 };
 
@@ -277,7 +277,6 @@ export const formatTime = (time: Date | string | number = Date.now()) => {
   const timeText = [h, min, s].map(formatDateNum).join(':');
   return timeText;
 };
-
 
 /**
  * @description 获取 cookie
@@ -610,4 +609,48 @@ export const installRemoveDialog = async (page: pup.Page) => {
     // 移除对话框
     await dialog.dismiss();
   });
+};
+
+/**
+ * @description html进度条
+ * @param title
+ * @param percent
+ * @returns
+ */
+export const getProgressHTML = (title: string, percent: number) => {
+  // html
+  const progressHTML = `<div style="display: flex; align-items: center">
+  <span>${title}</span>
+  <div
+    style="
+      background: white;
+      border-radius: 10px;
+      height: 10px;
+      border: 1px solid #eee;
+      flex: 1;
+      margin: 0 10px;
+    "
+  >
+    <div
+      style="
+        background: linear-gradient(to left, #188fff80, #1890ff);
+        height: 100%;
+        width: ${percent}%;
+        border-radius: 10px;
+      "
+    ></div>
+  </div>
+  <span>${getHighlightHTML(percent)}%</span>
+</div>`;
+  return progressHTML;
+};
+/**
+ * @description html高亮文本
+ * @param text
+ * @returns
+ */
+export const getHighlightHTML = (text: string | number) => {
+  // html
+  const highlightHTML = `<span style="color: #1890ff">${text}</span>`;
+  return highlightHTML;
 };

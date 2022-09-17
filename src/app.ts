@@ -14,6 +14,7 @@ import {
   renderUserData,
 } from './controller/user';
 import shared from './shared';
+import { getHighlightHTML, getProgressHTML } from './utils';
 
 // 处理浏览器
 const handleBrowser = async (browser: pup.Browser) => {
@@ -49,6 +50,8 @@ const handleBrowser = async (browser: pup.Browser) => {
   // 任务进度
   let taskList = await getTaskList();
   shared.log.success('获取任务进度成功!');
+
+  // 信息获取成功
   if (userInfo && total !== undefined && score !== undefined && taskList) {
     // 昵称
     shared.setNick(userInfo.nick);
@@ -64,13 +67,9 @@ const handleBrowser = async (browser: pup.Browser) => {
       title: '学习提示',
       content: [
         '学习强国, 登录成功!',
-        `当天积分:  <span style="color: #1890ff">${score}</span> 分`,
-        `总积分: <span style="color: #1890ff">${total}</span> 分`,
-        `文章选读: <span style="color: #1890ff">${taskList[0].rate}</span> %`,
-        `视听学习: <span style="color: #1890ff">${taskList[1].rate}</span> %`,
-        `每日答题: <span style="color: #1890ff">${taskList[2].rate}</span> %`,
-        `每周答题: <span style="color: #1890ff">${taskList[3].rate}</span> %`,
-        `专项练习: <span style="color: #1890ff">${taskList[4].rate}</span> %`,
+        `当天积分:  ${getHighlightHTML(score)} 分`,
+        `总积分: ${getHighlightHTML(total)} 分`,
+        ...taskList.map((task) => getProgressHTML(task.title, task.rate)),
       ],
       type: 'success',
     });
@@ -95,20 +94,14 @@ const handleBrowser = async (browser: pup.Browser) => {
         title: '学习提示',
         content: [
           '学习强国, 学习完成!',
-          `当天积分:  <span style="color: #1890ff">${score}</span> 分`,
-          `总积分: <span style="color: #1890ff">${total}</span> 分`,
-          `文章选读: <span style="color: #1890ff">${taskList[0].rate}</span> %`,
-          `视听学习: <span style="color: #1890ff">${taskList[1].rate}</span> %`,
-          `每日答题: <span style="color: #1890ff">${taskList[2].rate}</span> %`,
-          `每周答题: <span style="color: #1890ff">${taskList[3].rate}</span> %`,
-          `专项练习: <span style="color: #1890ff">${taskList[4].rate}</span> %`,
+          `当天积分:  ${getHighlightHTML(score)} 分`,
+          `总积分: ${getHighlightHTML(total)} 分`,
+          ...taskList.map((task) => getProgressHTML(task.title, task.rate)),
         ],
         type: 'success',
       });
     }
   }
-
-  // 学习
 };
 /**
  * @description 学习
@@ -159,15 +152,15 @@ const study = async () => {
     shared.log.success(`任务四: ${chalk.blueBright('每周答题')} 已完成!`);
 
     // 是否每日答题
-    // if (STUDY_CONFIG.settings[4] && !taskList[4].status) {
-    shared.log.info(`任务五: ${chalk.blueBright('专项练习')} 开始`);
-    // 专项练习
-    const res = await handleExam(2);
-    // 答题出错
-    if (!res) {
-      shared.log.fail(`任务五: ${chalk.blueBright('专项练习')} 答题出错!`);
+    if (STUDY_CONFIG.settings[4] && !taskList[4].status) {
+      shared.log.info(`任务五: ${chalk.blueBright('专项练习')} 开始`);
+      // 专项练习
+      const res = await handleExam(2);
+      // 答题出错
+      if (!res) {
+        shared.log.fail(`任务五: ${chalk.blueBright('专项练习')} 答题出错!`);
+      }
     }
-    // }
     shared.log.success(`任务五: ${chalk.blueBright('专项练习')} 已完成!`);
   }
 };

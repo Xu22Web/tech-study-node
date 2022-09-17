@@ -12,6 +12,7 @@ import {
   getBounds,
   getCookieIncludesDomain,
   getCount,
+  getHighlightHTML,
   getText,
   sleep,
   stringfyCookie,
@@ -80,8 +81,8 @@ const handleExam = async (type: number): Promise<boolean> => {
           title: '学习提示',
           content: [
             '每周答题, 答题错误或失败!',
-            `标题: <span style="color: #1890ff">${name}</span>`,
-            `链接: <span style="color: #1890ff">${url}</span>`,
+            `标题: ${getHighlightHTML(name)}`,
+            `链接: ${getHighlightHTML(url)}`,
           ],
           type: 'fail',
         });
@@ -122,8 +123,8 @@ const handleExam = async (type: number): Promise<boolean> => {
           title: '学习提示',
           content: [
             '专项练习, 答题错误或失败!',
-            `标题: <span style="color: #1890ff">${name}</span>`,
-            `链接: <span style="color: #1890ff">${url}</span>`,
+            `标题: ${getHighlightHTML(name)}`,
+            `链接: ${getHighlightHTML(url)}`,
           ],
           type: 'fail',
         });

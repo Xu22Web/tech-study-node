@@ -6,7 +6,7 @@ import PUP_CONFIG from '../src/config/pup';
 import PUSH_CONFIG from '../src/config/push';
 import handleBrowser from '../src/app';
 import shared from '../src/shared';
-import { formatDateTime } from '../src/utils';
+import { formatDateTime, getHighlightHTML } from '../src/utils';
 
 // 主函数
 const main = async () => {
@@ -104,11 +104,11 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
       shared.pushModalTips({
         title: '服务提示',
         content: [
-          `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务完成!`,
-          `今天剩余任务数: <span style="color: #1890ff">${rest.length}</span> 个`,
+          `用户: ${getHighlightHTML(sendInfo.nick)}, 定时任务完成!`,
+          `今天剩余任务数: ${getHighlightHTML(rest.length)} 个`,
           '下次任务信息: ',
-          `用户: <span style="color: #1890ff">${rest[0].nick}</span>`,
-          `时间: <span style="color: #1890ff">${rest[0].timeText}</span>`,
+          `用户: ${getHighlightHTML(rest[0].nick)}`,
+          `时间: ${getHighlightHTML(rest[0].timeText)}`,
         ],
         type: 'info',
       });
@@ -121,7 +121,7 @@ PUSH_CONFIG.list.forEach((sendInfo, i) => {
       shared.pushModalTips({
         title: '服务提示',
         content: [
-          `用户: <span style="color: #1890ff">${sendInfo.nick}</span>, 定时任务完成!`,
+          `用户: ${getHighlightHTML(sendInfo.nick)}, 定时任务完成!`,
           `今天定时任务均已完成!`,
         ],
         type: 'info',
