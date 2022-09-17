@@ -153,9 +153,8 @@ const createModal = (options: ModalOptions) => {
     <div></div>
 
     <div style="padding:10px 5px; font-size: 16px; min-height: 80px">
-      <div style="">
-        ${getHighlightHTML(to)}
-        <span>, 你好!</span>
+      <div>
+        ${getHighlightHTML(to)}, 你好!
       </div>
       <div style="line-height: 28px;">${contentText}</div>
     </div>
@@ -624,7 +623,7 @@ export const getProgressHTML = (title: string, percent: number) => {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding-bottom: 2px;
+      padding: 1px 0;
     "
   >
     <span>${title}</span>
