@@ -39,7 +39,7 @@ const createModal = (options: ModalOptions) => {
   // 内容文本
   let contentText = '';
   if (Array.isArray(content)) {
-    contentText = content.join('<br>');
+    contentText = content.map((ct) => `<div>${ct}</div>`).join('');
   } else {
     contentText = content;
   }
@@ -619,8 +619,7 @@ export const installRemoveDialog = async (page: pup.Page) => {
  */
 export const getProgressHTML = (title: string, percent: number) => {
   // html
-  const progressHTML = `<div>
-  <div
+  const progressHTML = `<div
     style="
       display: flex;
       align-items: center;
@@ -648,8 +647,7 @@ export const getProgressHTML = (title: string, percent: number) => {
         border-radius: 10px;
       "
     ></div>
-  </div>
-</div>`;
+  </div>`;
   return progressHTML;
 };
 /**
