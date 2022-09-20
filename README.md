@@ -40,7 +40,7 @@ pnpm install
 <summary>Debian (e.g. Ubuntu) Dependencies</summary>
 
 ```
- apt install
+ apt install \
  gconf-service \
  libasound2 \
  libatk1.0-0 \
@@ -87,7 +87,7 @@ pnpm install
 <summary>CentOS Dependencies</summary>
    
   ```bash
-   yum install -y
+   yum install -y \
    alsa-lib.x86_64 \
    atk.x86_64 \
    cups-libs.x86_64 \
@@ -151,7 +151,7 @@ pnpm install
      yum -y install google-chrome-stable --nogpgcheck
     ```
 
-— 测试运行 `Google Chrome` 浏览器
+- 测试运行 `Google Chrome` 浏览器
 
 ```bash
  google-chrome
