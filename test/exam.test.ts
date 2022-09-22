@@ -7,6 +7,7 @@ import shared from '../src/shared';
 
 // 答题
 describe('exam', async () => {
+  // 每日答题
   it.skip('practice', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
     shared.setBrowser(broswer);
@@ -14,22 +15,24 @@ describe('exam', async () => {
     // 登录
     await handleLogin();
     const res = await handleExam(0);
-    expect(res).toMatchInlineSnapshot('undefined');
+    expect(res).toMatchInlineSnapshot(true);
   });
+  // 每周答题
   it.skip('weekly', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
-    const page = await broswer.newPage();
+    await broswer.newPage();
     // 登录
     await handleLogin();
     const res = await handleExam(1);
-    expect(res).toMatchInlineSnapshot();
+    expect(res).toMatchInlineSnapshot(true);
   });
+  // 专项练习
   it.skip('paper', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
-    const page = await broswer.newPage();
+    await broswer.newPage();
     // 登录
     await handleLogin();
     const res = await handleExam(2);
-    expect(res).toMatchInlineSnapshot();
+    expect(res).toMatchInlineSnapshot(true);
   });
 });

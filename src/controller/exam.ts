@@ -391,8 +391,12 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     }
     // 等待跳转
     await sleep(3000);
-    // 等待滑动验证
-    await handleSildeVerify(page);
+    // 存在滑动验证
+    const exists = await hasSlideVerify(page);
+    // 处理滑动验证
+    if (exists) {
+      await handleSlideVerify(page);
+    }
   }
   shared.log.success(`${chalk.blueBright(current)} / ${total} 答题完成!`);
   // 等待结果提交
@@ -837,8 +841,6 @@ const getAnswerByTips = async (page: pup.Page) => {
 const getAnswerByNetwork = async (page: pup.Page) => {
   // 题目内容
   const question = await getQuestion(page);
-  // md5加密
-  const key = await getKey(page);
   // 获取答案
   const answers = await getAnswerSearch(question);
   if (answers.length) {
@@ -883,58 +885,100 @@ const saveAnswerFromWrong = async (page: pup.Page) => {
   }
   return false;
 };
-
 /**
- * @description 处理滑块验证
- * @param page 页面
+ * @description 存在滑动验证
+ * @param page
  */
-const handleSildeVerify = async (page: pup.Page) => {
+const hasSlideVerify = async (page: pup.Page) => {
   // 是否滑块
   const exists = await page.$eval('#nc_mask', (node) => {
     const mask = <HTMLElement>node;
     return mask && getComputedStyle(mask).display !== 'none';
   });
+  console.log('hasSlideVerify');
+  await sleep(10000);
   // 存在滑块
   if (exists) {
-    // 等待
-    await sleep(3000);
-    // 等待加载
-    await page.waitForSelector('.nc_scale');
-    // 等待加载
-    await page.waitForSelector('.btn_slide');
-    // 轨道
-    const track = await getBounds(page, '.nc_scale');
-    // 滑块
-    const slide = await getBounds(page, '.btn_slide');
-    // 轨道滑块
-    if (slide && track) {
-      // 范围内随机起点
-      const start = createRandomPoint(slide);
-      // 终点
-      const end = {
-        x: track.x + track.width,
-        y: track.y + track.height / 2,
-      };
-      // 路径
-      const path = createRandomPath(start, end, 5);
-      // 滑动到起点
-      await page.mouse.move(start.x, start.y, { steps: 1 });
-      // tap
-      await page.touchscreen.tap(start.x, start.y);
-      // 按下按钮
-      await page.mouse.down();
-      // 滑动
-      for (const i in path) {
-        await page.mouse.move(path[i].x, path[i].y, { steps: 1 });
+    // 加载状态
+    let loadingStatus = false;
+    // 加载滑动验证
+    while (!loadingStatus) {
+      // 等待加载
+      loadingStatus = await page.evaluate((time) => {
+        return new Promise<boolean>((resolve) => {
+          // 定时器
+          const timer = setInterval(() => {
+            // nc_scale
+            const nc_scale = document.querySelector<HTMLElement>('.nc_scale');
+            const btn_slide = document.querySelector<HTMLElement>('.btn_slide');
+            // 加载成功
+            if (nc_scale && btn_slide) {
+              clearInterval(timer);
+              clearTimeout(timeout);
+              resolve(true);
+            }
+          }, 500);
+          // 超时
+          const timeout = setTimeout(() => {
+            clearInterval(timer);
+            resolve(false);
+          }, time);
+        });
+      }, STUDY_CONFIG.timeout);
+      // 滑动验证加载失败
+      if (!loadingStatus) {
+        // 关闭滑动验证
+        await page.$eval('.button-close', (node) => {
+          const btn = <HTMLElement>node;
+          btn.click();
+        });
+        await sleep(3000);
+        // 点击
+        await clickNextBtn(page);
       }
-      // tap
-      await page.touchscreen.tap(
-        path[path.length - 1].x,
-        path[path.length - 1].y
-      );
-      // 按键抬起
-      await page.mouse.up();
     }
+    return true;
+  }
+  return false;
+};
+
+/**
+ * @description 处理滑块验证
+ * @param page 页面
+ */
+const handleSlideVerify = async (page: pup.Page) => {
+  // 轨道
+  const track = await getBounds(page, '.nc_scale');
+  // 滑块
+  const slide = await getBounds(page, '.btn_slide');
+  // 轨道滑块
+  if (slide && track) {
+    // 范围内随机起点
+    const start = createRandomPoint(slide);
+    // 终点
+    const end = {
+      x: track.x + track.width,
+      y: track.y + track.height / 2,
+    };
+    // 路径
+    const path = createRandomPath(start, end, 5);
+    // 滑动到起点
+    await page.mouse.move(start.x, start.y, { steps: 1 });
+    // tap
+    await page.touchscreen.tap(start.x, start.y);
+    // 按下按钮
+    await page.mouse.down();
+    // 滑动
+    for (const i in path) {
+      await page.mouse.move(path[i].x, path[i].y, { steps: 1 });
+    }
+    // tap
+    await page.touchscreen.tap(
+      path[path.length - 1].x,
+      path[path.length - 1].y
+    );
+    // 按键抬起
+    await page.mouse.up();
   }
 };
 
