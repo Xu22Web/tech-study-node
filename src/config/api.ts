@@ -35,7 +35,6 @@ const API_CONFIG = {
     'https://www.xuexi.cn/lgdata/2qfjjjrprmdh.json',
     'https://www.xuexi.cn/lgdata/3o3ufqgl8rsn.json',
     'https://www.xuexi.cn/lgdata/591ht3bc22pi.json',
-    'https://www.xuexi.cn/lgdata/591ht3bc22pi.json',
   ],
   /**
    * @description 每周答题列表
