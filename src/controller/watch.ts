@@ -162,12 +162,12 @@ const getTodayNews = async () => {
       // 数量补足需要数量
       while (news.length < need) {
         // 随便取
-        const randomIndex = ~~(Math.random() * (newsList.length + 1));
+        const randomIndex = ~~(Math.random() * newsList.length);
         // 新闻
         const item = newsList[randomIndex];
-        // 是否存在视频
+        // 是否存在新闻
         if (item.dataValid && item.type === 'tuwen') {
-          news.push(newsList[randomIndex]);
+          news.push(item);
         }
       }
     }
@@ -198,7 +198,7 @@ const getTodayVideos = async () => {
       // 数量补足需要数量
       while (videos.length < need) {
         // 随便取
-        const randomIndex = ~~(Math.random() * (videoList.length + 1));
+        const randomIndex = ~~(Math.random() * videoList.length);
         // 视频
         const item = videoList[randomIndex];
         // 是否存在视频
@@ -206,7 +206,7 @@ const getTodayVideos = async () => {
           item.dataValid &&
           (item.type === 'shipin' || item.type === 'juji')
         ) {
-          videos.push(videoList[randomIndex]);
+          videos.push(item);
         }
       }
     }
