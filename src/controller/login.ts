@@ -128,6 +128,7 @@ const getLoginStatus = (page: pup.Page) => {
     }, 500);
     // 超时延迟
     const timeout = setTimeout(() => {
+      // 清除定时
       clearInterval(timer);
       shared.log.fail('登录超时, 请重试!');
       resolve(false);

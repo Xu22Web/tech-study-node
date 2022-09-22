@@ -246,17 +246,18 @@ const waitVideos = async () => {
         }
         // 视频可播放
         if (video) {
-          // 清除计时器
+          // 清除定时器
           clearInterval(timer);
           // 是否可播放
           video.addEventListener('canplay', () => {
-            clearInterval(timeout);
+            clearTimeout(timeout);
             resolve(true);
           });
         }
       }, 100);
       // 超时
       const timeout = setTimeout(() => {
+        // 清除定时器
         clearInterval(timer);
         resolve(false);
       }, time);
@@ -306,15 +307,17 @@ const waitVideos = async () => {
           }
           // 播放
           if (!video.paused) {
-            // 清除计时器
+            // 清除定时器
             clearInterval(timer);
-            clearInterval(timeout);
+            // 清除超时延迟
+            clearTimeout(timeout);
             resolve(true);
           }
         }
       }, 100);
       // 超时
       const timeout = setTimeout(() => {
+        // 清除定时器
         clearInterval(timer);
         resolve(false);
       }, time);
@@ -349,6 +352,7 @@ const countDown = (duration: number, callback: (duration: number) => void) => {
       callback(duration);
       // 倒计时结束
       if (!duration) {
+        // 清除定时器
         clearInterval(timer);
         resolve(true);
       }

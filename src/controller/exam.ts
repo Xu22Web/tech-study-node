@@ -265,15 +265,16 @@ const handleQuestion = async (page: pup.Page, type: number) => {
         const question = document.querySelector('.question');
         // 视频可播放
         if (question) {
-          // 清除计时器
+          // 清除定时器
           clearInterval(timer);
-          // 清除倒计时
-          clearInterval(timeout);
+          // 清除超时延迟
+          clearTimeout(timeout);
           resolve(true);
         }
       }, 100);
       // 超时
       const timeout = setTimeout(() => {
+        // 清除定时器
         clearInterval(timer);
         resolve(false);
       }, time);
@@ -436,7 +437,8 @@ const getNextBtnText = async (page: pup.Page) => {
         );
         // 数量不唯一
         if (nextAll.length) {
-          clearInterval(timer); // 停止定时器
+          // 清除定时器
+          clearInterval(timer);
           if (nextAll.length === 2) {
             resolve(nextAll[1].innerText.replaceAll(' ', ''));
             return;
@@ -913,13 +915,16 @@ const hasSlideVerify = async (page: pup.Page) => {
             const btn_slide = document.querySelector<HTMLElement>('.btn_slide');
             // 加载成功
             if (nc_scale && btn_slide) {
+              // 清除定时器
               clearInterval(timer);
+              // 清除超时延迟
               clearTimeout(timeout);
               resolve(true);
             }
           }, 500);
           // 超时
           const timeout = setTimeout(() => {
+            // 清除定时器
             clearInterval(timer);
             resolve(false);
           }, time);
@@ -999,6 +1004,7 @@ const waitResult = async (page: pup.Page) => {
         // 获取按钮
         const btnText = await getNextBtnText(page);
         if (finish.includes(btnText)) {
+          // 清除定时器
           clearInterval(timer);
           resolve(true);
         }
