@@ -160,12 +160,18 @@ export class Log {
   finish() {
     // 关闭启用的日志
     if (this.enabled) {
+      // 关闭日志
+      this.collect('finish', '关闭日志!');
+      // 关闭日志
+      this.enabled = false;
       // 当天时间
       const date = new Date();
       // 文件路径
       const filePath = path.join(logsPath, `${formatDate(date)}.log`);
       // 日志数据
       const logsData = this.logs.join('\n');
+      // 清除缓存日志
+      this.clear();
       // 文件是否存在
       if (fs.existsSync(filePath)) {
         // 追加文件
@@ -174,12 +180,6 @@ export class Log {
       }
       // 写入文件
       fs.writeFileSync(filePath, logsData);
-      // 关闭日志
-      this.collect('finish', '关闭日志!');
-      // 清除缓存日志
-      this.clear();
-      // 关闭日志
-      this.enabled = false;
     }
   }
   /**
@@ -196,7 +196,6 @@ export class Log {
   clear() {
     // 清除缓存日志
     this.logs = [];
-    this.collect('success', '清除缓存日志成功!');
   }
   /**
    * @description 自动删除日志
