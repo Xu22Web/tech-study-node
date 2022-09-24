@@ -3,6 +3,7 @@ import STUDY_CONFIG from '../config/study';
 import { getTaskList } from './user';
 import { videoList, newsList } from '../apis';
 import shared from '../shared';
+import { sleep } from '../utils';
 /**
  * @description 读文章 | 看视频
  * @returns
@@ -69,6 +70,8 @@ const handleReadNews = async () => {
   // 未完成
   if (taskList && !taskList[0].status) {
     shared.log.info('未完成任务, 继续看新闻!');
+    // 请求速率限制
+    await sleep(STUDY_CONFIG.rateLimitms);
     // 继续观看
     await handleReadNews();
   }
@@ -133,6 +136,8 @@ const handleWatchVideo = async () => {
   // 未完成
   if (taskList && !taskList[1].status) {
     shared.log.info('未完成任务, 继续看视频!');
+    // 请求速率限制
+    await sleep(STUDY_CONFIG.rateLimitms);
     // 继续观看
     await handleWatchVideo();
   }
@@ -156,7 +161,6 @@ const getTodayNews = async () => {
     const need = newsNum < maxNewsNum ? newsNum : maxNewsNum;
     // 获取重要新闻
     const newsList = await getNews();
-
     // 存在新闻列表
     if (newsList && newsList.length) {
       // 数量补足需要数量

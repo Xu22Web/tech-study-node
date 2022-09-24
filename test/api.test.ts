@@ -16,7 +16,7 @@ import handleLogin from '../src/controller/login';
 import PUSH_CONFIG from '../src/config/push';
 
 describe('api', () => {
-  it.skip('new', async () => {
+  it.skip('news', async () => {
     // 获取视频
     const res = await getNews();
     expect(res.slice(0, 1)).toMatchInlineSnapshot(`
@@ -120,7 +120,7 @@ describe('api', () => {
       }
     `);
   });
-  it.skip('taskList', async () => {
+  it('taskList', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
     shared.setBrowser(broswer);
     await shared.openPage();
@@ -130,18 +130,28 @@ describe('api', () => {
     expect(res).toMatchInlineSnapshot(`
       [
         {
-          "currentScore": 6,
+          "currentScore": 12,
           "dayMaxScore": 12,
-          "need": 6,
-          "rate": 50,
-          "status": false,
+          "need": 0,
+          "rate": 100,
+          "status": true,
+          "title": "文章选读",
         },
         {
-          "currentScore": 7,
+          "currentScore": 12,
           "dayMaxScore": 12,
-          "need": 5,
-          "rate": 58.33,
-          "status": false,
+          "need": 0,
+          "rate": 100,
+          "status": true,
+          "title": "视听学习",
+        },
+        {
+          "currentScore": 5,
+          "dayMaxScore": 5,
+          "need": 0,
+          "rate": 100,
+          "status": true,
+          "title": "每日答题",
         },
         {
           "currentScore": 0,
@@ -149,20 +159,15 @@ describe('api', () => {
           "need": 5,
           "rate": 0,
           "status": false,
+          "title": "每周答题",
         },
         {
-          "currentScore": 0,
-          "dayMaxScore": 5,
-          "need": 5,
-          "rate": 0,
-          "status": false,
-        },
-        {
-          "currentScore": 0,
+          "currentScore": 10,
           "dayMaxScore": 1,
-          "need": 1,
-          "rate": 0,
-          "status": false,
+          "need": 0,
+          "rate": 100,
+          "status": true,
+          "title": "专项练习",
         },
       ]
     `);
