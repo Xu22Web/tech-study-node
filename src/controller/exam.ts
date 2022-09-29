@@ -148,7 +148,7 @@ const initExam = async (type: number) => {
       // 总页数
       const { totalPageCount } = res;
       // 请求速率限制
-      await sleep(STUDY_CONFIG.rateLimitms);
+      await sleep(STUDY_CONFIG.rateLimit);
       return totalPageCount;
     }
     return;
@@ -161,7 +161,7 @@ const initExam = async (type: number) => {
       // 总页数
       const { totalPageCount } = res;
       // 请求速率限制
-      await sleep(STUDY_CONFIG.rateLimitms);
+      await sleep(STUDY_CONFIG.rateLimit);
       return totalPageCount;
     }
   }
@@ -199,7 +199,7 @@ const findExamWeekly = async () => {
         }
         current += STUDY_CONFIG.weeklyReverse ? -1 : 1;
         // 请求速率限制
-        await sleep(STUDY_CONFIG.rateLimitms);
+        await sleep(STUDY_CONFIG.rateLimit);
       } else {
         break;
       }
@@ -237,7 +237,7 @@ const findExamPaper = async () => {
         }
         current += STUDY_CONFIG.paperReverse ? -1 : 1;
         // 请求速率限制
-        await sleep(STUDY_CONFIG.rateLimitms);
+        await sleep(STUDY_CONFIG.rateLimit);
       } else {
         break;
       }

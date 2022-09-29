@@ -56,7 +56,7 @@ const STUDY_CONFIG = {
   /**
    * @description 限制请求速率
    */
-  rateLimitms: 3000,
+  rateLimit: 2500,
   /**
    * @description 每周答题 答题失败是否退出不提交
    * @example true 答题失败退出答题不提交 false 继续答题

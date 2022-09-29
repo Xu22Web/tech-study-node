@@ -14,7 +14,7 @@ import {
   renderUserData,
 } from './controller/user';
 import shared from './shared';
-import { getHighlightHTML, getProgressHTML } from './utils';
+import { getHighlightHTML, getProgressHTML, sleep } from './utils';
 
 // 处理浏览器
 const handleBrowser = async (browser: pup.Browser) => {
@@ -108,6 +108,8 @@ const handleBrowser = async (browser: pup.Browser) => {
 
  */
 const study = async () => {
+  // 请求速率限制
+  await sleep(STUDY_CONFIG.rateLimit);
   // 任务进度
   const taskList = await getTaskList();
   if (taskList) {
@@ -162,7 +164,10 @@ const study = async () => {
       }
     }
     shared.log.success(`任务五: ${chalk.blueBright('专项练习')} 已完成!`);
+    return;
   }
+  // 重新学习
+  await study();
 };
 
 export default handleBrowser;

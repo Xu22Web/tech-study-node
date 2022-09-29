@@ -65,13 +65,15 @@ const handleReadNews = async () => {
       break;
     }
   }
+  // 请求速率限制
+  await sleep(STUDY_CONFIG.rateLimit);
   // 任务进度
   const taskList = await getTaskList();
   // 未完成
   if (taskList && !taskList[0].status) {
     shared.log.info('未完成任务, 继续看新闻!');
     // 请求速率限制
-    await sleep(STUDY_CONFIG.rateLimitms);
+    await sleep(STUDY_CONFIG.rateLimit);
     // 继续观看
     await handleReadNews();
   }
@@ -131,13 +133,15 @@ const handleWatchVideo = async () => {
       break;
     }
   }
+  // 请求速率限制
+  await sleep(STUDY_CONFIG.rateLimit);
   // 任务进度
   const taskList = await getTaskList();
   // 未完成
   if (taskList && !taskList[1].status) {
     shared.log.info('未完成任务, 继续看视频!');
     // 请求速率限制
-    await sleep(STUDY_CONFIG.rateLimitms);
+    await sleep(STUDY_CONFIG.rateLimit);
     // 继续观看
     await handleWatchVideo();
   }
