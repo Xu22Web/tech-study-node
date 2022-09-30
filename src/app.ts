@@ -36,6 +36,7 @@ const handleBrowser = async (browser: pup.Browser) => {
     });
     return;
   }
+  shared.log.success('登录成功!');
   shared.log.loading('正在获取用户信息...');
   // 用户信息
   const userInfo = await getUserInfo();

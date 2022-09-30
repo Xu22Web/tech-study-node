@@ -1,9 +1,9 @@
-import pup from 'puppeteer-core';
-import shared from '../shared';
 import fs from 'fs';
 import path from 'path';
+import pup from 'puppeteer-core';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
+import shared from '../shared';
 import { getCookie } from '../utils';
 /**
  * @description 二维码保存位置
@@ -119,7 +119,6 @@ const getLoginStatus = (page: pup.Page) => {
         clearInterval(timer);
         // 清除超时延迟
         clearTimeout(timeout);
-        shared.log.success('登录成功!');
         resolve(true);
         return;
       }
