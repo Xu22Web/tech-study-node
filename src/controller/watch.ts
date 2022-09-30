@@ -1,9 +1,7 @@
 import chalk from 'chalk';
+import { newsList, videoList } from '../apis';
 import STUDY_CONFIG from '../config/study';
-import { getTaskList } from './user';
-import { videoList, newsList } from '../apis';
 import shared from '../shared';
-import { sleep } from '../utils';
 /**
  * @description 读文章 | 看视频
  * @returns
@@ -36,16 +34,14 @@ const handleReadNews = async () => {
       shared.log.fail(
         `${chalk.blueBright(Number(i) + 1)} / ${
           news.length
-        } | 标题: ${chalk.blueBright(
-          news[i].title.substring(0, 15)
-        )} 页面跳转失败!`
+        } | 标题: ${chalk.blueBright(news[i].title)} 页面跳转失败!`
       );
       continue;
     }
     shared.log.info(
       `${chalk.blueBright(Number(i) + 1)} / ${
         news.length
-      } | 标题: ${chalk.blueBright(news[i].title.substring(0, 15))}`
+      } | 标题: ${chalk.blueBright(news[i].title)}`
     );
     // 看新闻时间
     const duration = ~~(Math.random() * 20 + 80);
@@ -59,26 +55,20 @@ const handleReadNews = async () => {
       shared.log.success('已观看完当前新闻!');
     });
     // 任务进度
-    const taskList = await getTaskList();
+    await shared.getTaskList();
     // 提前完成
-    if (taskList && taskList[0].status) {
+    if (shared.taskList && shared.taskList[0].status) {
       break;
     }
   }
-  // 请求速率限制
-  await sleep(STUDY_CONFIG.rateLimit);
   // 任务进度
-  const taskList = await getTaskList();
+  await shared.getTaskList();
   // 未完成
-  if (taskList && !taskList[0].status) {
+  if (shared.taskList && !shared.taskList[0].status) {
     shared.log.info('未完成任务, 继续看新闻!');
-    // 请求速率限制
-    await sleep(STUDY_CONFIG.rateLimit);
     // 继续观看
     await handleReadNews();
   }
-  // 请求速率限制
-  await sleep(STUDY_CONFIG.rateLimit);
 };
 
 /**
@@ -98,9 +88,7 @@ const handleWatchVideo = async () => {
       shared.log.fail(
         `${chalk.blueBright(Number(i) + 1)} / ${
           videos.length
-        } | 标题: ${chalk.blueBright(
-          videos[i].title.substring(0, 15)
-        )} 页面跳转失败!`
+        } | 标题: ${chalk.blueBright(videos[i].title)} 页面跳转失败!`
       );
       // 跳过
       continue;
@@ -108,7 +96,7 @@ const handleWatchVideo = async () => {
     shared.log.info(
       `${chalk.blueBright(Number(i) + 1)} / ${
         videos.length
-      } | 标题: ${chalk.blueBright(videos[i].title.substring(0, 15))}`
+      } | 标题: ${chalk.blueBright(videos[i].title)}`
     );
     // 播放视频
     const waitRes = await waitVideos();
@@ -129,26 +117,20 @@ const handleWatchVideo = async () => {
       shared.log.success('已观看完当前视频!');
     });
     // 任务进度
-    const taskList = await getTaskList();
+    await shared.getTaskList();
     // 提前完成
-    if (taskList && taskList[1].status) {
+    if (shared.taskList && shared.taskList[1].status) {
       break;
     }
   }
-  // 请求速率限制
-  await sleep(STUDY_CONFIG.rateLimit);
   // 任务进度
-  const taskList = await getTaskList();
+  await shared.getTaskList();
   // 未完成
-  if (taskList && !taskList[1].status) {
+  if (shared.taskList && !shared.taskList[1].status) {
     shared.log.info('未完成任务, 继续看视频!');
-    // 请求速率限制
-    await sleep(STUDY_CONFIG.rateLimit);
     // 继续观看
     await handleWatchVideo();
   }
-  // 请求速率限制
-  await sleep(STUDY_CONFIG.rateLimit);
 };
 
 /**
@@ -157,14 +139,14 @@ const handleWatchVideo = async () => {
  */
 const getTodayNews = async () => {
   // 任务进度
-  const taskList = await getTaskList();
+  await shared.getTaskList();
   // 新闻
   const news: NewsVideoList = [];
-  if (taskList) {
+  if (shared.taskList) {
     // 最大新闻数
     const { maxNewsNum } = STUDY_CONFIG;
     // 新闻数
-    const newsNum = taskList[0].need;
+    const newsNum = shared.taskList[0].need;
     // 需要学习的新闻数量
     const need = newsNum < maxNewsNum ? newsNum : maxNewsNum;
     // 获取重要新闻
@@ -193,14 +175,14 @@ const getTodayNews = async () => {
  */
 const getTodayVideos = async () => {
   // 任务进度
-  const taskList = await getTaskList();
+  await shared.getTaskList();
   // 视频
   const videos: NewsVideoList = [];
-  if (taskList) {
+  if (shared.taskList) {
     // 最大视频数
     const { maxVideoNum } = STUDY_CONFIG;
     // 视频数
-    const videoNum = taskList[1].need;
+    const videoNum = shared.taskList[1].need;
     // 需要学习的视频数量
     const need = videoNum < maxVideoNum ? videoNum : maxVideoNum;
     // 获取重要视频

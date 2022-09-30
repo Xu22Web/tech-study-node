@@ -1,6 +1,6 @@
 import chalk from 'chalk';
-import shared from '../shared';
 import { taskProgress, todayScore, totalScore, userInfo } from '../apis';
+import shared from '../shared';
 import { formatTask, getCookieIncludesDomain, stringfyCookie } from '../utils';
 
 /**
@@ -33,7 +33,7 @@ export type TaskList = {
  */
 export const renderUserData = (userInfo: UserInfo) => {
   shared.log.warn(`用户信息`);
-  shared.log.info(`昵称: ${chalk.yellow(userInfo.nick)}\n`);
+  shared.log.info(`昵称: ${chalk.yellow(userInfo.nick)}`);
 };
 
 /**
@@ -43,7 +43,7 @@ export const renderUserData = (userInfo: UserInfo) => {
 export const renderScoreData = (score: number, total: number) => {
   shared.log.warn(`积分信息`);
   shared.log.info(
-    `当天积分: ${chalk.yellow(score)} 分 | 总积分: ${chalk.yellow(total)} 分\n`
+    `当天积分: ${chalk.yellow(score)} 分 | 总积分: ${chalk.yellow(total)} 分`
   );
 };
 /**
@@ -56,7 +56,7 @@ export const renderTasksData = (taskList: TaskList) => {
   shared.log.info(`视听学习: ${chalk.yellow(taskList[1].rate)} %`);
   shared.log.info(`每日答题: ${chalk.yellow(taskList[2].rate)} %`);
   shared.log.info(`每周答题: ${chalk.yellow(taskList[3].rate)} %`);
-  shared.log.info(`专项练习: ${chalk.yellow(taskList[4].rate)} %\n`);
+  shared.log.info(`专项练习: ${chalk.yellow(taskList[4].rate)} %`);
 };
 
 /**

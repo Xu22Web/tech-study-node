@@ -2,7 +2,19 @@ import pup from 'puppeteer-core';
 import PUSH_CONFIG from '../config/push';
 import STUDY_CONFIG from '../config/study';
 import { log, Log } from '../controller/logs';
-import { installMouseHelper, installRemoveDialog, pushModal } from '../utils';
+import {
+  getTaskList,
+  getTodayScore,
+  getTotalScore,
+  TaskList,
+  UserInfo,
+} from '../controller/user';
+import {
+  installMouseHelper,
+  installRemoveDialog,
+  pushModal,
+  sleep,
+} from '../utils';
 import { ModalOptions } from '../utils/interface';
 
 /**
@@ -33,6 +45,22 @@ type Shared = {
    * @description 进度
    */
   log: Log;
+  /**
+   * @description 用户信息
+   */
+  userInfo?: UserInfo;
+  /**
+   * @description 任务列表
+   */
+  taskList?: TaskList;
+  /**
+   * @description 总分
+   */
+  totalScore?: number;
+  /**
+   * @description 当天分数
+   */
+  todayScore?: number;
   /**
    * @description 获取浏览器
    */
@@ -99,6 +127,22 @@ type Shared = {
    * @param nick
    */
   setNick(nick: string): void;
+  /**
+   * @description 获取用户信息
+   */
+  getUserInfo(): Promise<UserInfo | undefined>;
+  /**
+   * @description 获取任务列表
+   */
+  getTaskList(): Promise<TaskList | undefined>;
+  /**
+   * @description 获取总分
+   */
+  getTotalScore(): Promise<number | undefined>;
+  /**
+   * @description 获取当天分数
+   */
+  getTodayScore(): Promise<number | undefined>;
 };
 
 /**
@@ -256,6 +300,54 @@ const shared: Shared = {
       return;
     }
     this.nick = PUSH_CONFIG.nick;
+  },
+  async getUserInfo() {
+    shared.log.loading('正在获取用户信息..');
+    // 获取用户信息
+    this.userInfo = await this.getUserInfo();
+    // 请求速率限制
+    await sleep(STUDY_CONFIG.rateLimit);
+    if (this.userInfo) {
+      this.log.success('获取用户信息成功!');
+      return this.userInfo;
+    }
+    this.log.fail('获取用户信息失败!');
+  },
+  async getTaskList() {
+    shared.log.loading('正在获取任务列表...');
+    // 获取任务列表
+    this.taskList = await getTaskList();
+    // 请求速率限制
+    await sleep(STUDY_CONFIG.rateLimit);
+    if (this.taskList) {
+      this.log.success('获取任务列表成功!');
+      return this.taskList;
+    }
+    this.log.fail('获取任务列表失败!');
+  },
+  async getTotalScore() {
+    shared.log.loading('正在获取总分...');
+    // 获取总分
+    this.totalScore = await getTotalScore();
+    // 请求速率限制
+    await sleep(STUDY_CONFIG.rateLimit);
+    if (this.totalScore !== undefined) {
+      this.log.success('获取总分成功!');
+      return this.totalScore;
+    }
+    this.log.fail('获取总分失败!');
+  },
+  async getTodayScore() {
+    shared.log.loading('正在获取当天分数...');
+    // 获取当天分数
+    this.todayScore = await getTodayScore();
+    // 请求速率限制
+    await sleep(STUDY_CONFIG.rateLimit);
+    if (this.todayScore !== undefined) {
+      this.log.success('获取当天分数成功!');
+      return this.todayScore;
+    }
+    this.log.fail('获取当天分数失败!');
   },
 };
 

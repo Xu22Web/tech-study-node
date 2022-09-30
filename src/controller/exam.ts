@@ -1,10 +1,10 @@
 import md5 from 'blueimp-md5';
 import chalk from 'chalk';
 import pup from 'puppeteer-core';
+import { examPaper, examWeekly, getAnswer, postAnswer } from '../apis';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
-import { examPaper, examWeekly, getAnswer, postAnswer } from '../apis';
 import {
   createRandomPath,
   createRandomPoint,
@@ -18,7 +18,6 @@ import {
   stringfyCookie,
   stringfyData,
 } from '../utils';
-import { getTaskList } from './user';
 
 /**
  * @description 练习测试
@@ -38,9 +37,9 @@ const handleExam = async (type: number): Promise<boolean> => {
       // 开始答题
       await handleQuestion(page, 0);
       // 任务列表
-      const taskList = await getTaskList();
+      await shared.getTaskList();
       // 继续做
-      if (taskList && !taskList[2].status) {
+      if (shared.taskList && !shared.taskList[2].status) {
         // 重新答题
         return await handleExam(0);
       }

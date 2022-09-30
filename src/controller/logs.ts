@@ -1,6 +1,6 @@
 import fs from 'fs';
-import path from 'path';
 import ora from 'ora';
+import path from 'path';
 import STUDY_CONFIG from '../config/study';
 import { formatDate, formatDateTime } from '../utils';
 
