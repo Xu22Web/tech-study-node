@@ -897,8 +897,8 @@ const hasSlideVerify = async (page: pup.Page) => {
     const mask = <HTMLElement>node;
     return mask && getComputedStyle(mask).display !== 'none';
   });
-  console.log('hasSlideVerify');
-  await sleep(10000);
+  console.info('处理滑动验证!');
+  await sleep(5000);
   // 存在滑块
   if (exists) {
     // 加载状态

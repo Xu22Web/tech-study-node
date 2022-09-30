@@ -77,6 +77,8 @@ const handleReadNews = async () => {
     // 继续观看
     await handleReadNews();
   }
+  // 请求速率限制
+  await sleep(STUDY_CONFIG.rateLimit);
 };
 
 /**
@@ -145,6 +147,8 @@ const handleWatchVideo = async () => {
     // 继续观看
     await handleWatchVideo();
   }
+  // 请求速率限制
+  await sleep(STUDY_CONFIG.rateLimit);
 };
 
 /**
