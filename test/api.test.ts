@@ -1,19 +1,17 @@
-import { describe, expect, it } from 'vitest';
 import pup from 'puppeteer-core';
+import { describe, expect, it } from 'vitest';
 import PUP_CONFIG from '../src/config/pup';
-import shared from '../src/shared';
+import PUSH_CONFIG from '../src/config/push';
+import { getAnswerSearch } from '../src/controller/exam';
+import handleLogin from '../src/controller/login';
 import {
-  getAnswerSearch,
-} from '../src/controller/exam';
-import { getVideos, getNews } from '../src/controller/watch';
-import {
+  getTaskList,
   getTodayScore,
   getTotalScore,
   getUserInfo,
-  getTaskList,
 } from '../src/controller/user';
-import handleLogin from '../src/controller/login';
-import PUSH_CONFIG from '../src/config/push';
+import { getNews, getVideos } from '../src/controller/watch';
+import shared from '../src/shared';
 
 describe('api', () => {
   it.skip('news', async () => {
@@ -120,7 +118,7 @@ describe('api', () => {
       }
     `);
   });
-  it('taskList', async () => {
+  it.skip('taskList', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
     shared.setBrowser(broswer);
     await shared.openPage();
@@ -173,7 +171,9 @@ describe('api', () => {
     `);
   });
   it.skip('answer', async () => {
-    const res = await getAnswerSearch('新时期要注重选拔任用（）、（）、（）、（）、（）的干部，对政治不合格的干部实行“一票否决”，已经在领导岗位的坚决调整。');
+    const res = await getAnswerSearch(
+      '新时期要注重选拔任用（）、（）、（）、（）、（）的干部，对政治不合格的干部实行“一票否决”，已经在领导岗位的坚决调整。'
+    );
     expect(res).toMatchInlineSnapshot(`
       [
         "牢固树立“四个意识”",

@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, it } from 'vitest';
 import shared from '../src/shared';
 
 describe('log', () => {
