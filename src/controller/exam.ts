@@ -172,7 +172,7 @@ const initExam = async (type: number) => {
  */
 const findExamWeekly = async () => {
   // 总页数
-  const total = await initExam(1);
+  const total = await initExam(0);
   // 当前页数
   let current = STUDY_CONFIG.weeklyReverse ? total : 1;
   if (total && current) {
@@ -308,7 +308,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     shared.log.loading(
       `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
         questionType
-      )} | 题目: ${question.slice(0, 10)}`
+      )} | 题目: ${question}`
     );
 
     // 默认值
