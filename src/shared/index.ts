@@ -6,14 +6,15 @@ import {
   getTaskList,
   getTodayScore,
   getTotalScore,
+  getUserInfo,
   TaskList,
-  UserInfo,
+  UserInfo
 } from '../controller/user';
 import {
   installMouseHelper,
   installRemoveDialog,
   pushModal,
-  sleep,
+  sleep
 } from '../utils';
 import { ModalOptions } from '../utils/interface';
 
@@ -302,9 +303,9 @@ const shared: Shared = {
     this.nick = PUSH_CONFIG.nick;
   },
   async getUserInfo() {
-    shared.log.loading('正在获取用户信息..');
+    shared.log.loading('正在获取用户信息...');
     // 获取用户信息
-    this.userInfo = await this.getUserInfo();
+    this.userInfo = await getUserInfo();
     // 请求速率限制
     await sleep(STUDY_CONFIG.rateLimit);
     if (this.userInfo) {
