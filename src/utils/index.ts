@@ -627,7 +627,7 @@ export const getProgressHTML = (title: string, percent: number) => {
     "
   >
     <span>${title}</span>
-    <span>${getHighlightHTML(percent)}%</span>
+    <span>${getHighlightHTML(percent)} %</span>
   </div>
   <div
     style="
