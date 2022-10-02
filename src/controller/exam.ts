@@ -308,7 +308,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     shared.log.loading(
       `${chalk.blueBright(current)} / ${total} | 题型: ${chalk.blueBright(
         questionType
-      )} | 题目: ${question}`
+      )} | 题目: ${question.replaceAll('\n', '')}`
     );
 
     // 默认值
