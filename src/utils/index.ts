@@ -1,7 +1,7 @@
+import paser from 'cron-parser';
 import pup from 'puppeteer-core';
 import { pushPlus } from '../apis';
-import { Point, Bounds, PushOptions, ModalOptions } from './interface';
-
+import { Bounds, ModalOptions, Point, PushOptions } from './interface';
 /**
  * @description 延迟
  * @param time 延迟时间
@@ -658,4 +658,40 @@ export const getHighlightHTML = (text: string | number) => {
   // html
   const highlightHTML = `<span style="color: #1890ff">${text}</span>`;
   return highlightHTML;
+};
+/**
+ * @description 获取剩余任务
+ * @returns
+ */
+export const getRestTaskList = (
+  taskList: {
+    nick: string;
+    token: string;
+    cron: string;
+  }[]
+) => {
+  // 剩余任务
+  const rest = taskList
+    .map((sendInfo) => {
+      // 任务时间
+      const time = paser.parseExpression(sendInfo.cron);
+      // 下次任务时间
+      const nextTime = time.next().toDate();
+      // 当前时间
+      const date = new Date();
+      // 当前任务是否结束
+      const done = !time.hasNext();
+      // 下个任务是否在今天
+      const isToday = !done && nextTime.getDate() === date.getDate();
+      return {
+        ...sendInfo,
+        isToday,
+        done,
+        timeText: formatDateTime(nextTime),
+        time: nextTime.getTime(),
+      };
+    })
+    .filter((sendInfo) => sendInfo.isToday)
+    .sort((a, b) => a.time - b.time);
+  return rest;
 };
