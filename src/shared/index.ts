@@ -8,13 +8,13 @@ import {
   getTotalScore,
   getUserInfo,
   TaskList,
-  UserInfo
+  UserInfo,
 } from '../controller/user';
 import {
   installMouseHelper,
   installRemoveDialog,
   pushModal,
-  sleep
+  sleep,
 } from '../utils';
 import { ModalOptions } from '../utils/interface';
 
@@ -100,12 +100,11 @@ type Shared = {
     }
   ): Promise<boolean>;
   /**
-   * @description 重试跳转网页
+   * @description 返回页面网页
    * @param url
    * @param options
    */
-  retryPage(
-    url: string,
+  goBackPage(
     options?: pup.WaitForOptions & {
       referer?: string | undefined;
     }
@@ -220,35 +219,27 @@ const shared: Shared = {
       try {
         // 跳转
         await page.goto(url, options);
-        // 响应
         return true;
       } catch (e) {
-        // 重试跳转
-        const res = await this.retryPage(url, options);
-        if (res) {
+        try {
+          // 跳转
+          await page.goto(url, options);
           return true;
-        }
+        } catch (e) {}
       }
     }
     return false;
   },
-  async retryPage(url, options) {
-    // 捕获异常
-    try {
-      // 关闭页面
-      this.closePage();
-      // 打开页面
-      const res = await this.openPage();
-      if (res) {
-        // 当前页面
-        const page = this.getPage();
-        if (page) {
-          // 创建新页面，继续跳转
-          await page.goto(url, options);
-          return true;
-        }
-      }
-    } catch (e) {}
+  async goBackPage(options) {
+    // 页面
+    const page = this.getPage();
+    if (page) {
+      try {
+        // 返回页面
+        await page.goBack(options);
+        return true;
+      } catch (e) {}
+    }
     return false;
   },
   async pushModal(options) {
@@ -306,8 +297,6 @@ const shared: Shared = {
     shared.log.loading('正在获取用户信息...');
     // 获取用户信息
     this.userInfo = await getUserInfo();
-    // 请求速率限制
-    await sleep(STUDY_CONFIG.rateLimit);
     if (this.userInfo) {
       this.log.success('获取用户信息成功!');
       return this.userInfo;
@@ -318,8 +307,6 @@ const shared: Shared = {
     shared.log.loading('正在获取任务列表...');
     // 获取任务列表
     this.taskList = await getTaskList();
-    // 请求速率限制
-    await sleep(STUDY_CONFIG.rateLimit);
     if (this.taskList) {
       this.log.success('获取任务列表成功!');
       return this.taskList;
@@ -330,8 +317,6 @@ const shared: Shared = {
     shared.log.loading('正在获取总分...');
     // 获取总分
     this.totalScore = await getTotalScore();
-    // 请求速率限制
-    await sleep(STUDY_CONFIG.rateLimit);
     if (this.totalScore !== undefined) {
       this.log.success('获取总分成功!');
       return this.totalScore;
@@ -342,8 +327,6 @@ const shared: Shared = {
     shared.log.loading('正在获取当天分数...');
     // 获取当天分数
     this.todayScore = await getTodayScore();
-    // 请求速率限制
-    await sleep(STUDY_CONFIG.rateLimit);
     if (this.todayScore !== undefined) {
       this.log.success('获取当天分数成功!');
       return this.todayScore;

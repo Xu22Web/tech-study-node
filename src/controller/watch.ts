@@ -26,11 +26,11 @@ const handleReadNews = async () => {
   //遍历文章
   for (const i in news) {
     // 跳转页面
-    const res = await shared.gotoPage(news[i].url, {
+    const gotoRes = await shared.gotoPage(news[i].url, {
       waitUntil: 'domcontentloaded',
     });
     //  跳过跳转失败
-    if (!res) {
+    if (!gotoRes) {
       shared.log.fail(
         `${chalk.blueBright(Number(i) + 1)} / ${
           news.length

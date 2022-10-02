@@ -16,13 +16,13 @@ const qrcodePath = path.join(STUDY_CONFIG.qrcodePath, 'login.png');
  */
 const handleLogin = async () => {
   // 获取页面
-  const res = await shared.gotoPage(URL_CONFIG.login, {
+  const gotoRes = await shared.gotoPage(URL_CONFIG.login, {
     waitUntil: 'domcontentloaded',
   });
   // 页面
   const page = shared.getPage();
   // 跳转失败
-  if (!res || !page) {
+  if (!gotoRes || !page) {
     return false;
   }
   // 重试次数

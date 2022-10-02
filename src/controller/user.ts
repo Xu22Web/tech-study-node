@@ -141,57 +141,56 @@ export const getTaskList = async () => {
   if (!page) {
     return;
   }
-  if (page) {
-    try {
-      // 获取 cookies
-      const cookies = await getCookieIncludesDomain(page, '.xuexi.cn');
-      // cookie
-      const cookie = stringfyCookie(cookies);
-      // 任务进度
-      const data = await taskProgress(cookie);
-      // 请求成功
-      if (data) {
-        // 进度和当天总分
-        const { taskProgress: progess }: { taskProgress: any[] } = data;
-        // 进度存在
-        if (progess && progess.length) {
-          // 进度
-          const taskProgress = progess.map(formatTask);
-          // 任务列表
-          const taskList: TaskList = [];
-          // 文章选读
-          taskList[0] = {
-            title: '文章选读',
-            ...taskProgress[0],
-          };
-          // 视听学习
-          taskList[1] = {
-            title: '视听学习',
-            ...formatTask({
-              currentScore:
-                taskProgress[1].currentScore + taskProgress[3].currentScore,
-              dayMaxScore:
-                taskProgress[1].dayMaxScore + taskProgress[3].dayMaxScore,
-            }),
-          };
-          // 每日答题
-          taskList[2] = {
-            title: '每日答题',
-            ...taskProgress[6],
-          };
-          // 每周答题
-          taskList[3] = {
-            title: '每周答题',
-            ...taskProgress[2],
-          };
-          // 专项练习
-          taskList[4] = {
-            title: '专项练习',
-            ...taskProgress[5],
-          };
-          return taskList;
-        }
+
+  try {
+    // 获取 cookies
+    const cookies = await getCookieIncludesDomain(page, '.xuexi.cn');
+    // cookie
+    const cookie = stringfyCookie(cookies);
+    // 任务进度
+    const data = await taskProgress(cookie);
+    // 请求成功
+    if (data) {
+      // 进度和当天总分
+      const { taskProgress: progess }: { taskProgress: any[] } = data;
+      // 进度存在
+      if (progess && progess.length) {
+        // 进度
+        const taskProgress = progess.map(formatTask);
+        // 任务列表
+        const taskList: TaskList = [];
+        // 文章选读
+        taskList[0] = {
+          title: '文章选读',
+          ...taskProgress[0],
+        };
+        // 视听学习
+        taskList[1] = {
+          title: '视听学习',
+          ...formatTask({
+            currentScore:
+              taskProgress[1].currentScore + taskProgress[3].currentScore,
+            dayMaxScore:
+              taskProgress[1].dayMaxScore + taskProgress[3].dayMaxScore,
+          }),
+        };
+        // 每日答题
+        taskList[2] = {
+          title: '每日答题',
+          ...taskProgress[6],
+        };
+        // 每周答题
+        taskList[3] = {
+          title: '每周答题',
+          ...taskProgress[2],
+        };
+        // 专项练习
+        taskList[4] = {
+          title: '专项练习',
+          ...taskProgress[5],
+        };
+        return taskList;
       }
-    } catch (e) {}
-  }
+    }
+  } catch (e) {}
 };
