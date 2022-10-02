@@ -18,7 +18,7 @@ const handleBrowser = async (browser: pup.Browser) => {
   shared.setBrowser(browser);
   // 打开页面
   await shared.openPage();
-  shared.log.info('用户登录');
+  shared.log.info('用户登录!');
   // 登录状态
   const status = await handleLogin();
   // 登录失败
@@ -49,7 +49,7 @@ const handleBrowser = async (browser: pup.Browser) => {
   ) {
     // 昵称
     shared.setNick(shared.userInfo.nick);
-    shared.log.info('学习开始!\n');
+    shared.log.info('学习开始!');
     // 用户信息数据
     await renderUserData(shared.userInfo);
     // 用户积分数据
@@ -82,7 +82,7 @@ const handleBrowser = async (browser: pup.Browser) => {
       shared.todayScore !== undefined &&
       shared.taskList
     ) {
-      shared.log.info('学习完成!\n');
+      shared.log.info('学习完成!');
       // 用户信息数据
       await renderUserData(shared.userInfo);
       // 用户积分数据
