@@ -44,7 +44,7 @@ const handleReadNews = async () => {
       } | 标题: ${chalk.blueBright(news[i].title)}`
     );
     // 看新闻时间
-    const duration = ~~(Math.random() * 20 + 80);
+    const duration = ~~(Math.random() * 40 + 80);
     // 倒计时
     await countDown(duration, (duration) => {
       // 倒计时存在
@@ -106,7 +106,7 @@ const handleWatchVideo = async () => {
       continue;
     }
     // 看视频时间
-    const duration = ~~(Math.random() * 60 + 100);
+    const duration = ~~(Math.random() * 40 + 120);
     // 倒计时
     await countDown(duration, (current) => {
       // 倒计时存在
@@ -224,25 +224,13 @@ const waitVideos = async () => {
     return new Promise<boolean>((resolve) => {
       // 定时器
       const timer = setInterval(() => {
-        // iframe
-        const iframe = document.querySelector<HTMLIFrameElement>('iframe');
-        // 视频
-        let video: HTMLVideoElement | null;
         // 获取播放器
-        if (iframe && iframe.contentWindow) {
-          // 如果有iframe,说明外面的video标签是假的
-          video =
-            iframe.contentWindow.document.querySelector<HTMLVideoElement>(
-              'video'
-            );
-        } else {
-          video = document.querySelector<HTMLVideoElement>('video');
-        }
+        const video = document.querySelector<HTMLVideoElement>('video');
         // 视频可播放
         if (video) {
           // 清除定时器
           clearInterval(timer);
-          // 是否可播放
+          // 是否可以播放
           video.addEventListener('canplay', () => {
             clearTimeout(timeout);
             resolve(true);
@@ -253,6 +241,13 @@ const waitVideos = async () => {
       const timeout = setTimeout(() => {
         // 清除定时器
         clearInterval(timer);
+        // 获取播放器
+        const video = document.querySelector<HTMLVideoElement>('video');
+        // 视频可播放
+        if (video) {
+          resolve(true);
+          return;
+        }
         resolve(false);
       }, time);
     });
@@ -261,31 +256,16 @@ const waitVideos = async () => {
   if (!canPlay) {
     return false;
   }
-
   // 播放视频
   const playing = await page.evaluate(async (time) => {
     return new Promise<boolean>((resolve) => {
       // 定时器
       const timer = setInterval(async () => {
-        const iframe = document.querySelector<HTMLIFrameElement>('iframe');
         // 视频
-        let video: HTMLVideoElement | null;
+        const video = document.querySelector<HTMLVideoElement>('video');
         // 播放按钮
-        let pauseButton: HTMLButtonElement | null;
-        if (iframe) {
-          // 如果有iframe,说明外面的video标签是假的
-          video = <HTMLVideoElement>(
-            iframe.contentWindow?.document.querySelector('video')
-          );
-          pauseButton = <HTMLButtonElement>(
-            iframe.contentWindow?.document.querySelector('.prism-play-btn')
-          );
-        } else {
-          // 否则这个video标签是真的
-          video = document.querySelector<HTMLVideoElement>('video');
-          pauseButton =
-            document.querySelector<HTMLButtonElement>('.prism-play-btn');
-        }
+        const pauseButton =
+          document.querySelector<HTMLButtonElement>('.prism-play-btn');
         // 获取视频、播放按钮
         if (video && pauseButton) {
           // 静音
@@ -295,6 +275,7 @@ const waitVideos = async () => {
             // js播放
             await video.play();
           }
+          // 播放
           if (video.paused) {
             // 点击播放
             pauseButton.click();
