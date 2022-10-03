@@ -6,7 +6,7 @@ const STUDY_CONFIG = {
   /**
    * @description 通用超时
    */
-  timeout: 30000,
+  timeout: 10000,
   /**
    * @description 最大登录重试次数
    */
