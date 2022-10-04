@@ -695,3 +695,69 @@ export const getRestTaskList = (
     .sort((a, b) => a.time - b.time);
   return rest;
 };
+/**
+ * @description 创建表格
+ * @param theadData
+ * @param tbodyData
+ * @returns
+ */
+export const getTableHTML = (theadData: string[], tbodyData: string[][]) => {
+  // 表头
+  const thead = theadData
+    .map(
+      (head) => `<th
+  style="
+    padding: 12px;
+    border-bottom: solid #efeff5 1px;
+    border-right: solid #efeff5 1px;
+  "
+>
+  ${head}
+</th>`
+    )
+    .join('');
+  // 表身
+  const tbody = tbodyData
+    .map(
+      (body) => `<tr>
+${body
+  .map(
+    (b) => `<td
+style="
+  padding: 12px;
+  border-bottom: solid #efeff5 1px;
+  border-right: solid #efeff5 1px;
+"
+>
+${b}
+</td>`
+  )
+  .join('')}
+</tr>`
+    )
+    .join('');
+  // 表
+  const table = `<table
+  class="n-table n-table--bottom-bordered"
+  style="
+    background: #fff;
+    color: #333639;
+    font-size: 14px;
+    border-radius: 3px;
+    border-collapse: separate;
+    border-spacing: 0;
+    outline: none;
+    box-sizing: border-box;
+  "
+>
+  <thead>
+    <tr style="background: #fafafc; font-weight: 500; color: #1f2225">
+      ${thead}
+    </tr>
+  </thead>
+  <tbody>
+    ${tbody}
+  </tbody>
+</table>`;
+  return table;
+};

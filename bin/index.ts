@@ -8,7 +8,7 @@ import PUSH_CONFIG from '../src/config/push';
 import STUDY_CONFIG from '../src/config/study';
 import URL_CONFIG from '../src/config/url';
 import shared from '../src/shared';
-import { getHighlightHTML, getRestTaskList } from '../src/utils';
+import { getHighlightHTML, getRestTaskList, getTableHTML } from '../src/utils';
 
 type Config = {
   apiConfig: Partial<typeof API_CONFIG>;
@@ -93,9 +93,11 @@ export const handleTask = async (token: string, nick: string) => {
       content: [
         `用户: ${getHighlightHTML(nick)}, 定时任务完成!`,
         `今天剩余任务数: ${getHighlightHTML(rest.length)} 个`,
-        '下次任务信息: ',
-        `用户: ${getHighlightHTML(rest[0].nick)}`,
-        `时间: ${getHighlightHTML(rest[0].timeText)}`,
+        '剩余任务信息: ',
+        getTableHTML(
+          ['用户', '时间'],
+          rest.map((item) => [`${item.nick}`, `${item.timeText}`])
+        ),
       ],
       type: 'info',
     });
@@ -129,14 +131,10 @@ export const startTask = () => {
       '已运行定时任务!',
       `今天剩余任务数: ${getHighlightHTML(rest.length)} 个`,
       '剩余任务信息: ',
-      ...rest
-        .map((item) => {
-          return [
-            `用户: ${getHighlightHTML(item.nick)}`,
-            `时间: ${getHighlightHTML(item.timeText)}`,
-          ];
-        })
-        .flat(),
+      getTableHTML(
+        ['用户', '时间'],
+        rest.map((item) => [`${item.nick}`, `${item.timeText}`])
+      ),
     ],
     type: 'info',
   });
@@ -158,4 +156,4 @@ export const startTask = () => {
 };
 
 // 开始任务
-startTask()
+startTask();
