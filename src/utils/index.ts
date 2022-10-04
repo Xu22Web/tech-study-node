@@ -748,6 +748,7 @@ ${b}
     border-spacing: 0;
     outline: none;
     box-sizing: border-box;
+    width: 100%;
   "
 >
   <thead>
