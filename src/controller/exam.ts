@@ -258,12 +258,8 @@ const findExamPaper = async () => {
  * @returns
  */
 const handleQuestion = async (page: pup.Page, type: number) => {
-  // 进度
-  shared.log.info('开始答题!');
-  // 总答题结果
-  let result = true;
-  // 等待题目
-  await sleep(3000);
+  // 题目加载
+  shared.log.loading('正在加载题目...');
   // 等待题目加载完成
   const res = await page.evaluate((time) => {
     return new Promise<boolean>((resolve) => {
@@ -271,7 +267,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       const timer = setInterval(() => {
         // 题目
         const question = document.querySelector('.question');
-        // 视频可播放
+        // 题目存在
         if (question) {
           // 清除定时器
           clearInterval(timer);
@@ -290,8 +286,16 @@ const handleQuestion = async (page: pup.Page, type: number) => {
   }, STUDY_CONFIG.timeout);
   // 题目加载失败
   if (!res) {
+    // 题目加载
+    shared.log.fail('题目加载失败!');
     return false;
   }
+  // 题目加载成功
+  shared.log.success('题目加载成功!');
+  // 进度
+  shared.log.info('开始答题!');
+  // 总答题结果
+  let result = true;
   // 获取题号
   let { total, current } = await getQuestionNum(page);
   // 开始答题
@@ -931,7 +935,7 @@ const hasSlideVerify = async (page: pup.Page) => {
               clearTimeout(timeout);
               resolve(true);
             }
-          }, 500);
+          }, 100);
           // 超时
           const timeout = setTimeout(() => {
             // 清除定时器
