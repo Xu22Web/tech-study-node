@@ -47,6 +47,7 @@ const handleExam = async (type: number): Promise<boolean> => {
       }
       return true;
     }
+    shared.log.info('每日答题 页面跳转失败!');
     return false;
   }
   // 每周答题
@@ -90,6 +91,8 @@ const handleExam = async (type: number): Promise<boolean> => {
       }
       return result;
     }
+    shared.log.info('每周答题 页面跳转失败!');
+    return false;
   }
   // 专项练习
   if (type === 2) {
@@ -132,6 +135,8 @@ const handleExam = async (type: number): Promise<boolean> => {
       }
       return result;
     }
+    shared.log.info('专项练习 页面跳转失败!');
+    return false;
   }
   return false;
 };
@@ -253,6 +258,8 @@ const findExamPaper = async () => {
  * @returns
  */
 const handleQuestion = async (page: pup.Page, type: number) => {
+  // 进度
+  shared.log.info('开始答题!');
   // 总答题结果
   let result = true;
   // 等待题目
@@ -283,13 +290,10 @@ const handleQuestion = async (page: pup.Page, type: number) => {
   }, STUDY_CONFIG.timeout);
   // 题目加载失败
   if (!res) {
-    result = false;
-    return result;
+    return false;
   }
   // 获取题号
   let { total, current } = await getQuestionNum(page);
-  // 进度
-  shared.log.info('开始答题!');
   // 开始答题
   for (let i = 0; i < total; i++) {
     // 获取按钮
