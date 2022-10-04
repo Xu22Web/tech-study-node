@@ -124,7 +124,7 @@ const getLoginStatus = (page: pup.Page) => {
       }
       // 刷新二维码
       await RefreshQRCode(page);
-    }, 500);
+    }, 100);
     // 超时延迟
     const timeout = setTimeout(() => {
       // 清除定时
