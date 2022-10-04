@@ -899,7 +899,12 @@ const saveAnswerFromWrong = async (page: pup.Page) => {
 const hasSlideVerify = async (page: pup.Page) => {
   // 是否滑块
   const exists = await page.$eval('#nc_mask', (node) => {
+    // 遮罩
     const mask = <HTMLElement>node;
+    // 提升层级
+    if (mask) {
+      mask.style.zIndex = '999';
+    }
     return mask && getComputedStyle(mask).display !== 'none';
   });
   // 存在滑块
