@@ -40,7 +40,7 @@ const handleExam = async (type: number): Promise<boolean> => {
       // 任务列表
       await shared.getTaskList();
       // 继续做
-      if (shared.taskList && shared.taskList[2].status) {
+      if (shared.taskList && !shared.taskList[2].status) {
         shared.log.info('未完成任务, 继续每日答题!');
         // 重新答题
         return await handleExam(0);
