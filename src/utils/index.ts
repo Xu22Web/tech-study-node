@@ -743,12 +743,13 @@ ${b}
     background: #fff;
     color: #333639;
     font-size: 14px;
-    border-radius: 3px;
     border-collapse: separate;
     border-spacing: 0;
     outline: none;
     box-sizing: border-box;
     width: 100%;
+    border-top: solid #efeff5 1px;
+    border-left: solid #efeff5 1px;
   "
 >
   <thead>
