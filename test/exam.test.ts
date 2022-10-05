@@ -15,24 +15,26 @@ describe('exam', async () => {
     // 登录
     await handleLogin();
     const res = await handleExam(0);
-    expect(res).toMatchInlineSnapshot(true);
+    expect(res).toMatchInlineSnapshot('true');
   });
   // 每周答题
   it.skip('weekly', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
-    await broswer.newPage();
+    shared.setBrowser(broswer);
+    await shared.openPage();
     // 登录
     await handleLogin();
     const res = await handleExam(1);
-    expect(res).toMatchInlineSnapshot(true);
+    expect(res).toMatchInlineSnapshot('true');
   });
   // 专项练习
-  it.skip('paper', async () => {
+  it('paper', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
-    await broswer.newPage();
+    shared.setBrowser(broswer);
+    await shared.openPage();
     // 登录
     await handleLogin();
     const res = await handleExam(2);
-    expect(res).toMatchInlineSnapshot(true);
+    expect(res).toMatchInlineSnapshot('true');
   });
 });
