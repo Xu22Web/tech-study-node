@@ -157,7 +157,6 @@ const initExam = async (type: number) => {
       await sleep(STUDY_CONFIG.rateLimit);
       return totalPageCount;
     }
-    return;
   }
   // 专项练习
   if (type === 1) {
@@ -187,19 +186,23 @@ const findExamWeekly = async () => {
       // 当前页数数据
       const res = await getExamWeekly(current);
       if (res) {
-        const { list } = res;
-        for (const i in list) {
+        const examWeeks = res.list;
+        // 逆序每周列表
+        if (STUDY_CONFIG.weeklyReverse) {
+          examWeeks.reverse();
+        }
+        for (const i in examWeeks) {
           // 获取每周列表
-          const examWeeks = list[i].practices;
+          const examWeek = examWeeks[i].practices;
           // 逆序每周列表
           if (STUDY_CONFIG.weeklyReverse) {
-            examWeeks.reverse();
+            examWeek.reverse();
           }
           // 查询每周的测试列表
-          for (const j in examWeeks) {
+          for (const j in examWeek) {
             // 遍历查询有没有没做过的 1为"开始答题" , 2为"重新答题"
-            if (examWeeks[j].status !== 2) {
-              return examWeeks[j];
+            if (examWeek[j].status === 1) {
+              return examWeek[j];
             }
           }
         }
@@ -210,12 +213,11 @@ const findExamWeekly = async () => {
         break;
       }
     }
-    return;
   }
 };
 
 /**
- * @description 获取每周答题
+ * @description 获取专项练习
  * @returns
  */
 const findExamPaper = async () => {
@@ -237,7 +239,7 @@ const findExamPaper = async () => {
         // 遍历专项练习列表
         for (const i in examPapers) {
           // 1为"开始答题" , 2为"重新答题"
-          if (examPapers[i].status !== 2) {
+          if (examPapers[i].status === 1) {
             return examPapers[i];
           }
         }
