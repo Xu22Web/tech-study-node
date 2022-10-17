@@ -125,20 +125,30 @@ export const handleSchedule = async (schedule: Schedule) => {
 export const startSchedule = () => {
   // 剩余任务
   const restSchedule = getRestScheduleList(SCHEDULE_CONFIG);
-  // 推送服务提示
-  shared.pushModalTips({
-    title: '服务提示',
-    content: [
-      '已运行定时任务!',
-      `今天剩余任务数: ${getHighlightHTML(restSchedule.length)} 个`,
-      '剩余任务信息: ',
-      getTableHTML(
-        ['用户', '时间'],
-        restSchedule.map((item) => [`${item.nick}`, `${item.timeText}`])
-      ),
-    ],
-    type: 'info',
-  });
+  // 存在剩余任务
+  if (restSchedule.length) {
+    // 推送服务提示
+    shared.pushModalTips({
+      title: '服务提示',
+      content: [
+        '已运行定时任务!',
+        `今天剩余任务数: ${getHighlightHTML(restSchedule.length)} 个`,
+        '剩余任务信息: ',
+        getTableHTML(
+          ['用户', '时间'],
+          restSchedule.map((item) => [`${item.nick}`, `${item.timeText}`])
+        ),
+      ],
+      type: 'info',
+    });
+  } else {
+    // 推送服务提示
+    shared.pushModalTips({
+      title: '服务提示',
+      content: ['已运行定时任务!', '今天定时任务均已完成!'],
+      type: 'info',
+    });
+  }
   // 执行清除日志任务
   schedule.scheduleJob('0 0 0 * * ?', () => {
     // 清除日志
