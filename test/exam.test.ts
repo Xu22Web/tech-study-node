@@ -28,7 +28,7 @@ describe('exam', async () => {
     expect(res).toMatchInlineSnapshot('true');
   });
   // 专项练习
-  it('paper', async () => {
+  it.skip('paper', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
     shared.setBrowser(broswer);
     await shared.openPage();

@@ -245,25 +245,32 @@ export const pushPlus = async (
   title: string,
   content: string,
   template: string,
-  to: string
+  toToken?: string
 ) => {
   try {
+    // 参数体
+    const body: {
+      token: string;
+      title: string;
+      content: string;
+      template: string;
+      to?: string;
+    } = {
+      token,
+      title,
+      content,
+      template,
+    };
+    // 好友令牌
+    if (toToken) {
+      body.to = toToken;
+    }
     // 推送
-    const res = await axios.post(
-      API_CONFIG.push,
-      {
-        token,
-        title,
-        content,
-        template,
-        to,
+    const res = await axios.post(API_CONFIG.push, body, {
+      headers: {
+        'Content-Type': 'application/json',
       },
-      {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    });
     // 请求成功
     if (res.status === 200) {
       const { data } = res;

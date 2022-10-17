@@ -1,6 +1,7 @@
 import paser from 'cron-parser';
 import pup from 'puppeteer-core';
 import { pushPlus } from '../apis';
+import { Schedule } from '../config/schedule';
 import { Bounds, ModalOptions, Point, PushOptions } from './interface';
 /**
  * @description 延迟
@@ -22,7 +23,7 @@ export const sleep = (time: number = 1000) => {
  */
 export const pushMessage = async (options: PushOptions) => {
   // 选项
-  const { title, content, template = 'html', toToken, fromToken } = options;
+  const { title, content, template, fromToken, toToken } = options;
   // 推送
   const res = await pushPlus(fromToken, title, content, template, toToken);
   return res;
@@ -189,7 +190,7 @@ const createModal = (options: ModalOptions) => {
 export const pushModal = async (
   options: ModalOptions,
   fromToken: string,
-  toToken: string
+  toToken?: string
 ) => {
   // html
   const html = createModal(options);
@@ -199,6 +200,7 @@ export const pushModal = async (
     content: html,
     fromToken,
     toToken,
+    template: 'html',
   });
   return res;
 };
@@ -493,12 +495,12 @@ export const createRandomPath = (start: Point, end: Point, steps: number) => {
   // 开始节点
   path.push(start);
   // 插入点
-  for (let i = 1; i < steps + 1; i++) {
+  for (let i = 0; i < steps; i++) {
     // 横坐标
-    const x = path[i - 1].x + Math.random() * 5 + minDeltaX;
+    const x = path[i].x + Math.random() * 5 + minDeltaX;
     // 纵坐标
     const y =
-      path[i - 1].y +
+      path[i].y +
       Math.random() * 5 * Math.pow(-1, ~~(Math.random() * 2 + 1)) +
       maxDeltaY;
     path.push({
@@ -663,18 +665,12 @@ export const getHighlightHTML = (text: string | number) => {
  * @description 获取剩余任务
  * @returns
  */
-export const getRestTaskList = (
-  taskList: {
-    nick: string;
-    token: string;
-    cron: string;
-  }[]
-) => {
+export const getRestScheduleList = (scheduleList: Schedule[]) => {
   // 剩余任务
-  const rest = taskList
-    .map((sendInfo) => {
+  const rest = scheduleList
+    .map((schedule) => {
       // 任务时间
-      const time = paser.parseExpression(sendInfo.cron);
+      const time = paser.parseExpression(schedule.cron);
       // 下次任务时间
       const nextTime = time.next().toDate();
       // 当前时间
@@ -684,7 +680,7 @@ export const getRestTaskList = (
       // 下个任务是否在今天
       const isToday = !done && nextTime.getDate() === date.getDate();
       return {
-        ...sendInfo,
+        ...schedule,
         isToday,
         done,
         timeText: formatDateTime(nextTime),

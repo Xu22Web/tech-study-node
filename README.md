@@ -22,7 +22,7 @@
 
 - 基于 `PushPlus` 推送功能，通过微信远程接收学习情况和服务运行情况
 
-- 基于 `node-schedule` 设定定时任务，支持对好友推送学习强国登录
+- 基于 `node-schedule` 设置定时任务，每天自动运行定时任务
 
 ### 安装与运行 Install and Run
 
@@ -228,27 +228,95 @@ pnpm install
 
       - `executablePath` 可执行文件路径，由于项目采用 `Google Chrome` + `puppeteer-core` 的形式，需要手动下载浏览器并配置此项
 
-   2. 查看更改 `Study 配置` ，需要注意的配置项
+   2. 查看更改 `Schdule 配置`，单或多个定时任务配置
 
-      - `qrcodeLocalEnabled` 登录二维码本地保存，便于在无头模式登录，开启推送后可以关闭
+      ```js
+      [
+        {
+          // 若 `Push 配置`中 `enabled` 为 true，任务配置的用户 `token` 为必填项
+          /**
+           * @description 用户昵称
+           */
+          nick: '用户昵称',
+          /**
+           * @description 自己或者好友 token  (-)
+           */
+          token: '用户 token',
+          /**
+           * @description cron 表达式
+           */
+          cron: '0 0 12 * * ?',
+          /**
+           * @description 学习项目配置
+           * @example  [文章选读, 视听学习, 每日答题, 每周答题, 专项练习]
+           */
+          taskConfig: [true, true, true, true, true],
+          /**
+           * @description 每周答题 答题失败（包含答题错误或异常或无答案）退出不提交
+           * @example true 退出答题不提交 false 继续答题
+           */
+          weeklyExitAfterWrong: false,
+          /**
+           * @description 专项练习 答题失败（由于答完结算，仅包含答题异常或无答案）退出不提交
+           * @example true 退出答题不提交 false 继续答题
+           */
+          paperExitAfterWrong: false,
+        },
+      ];
+      ```
 
-      - `weeklyReverse` 每周答题的顺序
+      ```
+        # 关于`node-schedule`定时任务的`cron`表达式
 
-      - `paperReverse` 专项练习的顺序
+        *    *    *    *    *    *
+        ┬    ┬    ┬    ┬    ┬    ┬
+        │    │    │    │    │    │
+        │    │    │    │    │    └ day of week (0 - 7) (0 or 7 is Sun)
+        │    │    │    │    └───── month (1 - 12)
+        │    │    │    └────────── day of month (1 - 31)
+        │    │    └─────────────── hour (0 - 23)
+        │    └──────────────────── minute (0 - 59)
+        └───────────────────────── second (0 - 59, OPTIONAL)
+      ```
 
-      - `weeklyExitAfterWrong` 每周答题，答题失败退出不提交
+   3. 查看更改 `Study 配置`，需要注意的配置项
 
-      - `paperExitAfterWrong` 专项练习，答题失败退出不提交
+      - `qrcodeLocalEnabled` 登录二维码本地保存，便于在无头模式登录（开启推送后，自行关闭）
 
-      - `settings` 配置需要进行的学习项目
+      - `weeklyReverse` 每周答题的开启逆序
 
-   3. 查看更改 `Push 配置` ，是否启用 `PushPlus` 推送
+      - `paperReverse` 专项练习的开启逆序
+
+   4. 查看更改 `Push 配置` ，启用 `PushPlus` 推送步骤（不需要推送请跳过）
 
       - 在 [PushPlus 官网](https://www.pushplus.plus/ 'PushPlus 官网') 上，注册登录账号，添加好友自己为好友，也可添加其他好友
 
-      - 编辑 `PushPlus 配置` ，包含 `enabled` 、自己的 `token` 、好友消息的 `token` 以及定时任务的 `cron` 表达式等
-
       - 默认采用 `微信公众号` 推送，官方也支持第三方 `webhook` 服务（企业微信机器人、钉钉机器人、飞书机器人等）、企业微信应用、邮件等。
+
+      - 编辑 `PushPlus 配置`
+
+        ```js
+          {
+            /**
+             * @description 启用推送
+             * @example true 启用推送 false 禁用推送
+             */
+            enabled: true,
+            /**
+             * @description 发送服务消息昵称
+             */
+            nick: '管理员',
+            /**
+             * @description 发送服务消息来源
+             */
+            from: '卑微的服务器',
+            /**
+             * @description 管理员的token
+             */
+            token: '自己的 token',
+          }
+
+        ```
 
 5. 运行
 
@@ -256,17 +324,31 @@ pnpm install
 pnpm start
 ```
 
+6. 定时任务开启时，`学习强国 APP` 扫码登录
+
+   - 未开启 `PushPlus` 推送
+
+     > 注意：Puppeteer 配置（ src/config/pup.ts）中的 headless 字段（true 非图形界面，false 图形界面）
+
+     - 对于图形界面，可直接扫码登陆
+
+     - 对于非图形界面，扫描 src/qrcode 目录下的二维码
+
+   - 开启 `PushPlus` 推送，保存微信公众发送消息里的二维码，扫码登录
+
 ### 配置 Configuration
 
-- Puppeteer 配置 `src/config/pup.ts` （[官方文档`puppeteer.launch`](http://www.puppeteerjs.com/#?product=Puppeteer&version=v16.2.0&show=api-puppeteerlaunchoptions 'Puppeteer 使用和配置')）
+- Puppeteer 配置 `src/config/pup.ts` （[官方文档配置](http://www.puppeteerjs.com/#?product=Puppeteer&version=v16.2.0&show=api-puppeteerlaunchoptions 'Puppeteer 使用和配置')）
 
-- Study 配置 `src/config/study.ts`
+- Study 配置 `src/config/study.ts` （学习配置）
 
-- PushPlus 配置 `src/config/push.ts`
+- PushPlus 配置 `src/config/push.ts` （推送配置）
 
-- API 配置 `src/config/api.ts`
+- API 配置 `src/config/api.ts` （接口配置）
 
-- URL 配置 `src/config/url.ts`
+- URL 配置 `src/config/url.ts` （链接配置）
+
+- Schedule 配置 `src/config/schedule.ts` （定时任务配置）
 
 ### 附加 Addition
 
@@ -274,11 +356,11 @@ pnpm start
 
   - `login` 用户登录
 
-  - `watch` 文章选读, 视听学习
+  - `watch` 文章选读，视听学习
 
-  - `exam` 每日答题, 每周答题, 专项练习
+  - `exam` 每日答题，每周答题，专项练习
 
-  - `error` 错误测试 `gotoPage` 跳转超时等
+  - `error` 错误测试
 
   - `api` 测试 API 可用性
 

@@ -1,7 +1,7 @@
 import pup from 'puppeteer-core';
 import { describe, expect, it } from 'vitest';
 import PUP_CONFIG from '../src/config/pup';
-import PUSH_CONFIG from '../src/config/push';
+import { SCHEDULE_CONFIG } from '../src/config/schedule';
 import { getAnswerSearch } from '../src/controller/exam';
 import handleLogin from '../src/controller/login';
 import {
@@ -184,13 +184,12 @@ describe('api', () => {
       ]
     `);
   });
-  it.skip('sharedpush', async () => {
-    shared.setToken(PUSH_CONFIG.list[0].token);
+  it('sharedpush', async () => {
+    shared.setSchedule(SCHEDULE_CONFIG[0]);
     const res = await shared.pushModal({
       title: '普通提示',
       content: ['发生错误!', '测试'],
       type: 'fail',
-      to: '用户',
     });
     expect(res).toMatchInlineSnapshot('undefined');
   });

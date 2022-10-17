@@ -1,5 +1,6 @@
 import pup from 'puppeteer-core';
 import PUSH_CONFIG from '../config/push';
+import { Schedule } from '../config/schedule';
 import STUDY_CONFIG from '../config/study';
 import { log, Log } from '../controller/logs';
 import {
@@ -10,12 +11,7 @@ import {
   TaskList,
   UserInfo,
 } from '../controller/user';
-import {
-  installMouseHelper,
-  installRemoveDialog,
-  pushModal,
-  sleep,
-} from '../utils';
+import { installMouseHelper, installRemoveDialog, pushModal } from '../utils';
 import { ModalOptions } from '../utils/interface';
 
 /**
@@ -31,17 +27,9 @@ type Shared = {
    */
   broswer?: pup.Browser;
   /**
-   * @description token
+   * @description 定时任务
    */
-  token: string;
-  /**
-   * @description 昵称
-   */
-  nick: string;
-  /**
-   * @description 来自
-   */
-  from: string;
+  schedule?: Schedule;
   /**
    * @description 进度
    */
@@ -71,6 +59,10 @@ type Shared = {
    * @param newPage
    */
   setBrowser(newBrowser: pup.Browser): void;
+  /**
+   * @description 关闭浏览器
+   */
+  closeBrowser(): Promise<void>;
   /**
    * @description 获取页面
    */
@@ -112,21 +104,16 @@ type Shared = {
   /**
    * @description 推送
    */
-  pushModal(options: ModalOptions): Promise<void>;
+  pushModal(options: Omit<ModalOptions, 'from'>): Promise<void>;
   /**
    * @description 服务推送
    */
   pushModalTips(options: Omit<ModalOptions, 'to' | 'from'>): Promise<void>;
   /**
-   * @description 设置token
-   * @param token
+   * @description 设置定时任务
+   * @param schedule
    */
-  setToken(token: string): void;
-  /**
-   * @description 设置昵称
-   * @param nick
-   */
-  setNick(nick: string): void;
+  setSchedule(schedule: Schedule): void;
   /**
    * @description 获取用户信息
    */
@@ -149,10 +136,6 @@ type Shared = {
  * @description 共享数据
  */
 const shared: Shared = {
-  // 默认值
-  token: PUSH_CONFIG.toToken,
-  nick: PUSH_CONFIG.nick,
-  from: PUSH_CONFIG.from,
   log: log(),
   getBrowser() {
     if (this.broswer && this.broswer.isConnected()) {
@@ -166,6 +149,13 @@ const shared: Shared = {
       return;
     }
     this.broswer = undefined;
+  },
+  async closeBrowser() {
+    // 获取浏览器
+    const browser = this.getBrowser();
+    if (browser) {
+      await browser.close();
+    }
   },
   getPage() {
     // 存在且未被关闭
@@ -247,20 +237,19 @@ const shared: Shared = {
     const {
       title,
       subTitle = '',
-      to = this.nick,
+      to = this.schedule?.nick,
       content,
       type,
-      from = this.from,
     } = options;
     // 推送配置
-    const { token, enabled } = PUSH_CONFIG;
+    const { token, from, enabled } = PUSH_CONFIG;
     // 启用推送
     if (enabled) {
       // 推送
       await pushModal(
         { title, subTitle, to, content, type, from },
         token,
-        this.token
+        this.schedule?.token
       );
     }
   },
@@ -268,30 +257,21 @@ const shared: Shared = {
     // 配置
     const { title, subTitle = '', content, type } = options;
     // 服务推送配置
-    const { nick, from, toToken, token, enabled } = PUSH_CONFIG;
+    const { nick, from, token, enabled } = PUSH_CONFIG;
     // 启用推送
     if (enabled) {
       // 推送
       await pushModal(
         { title, subTitle, to: nick, content, type, from },
-        token,
-        toToken
+        token
       );
     }
   },
-  setToken(token) {
-    if (token) {
-      this.token = token;
+  setSchedule(schedule) {
+    if (schedule) {
+      this.schedule = schedule;
       return;
     }
-    this.token = PUSH_CONFIG.toToken;
-  },
-  setNick(nick) {
-    if (nick) {
-      this.nick = nick;
-      return;
-    }
-    this.nick = PUSH_CONFIG.nick;
   },
   async getUserInfo() {
     shared.log.loading('正在获取用户信息...');

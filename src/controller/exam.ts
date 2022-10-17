@@ -343,15 +343,13 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       shared.log.loading(`${chalk.blueBright(current)} / ${total} 答题成功!`);
     } else {
       // 显示进度
-      shared.log.loading(
-        `${chalk.blueBright(current)} / ${total} 答题失败!`
-      );
+      shared.log.loading(`${chalk.blueBright(current)} / ${total} 答题失败!`);
       // 可能答错且无答案
       result = false;
-      if (type === 1 && STUDY_CONFIG.weeklyExitAfterWrong) {
+      if (type === 1 && shared.schedule?.weeklyExitAfterWrong) {
         return result;
       }
-      if (type === 2 && STUDY_CONFIG.paperExitAfterWrong) {
+      if (type === 2 && shared.schedule?.paperExitAfterWrong) {
         return result;
       }
       // 随机答题
@@ -383,10 +381,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
           await saveAnswerFromWrong(page);
           // 可能答错
           result = false;
-          if (type === 1 && STUDY_CONFIG.weeklyExitAfterWrong) {
-            return result;
-          }
-          if (type === 2 && STUDY_CONFIG.paperExitAfterWrong) {
+          if (type === 1 && shared.schedule?.weeklyExitAfterWrong) {
             return result;
           }
         }

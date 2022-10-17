@@ -24,8 +24,8 @@ export type TemplateType =
 export type PushOptions = {
   title: string;
   content: string;
-  template?: TemplateType;
-  toToken: string;
+  template: TemplateType;
+  toToken?: string;
   fromToken: string;
 };
 

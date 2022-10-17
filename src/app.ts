@@ -47,8 +47,6 @@ const handleBrowser = async (browser: pup.Browser) => {
     shared.todayScore !== undefined &&
     shared.taskList
   ) {
-    // 昵称
-    shared.setNick(shared.userInfo.nick);
     shared.log.info('学习开始!');
     // 用户信息数据
     await renderUserData(shared.userInfo);
@@ -114,7 +112,7 @@ const study = async () => {
   await shared.getTaskList();
   if (shared.taskList) {
     // 是否读新闻
-    if (STUDY_CONFIG.settings[0] && !shared.taskList[0].status) {
+    if (shared.schedule?.taskConfig[0] && !shared.taskList[0].status) {
       shared.log.info(`任务一: ${chalk.blueBright('文章选读')} 开始`);
       // 读新闻
       await handleWatch(0);
@@ -122,7 +120,7 @@ const study = async () => {
     shared.log.success(`任务一: ${chalk.blueBright('文章选读')} 已完成!`);
 
     // 是否看视频
-    if (STUDY_CONFIG.settings[1] && !shared.taskList[1].status) {
+    if (shared.schedule?.taskConfig[1] && !shared.taskList[1].status) {
       shared.log.info(`任务二: ${chalk.blueBright('视听学习')} 开始`);
       // 看视频
       await handleWatch(1);
@@ -130,7 +128,7 @@ const study = async () => {
     shared.log.success(`任务二: ${chalk.blueBright('视听学习')} 已完成!`);
 
     // 是否每日答题
-    if (STUDY_CONFIG.settings[2] && !shared.taskList[2].status) {
+    if (shared.schedule?.taskConfig[2] && !shared.taskList[2].status) {
       shared.log.info(`任务三: ${chalk.blueBright('每日答题')} 开始`);
       // 每日答题
       const res = await handleExam(0);
@@ -142,7 +140,7 @@ const study = async () => {
     shared.log.success(`任务三: ${chalk.blueBright('每日答题')} 已完成!`);
 
     // 是否每周答题
-    if (STUDY_CONFIG.settings[3] && !shared.taskList[3].status) {
+    if (shared.schedule?.taskConfig[3] && !shared.taskList[3].status) {
       shared.log.info(`任务四: ${chalk.blueBright('每周答题')} 开始`);
       // 每周答题
       const res = await handleExam(1);
@@ -154,7 +152,7 @@ const study = async () => {
     shared.log.success(`任务四: ${chalk.blueBright('每周答题')} 已完成!`);
 
     // 是否每日答题
-    if (STUDY_CONFIG.settings[4] && !shared.taskList[4].status) {
+    if (shared.schedule?.taskConfig[4] && !shared.taskList[4].status) {
       shared.log.info(`任务五: ${chalk.blueBright('专项练习')} 开始`);
       // 专项练习
       const res = await handleExam(2);

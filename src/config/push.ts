@@ -7,7 +7,7 @@ const PUSH_CONFIG = {
    * @description 启用推送
    * @example true 启用推送 false 禁用推送
    */
-  enabled: false,
+  enabled: true,
   /**
    * @description 发送服务消息昵称
    */
@@ -17,23 +17,8 @@ const PUSH_CONFIG = {
    */
   from: '卑微的服务器',
   /**
-   * @description 自己的token
+   * @description 管理员的token
    */
   token: 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
-  /**
-   * @description 加自己为好友的token
-   */
-  toToken: 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
-  /**
-   * @description 好友发送列表
-   * @link {@link https://www.pushplus.plus/liaison.html PushPlus 好友消息}
-   */
-  list: [
-    {
-      nick: 'xxx',
-      token: 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
-      cron: '0 0 12 * * ?',
-    },
-  ],
 };
 export default PUSH_CONFIG;

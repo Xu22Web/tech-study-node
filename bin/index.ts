@@ -5,11 +5,18 @@ import handleBrowser from '../src/app';
 import API_CONFIG from '../src/config/api';
 import PUP_CONFIG from '../src/config/pup';
 import PUSH_CONFIG from '../src/config/push';
+import { Schedule, SCHEDULE_CONFIG } from '../src/config/schedule';
 import STUDY_CONFIG from '../src/config/study';
 import URL_CONFIG from '../src/config/url';
 import shared from '../src/shared';
-import { getHighlightHTML, getRestTaskList, getTableHTML } from '../src/utils';
-
+import {
+  getHighlightHTML,
+  getRestScheduleList,
+  getTableHTML,
+} from '../src/utils';
+/**
+ * @description 配置
+ */
 type Config = {
   apiConfig: Partial<typeof API_CONFIG>;
   pupConfig: Partial<typeof PUP_CONFIG>;
@@ -35,13 +42,11 @@ export const defineConfig = (config: Config) => {
  * @param token
  * @param nick
  */
-export const handleTask = async (token: string, nick: string) => {
+export const handleSchedule = async (schedule: Schedule) => {
   // 开始日志
   shared.log.start();
   // 初始化消息当前用户token
-  shared.setToken(token);
-  // 昵称
-  shared.setNick(nick);
+  shared.setSchedule(schedule);
   shared.log.loading('正在打开浏览器...');
   // 浏览器
   const browser = await pup.launch(PUP_CONFIG);
@@ -50,39 +55,33 @@ export const handleTask = async (token: string, nick: string) => {
     // 处理浏览器
     await handleBrowser(browser);
     // 关闭浏览器
-    await browser.close();
+    await shared.closeBrowser();
     shared.log.info('已关闭浏览器!');
   } catch (e: any) {
     // 关闭浏览器
-    await browser.close();
+    await shared.closeBrowser();
     shared.log.warn('发生错误，已关闭浏览器!');
     // 错误
     const err = new Error(e);
     shared.log.fail([
-      `${chalk.red(err.name)}`,
       `${chalk.red(err.message)}`,
-      `${chalk.red(err.cause)}`,
       `${chalk.red(err.stack || 'unkown stack')}`,
     ]);
     // 推送服务提示
     shared.pushModalTips({
       title: '服务提示',
-      content: [
-        '发生错误!',
-        err.name,
-        err.message,
-        String(err.cause),
-        err.stack || 'unkown stack',
-      ],
+      content: ['发生错误!', err.message, err.stack || 'unkown stack'],
       type: 'fail',
     });
   }
   // 剩余任务
-  const rest = getRestTaskList(PUSH_CONFIG.list);
+  const rest = getRestScheduleList(SCHEDULE_CONFIG);
   // 存在下次任务
   if (rest.length) {
     shared.log.warn('服务提示');
-    shared.log.info(`用户: ${chalk.yellow(nick)}, 定时任务已执行完毕!`);
+    shared.log.info(
+      `用户: ${chalk.yellow(schedule.nick)}, 定时任务已执行完毕!`
+    );
     shared.log.info(`今天剩余任务数: ${chalk.yellow(rest.length)} 个`);
     shared.log.warn(`下次任务信息`);
     shared.log.info(`用户: ${chalk.yellow(rest[0].nick)}`);
@@ -91,7 +90,7 @@ export const handleTask = async (token: string, nick: string) => {
     shared.pushModalTips({
       title: '服务提示',
       content: [
-        `用户: ${getHighlightHTML(nick)}, 定时任务完成!`,
+        `用户: ${getHighlightHTML(schedule.nick)}, 定时任务完成!`,
         `今天剩余任务数: ${getHighlightHTML(rest.length)} 个`,
         '剩余任务信息: ',
         getTableHTML(
@@ -103,12 +102,14 @@ export const handleTask = async (token: string, nick: string) => {
     });
   } else {
     shared.log.warn('服务提示');
-    shared.log.info(`用户: ${chalk.yellow(nick)}, 定时任务已执行完毕!`);
+    shared.log.info(
+      `用户: ${chalk.yellow(schedule.nick)}, 定时任务已执行完毕!`
+    );
     shared.log.success(`今天定时任务均已完成!`);
     shared.pushModalTips({
       title: '服务提示',
       content: [
-        `用户: ${getHighlightHTML(nick)}, 定时任务完成!`,
+        `用户: ${getHighlightHTML(schedule.nick)}, 定时任务完成!`,
         `今天定时任务均已完成!`,
       ],
       type: 'info',
@@ -121,19 +122,19 @@ export const handleTask = async (token: string, nick: string) => {
 /**
  * @description 开始定时任务
  */
-export const startTask = () => {
+export const startSchedule = () => {
   // 剩余任务
-  const rest = getRestTaskList(PUSH_CONFIG.list);
+  const restSchedule = getRestScheduleList(SCHEDULE_CONFIG);
   // 推送服务提示
   shared.pushModalTips({
     title: '服务提示',
     content: [
       '已运行定时任务!',
-      `今天剩余任务数: ${getHighlightHTML(rest.length)} 个`,
+      `今天剩余任务数: ${getHighlightHTML(restSchedule.length)} 个`,
       '剩余任务信息: ',
       getTableHTML(
         ['用户', '时间'],
-        rest.map((item) => [`${item.nick}`, `${item.timeText}`])
+        restSchedule.map((item) => [`${item.nick}`, `${item.timeText}`])
       ),
     ],
     type: 'info',
@@ -144,16 +145,13 @@ export const startTask = () => {
     shared.log.autoClean();
   });
   // 定时任务
-  PUSH_CONFIG.list.forEach((sendInfo, i) => {
-    console.log(`${i + 1} / ${PUSH_CONFIG.list.length} 执行定时任务`);
-    // 执行定时任务
-    schedule.scheduleJob(sendInfo.cron, async () => {
-      console.log(`${i + 1} / ${PUSH_CONFIG.list.length} 正在执行定时任务...`);
+  restSchedule.forEach((currentSchedule, i) =>
+    schedule.scheduleJob(currentSchedule.cron, async () => {
+      console.log(`${i + 1} / ${SCHEDULE_CONFIG.length} 正在执行定时任务...`);
       // 处理任务
-      await handleTask(sendInfo.token, sendInfo.nick);
-    });
-  });
+      await handleSchedule(currentSchedule);
+    })
+  );
 };
-
 // 开始任务
-startTask();
+startSchedule();

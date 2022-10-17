@@ -25,7 +25,6 @@ const API_CONFIG = {
   news: [
     'https://www.xuexi.cn/lgdata/35il6fpn0ohq.json',
     'https://www.xuexi.cn/lgdata/1ap1igfgdn2.json',
-    'https://www.xuexi.cn/lgdata/1novbsbi47k.json',
     'https://www.xuexi.cn/lgdata/vdppiu92n1.json',
     'https://www.xuexi.cn/lgdata/152mdtl3qn1.json'
   ],
