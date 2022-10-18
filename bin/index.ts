@@ -155,7 +155,7 @@ export const startSchedule = () => {
     shared.log.autoClean();
   });
   // 定时任务
-  restSchedule.forEach((currentSchedule, i) =>
+  SCHEDULE_CONFIG.forEach((currentSchedule, i) =>
     schedule.scheduleJob(currentSchedule.cron, async () => {
       console.log(`${i + 1} / ${SCHEDULE_CONFIG.length} 正在执行定时任务...`);
       // 处理任务
