@@ -1,6 +1,5 @@
 import chalk from 'chalk';
 import pup from 'puppeteer-core';
-import STUDY_CONFIG from './config/study';
 import handleExam from './controller/exam';
 import handleLogin from './controller/login';
 import {

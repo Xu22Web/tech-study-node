@@ -158,6 +158,7 @@ export const startSchedule = () => {
   SCHEDULE_CONFIG.forEach((currentSchedule, i) =>
     schedule.scheduleJob(currentSchedule.cron, async () => {
       console.log(`${i + 1} / ${SCHEDULE_CONFIG.length} 正在执行定时任务...`);
+      console.log(`用户: ${chalk.blueBright(currentSchedule.nick)} 任务开始!`);
       // 处理任务
       await handleSchedule(currentSchedule);
     })
