@@ -56,7 +56,7 @@ const API_CONFIG = {
   /**
    * @description 答案搜素
    */
-  answerSearch: 'https://api.answer.uu988.xyz:4545/answer/search',
+  answerSearch: 'https://api.answer.uu988.xyz/answer/search',
   /**
    * @description 推送
    */
