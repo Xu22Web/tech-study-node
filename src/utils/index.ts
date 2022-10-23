@@ -692,6 +692,28 @@ export const getRestScheduleList = (scheduleList: Schedule[]) => {
   return rest;
 };
 /**
+ * @description 格式化任务列表
+ * @param scheduleList
+ * @returns
+ */
+export const formatScheduleList = (scheduleList: Schedule[]) => {
+  // 格式化任务
+  const formattedScheduleList = scheduleList
+    .map((schedule) => {
+      // 任务时间
+      const time = paser.parseExpression(schedule.cron);
+      // 下次任务时间
+      const nextTime = time.next().toDate();
+      return {
+        ...schedule,
+        timeText: formatDateTime(nextTime),
+        time: nextTime.getTime(),
+      };
+    })
+    .sort((a, b) => a.time - b.time);
+  return formattedScheduleList;
+};
+/**
  * @description 创建表格
  * @param theadData
  * @param tbodyData

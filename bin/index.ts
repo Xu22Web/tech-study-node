@@ -10,6 +10,7 @@ import STUDY_CONFIG from '../src/config/study';
 import URL_CONFIG from '../src/config/url';
 import shared from '../src/shared';
 import {
+  formatScheduleList,
   getHighlightHTML,
   getRestScheduleList,
   getTableHTML,
@@ -43,8 +44,6 @@ export const defineConfig = (config: Config) => {
  * @param nick
  */
 export const handleSchedule = async (schedule: Schedule) => {
-  // 开始日志
-  shared.log.start();
   // 初始化消息当前用户token
   shared.setSchedule(schedule);
   shared.log.loading('正在打开浏览器...');
@@ -115,8 +114,6 @@ export const handleSchedule = async (schedule: Schedule) => {
       type: 'info',
     });
   }
-  // 结束日志
-  shared.log.finish();
 };
 
 /**
@@ -154,15 +151,26 @@ export const startSchedule = () => {
     // 清除日志
     shared.log.autoClean();
   });
+  // 任务列表
+  const scheduleList = formatScheduleList(SCHEDULE_CONFIG);
+  console.log('开始设置定时任务!');
   // 定时任务
-  SCHEDULE_CONFIG.forEach((currentSchedule, i) =>
+  scheduleList.forEach((currentSchedule, i) => {
+    console.log(
+      `${i + 1} / ${SCHEDULE_CONFIG.length} | 时间: ${currentSchedule.timeText}`
+    );
     schedule.scheduleJob(currentSchedule.cron, async () => {
-      console.log(`${i + 1} / ${SCHEDULE_CONFIG.length} 正在执行定时任务...`);
-      console.log(`用户: ${chalk.blueBright(currentSchedule.nick)} 任务开始!`);
+      // 开始日志
+      shared.log.start();
+      shared.log.info(
+        `正在执行 ${chalk.blueBright(currentSchedule.nick)} 的定时任务...`
+      );
       // 处理任务
       await handleSchedule(currentSchedule);
-    })
-  );
+      // 结束日志
+      shared.log.finish();
+    });
+  });
 };
 // 开始任务
 startSchedule();
