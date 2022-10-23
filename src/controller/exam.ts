@@ -402,14 +402,27 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     const exists = await hasSlideVerify(page);
     // 处理滑动验证
     if (exists) {
+      shared.log.loading('正在处理滑动验证...');
       await handleSlideVerify(page);
+      // 等待提交
+      await sleep(3000);
+      // 存在滑动验证
+      const exists = await hasSlideVerify(page);
+      if (exists) {
+        shared.log.fail('处理滑动验证失败!');
+      } else {
+        shared.log.success('处理滑动验证成功!');
+      }
     }
   }
   shared.log.success(`${chalk.blueBright(current)} / ${total} 答题完成!`);
   // 等待结果提交
-  await waitResult(page);
-  // 等待提交
-  await sleep(3000);
+  const waitRes = await waitResult(page);
+  if (waitRes) {
+    shared.log.success('提交答题成功!');
+  } else {
+    shared.log.fail('提交答题失败!');
+  }
   return result;
 };
 
@@ -904,7 +917,7 @@ const hasSlideVerify = async (page: pup.Page) => {
     const mask = <HTMLElement>node;
     // 提升层级
     if (mask) {
-      mask.style.zIndex = '999';
+      mask.style.zIndex = '9999';
     }
     return mask && getComputedStyle(mask).display !== 'none';
   });
@@ -1015,11 +1028,19 @@ const waitResult = async (page: pup.Page) => {
         // 获取按钮
         const btnText = await getNextBtnText(page);
         if (finish.includes(btnText)) {
+          // 清除超时
+          clearTimeout(timeout);
           // 清除定时器
           clearInterval(timer);
           resolve(true);
         }
       }, 100);
+      // 超时
+      const timeout = setTimeout(() => {
+        // 清除定时器
+        clearInterval(timer);
+        resolve(false);
+      }, STUDY_CONFIG.timeout);
       return;
     }
     resolve(true);
