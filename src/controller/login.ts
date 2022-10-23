@@ -6,9 +6,13 @@ import URL_CONFIG from '../config/url';
 import shared from '../shared';
 import { getCookie } from '../utils';
 /**
- * @description 二维码保存位置
+ * @description 二维码保存路径
  */
-const qrcodePath = path.join(STUDY_CONFIG.qrcodePath, 'login.png');
+const { qrcodePath } = STUDY_CONFIG;
+/**
+ * @description 二维码文件保存路径
+ */
+const filePath = path.join(qrcodePath, 'login.png');
 
 /**
  * @description 处理登录
@@ -46,7 +50,7 @@ const handleLogin = async () => {
   // 是否删除二维码
   if (STUDY_CONFIG.qrcodeLocalEnabled && STUDY_CONFIG.qrcodeAutoClean) {
     // 删除二维码
-    fs.unlink(qrcodePath, () => {
+    fs.unlink(filePath, () => {
       shared.log.success('登录二维码已删除!');
     });
   }
@@ -70,12 +74,6 @@ const getLoginQRCode = async (page: pup.Page) => {
   const base64Data = imgSrc.replace(/^data:image\/\w+;base64,/, '');
   // buffer
   const dataBuffer = Buffer.from(base64Data, 'base64');
-  // 保存二维码
-  if (STUDY_CONFIG.qrcodeLocalEnabled) {
-    // 写入文件
-    fs.writeFileSync(qrcodePath, dataBuffer);
-    shared.log.info(`登录二维码保存路径: ${qrcodePath}`);
-  }
   return { src: imgSrc, buffer: dataBuffer };
 };
 
@@ -143,7 +141,18 @@ const tryLogin = async (page: pup.Page) => {
   const qrData = await getLoginQRCode(page);
   if (qrData) {
     // 二维码信息
-    const { src } = qrData;
+    const { src, buffer } = qrData;
+    // 保存二维码
+    if (STUDY_CONFIG.qrcodeLocalEnabled) {
+      // 二维码文件夹不存在
+      if (!fs.existsSync(qrcodePath)) {
+        // 创建路径
+        fs.mkdirSync(qrcodePath);
+      }
+      // 写入文件
+      fs.writeFileSync(filePath, buffer);
+      shared.log.info(`登录二维码保存路径: ${filePath}`);
+    }
     // 图片
     const imgWrap = `
      <div style="padding: 10px 0">

@@ -9,11 +9,11 @@ const STUDY_CONFIG = {
   /**
    * @description 最大登录重试次数
    */
-  maxRetryLoginCount: 8,
+  maxRetryLoginCount: 10,
   /**
    * @description 最大登录等待时间
    */
-  loginTimeout: 60000,
+  loginTimeout: 80000,
   /**
    * @description 登录二维码本地存储（开启推送后，自行关闭）
    */
