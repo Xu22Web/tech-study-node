@@ -60,12 +60,15 @@ export class Log {
    */
   loading(text?: string | string[]) {
     if (this.enabled && text) {
+      let textFormat: string;
       // 数组
       if (Array.isArray(text)) {
-        this.ora.start(text.join('\n'));
+        textFormat = text.join('\n');
       } else {
-        this.ora.start(text);
+        textFormat = text;
       }
+      this.ora.prefixText = `[${formatDateTime()}]`;
+      this.ora.start(textFormat);
       this.collect('loading', text);
     }
   }
@@ -75,7 +78,14 @@ export class Log {
    */
   loaded(text?: string | string[]) {
     if (this.enabled && text) {
-      this.collect('loaded', text);
+      let textFormat: string;
+      // 数组
+      if (Array.isArray(text)) {
+        textFormat = text.join('\n');
+      } else {
+        textFormat = text;
+      }
+      this.collect('loaded', textFormat);
     }
     this.ora.stop();
   }
@@ -85,11 +95,15 @@ export class Log {
    */
   info(text?: string | string[]) {
     if (this.enabled && text) {
+      let textFormat: string;
+      // 数组
       if (Array.isArray(text)) {
-        this.ora.info(text.join('\n'));
+        textFormat = text.join('\n');
       } else {
-        this.ora.info(text);
+        textFormat = text;
       }
+      this.ora.prefixText = `[${formatDateTime()}]`;
+      this.ora.info(textFormat);
       this.collect('info', text);
     }
   }
@@ -99,12 +113,15 @@ export class Log {
    */
   warn(text?: string | string[]) {
     if (this.enabled && text) {
+      let textFormat: string;
       // 数组
       if (Array.isArray(text)) {
-        this.ora.warn(text.join('\n'));
+        textFormat = text.join('\n');
       } else {
-        this.ora.warn(text);
+        textFormat = text;
       }
+      this.ora.prefixText = `[${formatDateTime()}]`;
+      this.ora.warn(textFormat);
       this.collect('warn', text);
     }
   }
@@ -114,12 +131,15 @@ export class Log {
    */
   fail(text?: string | string[]) {
     if (this.enabled && text) {
+      let textFormat: string;
       // 数组
       if (Array.isArray(text)) {
-        this.ora.fail(text.join('\n'));
+        textFormat = text.join('\n');
       } else {
-        this.ora.fail(text);
+        textFormat = text;
       }
+      this.ora.prefixText = `[${formatDateTime()}]`;
+      this.ora.fail(textFormat);
       this.collect('fail', text);
     }
   }
@@ -129,12 +149,15 @@ export class Log {
    */
   success(text?: string | string[]) {
     if (this.enabled && text) {
+      let textFormat: string;
       // 数组
       if (Array.isArray(text)) {
-        this.ora.succeed(text.join('\n'));
+        textFormat = text.join('\n');
       } else {
-        this.ora.succeed(text);
+        textFormat = text;
       }
+      this.ora.prefixText = `[${formatDateTime()}]`;
+      this.ora.succeed(textFormat);
       this.collect('success', text);
     }
   }
@@ -176,10 +199,16 @@ export class Log {
       if (fs.existsSync(filePath)) {
         // 追加文件
         fs.appendFileSync(filePath, `\n${logsData}\n`);
-        return;
+      } else {
+        // 日志文件夹不存在
+        if (!fs.existsSync(logsPath)) {
+          // 创建路径
+          fs.mkdirSync(logsPath);
+        }
+        // 写入文件
+        fs.writeFileSync(filePath, logsData);
       }
-      // 写入文件
-      fs.writeFileSync(filePath, logsData);
+      console.log(`日志文件保存路径: ${filePath}`);
     }
   }
   /**
