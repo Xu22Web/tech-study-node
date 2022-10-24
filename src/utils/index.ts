@@ -704,13 +704,17 @@ export const formatScheduleList = (scheduleList: Schedule[]) => {
       const time = paser.parseExpression(schedule.cron);
       // 下次任务时间
       const nextTime = time.next().toDate();
+      // 时间文本
+      const timeText = formatTime(nextTime);
+      // 日期时间
+      const timeDate = new Date(timeText);
       return {
         ...schedule,
-        timeText: formatDateTime(nextTime),
-        time: nextTime.getTime(),
+        timeText,
+        timeDate: timeDate.getTime(),
       };
     })
-    .sort((a, b) => a.time - b.time);
+    .sort((a, b) => a.timeDate - b.timeDate);
   return formattedScheduleList;
 };
 /**

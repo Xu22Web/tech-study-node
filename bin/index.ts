@@ -157,7 +157,9 @@ export const startSchedule = () => {
   // 定时任务
   scheduleList.forEach((currentSchedule, i) => {
     console.log(
-      `${i + 1} / ${SCHEDULE_CONFIG.length} | 时间: ${currentSchedule.timeText}`
+      `${i + 1} / ${SCHEDULE_CONFIG.length} | 时间: ${
+        currentSchedule.timeText
+      } | 用户: ${chalk.blueBright(currentSchedule.nick)} 已设置任务`
     );
     schedule.scheduleJob(currentSchedule.cron, async () => {
       // 开始日志
@@ -167,8 +169,16 @@ export const startSchedule = () => {
       );
       // 处理任务
       await handleSchedule(currentSchedule);
+      shared.log.info(
+        `执行 ${chalk.blueBright(currentSchedule.nick)} 的定时任务完成!`
+      );
       // 结束日志
       shared.log.finish();
+      console.log(
+        `${i + 1} / ${SCHEDULE_CONFIG.length} | 用户: ${chalk.blueBright(
+          currentSchedule.nick
+        )} 任务执行完成!`
+      );
     });
   });
 };
