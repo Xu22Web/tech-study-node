@@ -222,13 +222,13 @@ pnpm install
 
 4. 完善基础配置
 
-   1. 查看更改 `Puppeteer 配置`，需要注意的配置项
+   1. 查看更改 `Puppeteer 配置`（`src/config/pup.ts`），需要注意的配置项
 
       - `headless` 无头模式，即是否非图形界面显示
 
       - `executablePath` 可执行文件路径，由于项目采用 `Google Chrome` + `puppeteer-core` 的形式，需要手动下载浏览器并配置此项
 
-   2. 查看更改 `Schdule 配置`，单或多个定时任务配置
+   2. 查看更改 `Schedule 配置`（`src/config/schedule.ts`），单或多个定时任务配置
 
       ```js
       [
@@ -279,7 +279,7 @@ pnpm install
         └───────────────────────── second (0 - 59, OPTIONAL)
       ```
 
-   3. 查看更改 `Study 配置`，需要注意的配置项
+   3. 查看更改 `Study 配置`（`src/config/study.ts`），需要注意的配置项
 
       - `qrcodeLocalEnabled` 登录二维码本地保存，便于在无头模式登录（开启推送后，自行关闭）
 
@@ -287,13 +287,11 @@ pnpm install
 
       - `paperReverse` 专项练习的开启逆序
 
-   4. 查看更改 `Push 配置` ，启用 `PushPlus` 推送步骤（不需要推送请跳过）
+   4. 启用 `PushPlus` 推送步骤（不需要推送请跳过）
 
-      - 在 [PushPlus 官网](https://www.pushplus.plus/ 'PushPlus 官网') 上，注册登录账号，添加好友自己为好友，也可添加其他好友
+      - 在 [PushPlus 官网](https://www.pushplus.plus/ 'PushPlus 官网') 上，注册登录账号，添加好友自己为好友（[PushPlus 好友消息](https://www.pushplus.plus/liaison.html 'PushPlus 好友消息')）。若有其他用户，可添加其他用户为好友（官方默认采用 `微信公众号` 推送）
 
-      - 默认采用 `微信公众号` 推送，官方也支持第三方 `webhook` 服务（企业微信机器人、钉钉机器人、飞书机器人等）、企业微信应用、邮件等。
-
-      - 编辑 `PushPlus 配置`
+      - 更改 `Push 配置`（`src/config/push.ts`），设置`enabled`为`true`，添加管理员`token`
 
         ```js
           {
@@ -318,6 +316,23 @@ pnpm install
 
         ```
 
+        ![管理员token](./administrator.png)
+
+      - 更改 `Schedule 配置`（`src/config/schedule.ts`），添加用户`token`
+
+        ```js
+        [
+          {
+            /**
+             * @description 自己或者好友 token
+             */
+            token: '用户 token',
+          },
+        ];
+        ```
+
+        ![好友消息token](./user.png)
+
 5. 运行
 
 ```
@@ -328,7 +343,7 @@ pnpm start
 
    - 未开启 `PushPlus` 推送
 
-     > 注意：Puppeteer 配置（ src/config/pup.ts）中的 headless 字段（true 非图形界面，false 图形界面）
+     > 注意：`Puppeteer 配置`（`src/config/pup.ts`）中的 headless 字段（true 非图形界面，false 图形界面）
 
      - 对于图形界面，可直接扫码登陆
 
