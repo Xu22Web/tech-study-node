@@ -607,8 +607,8 @@ export const installMouseHelper = async (page: pup.Page) => {
 export const installRemoveDialog = async (page: pup.Page) => {
   // 监听对话框弹出
   await page.on('dialog', async (dialog) => {
-    // 移除对话框
-    await dialog.dismiss();
+    // 清除对话框
+    await dialog.accept();
   });
 };
 
