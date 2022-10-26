@@ -289,7 +289,7 @@ pnpm install
 
    4. 启用 `PushPlus` 推送步骤（不需要推送请跳过）
 
-      - 在 [PushPlus 官网](https://www.pushplus.plus/ 'PushPlus 官网') 上，注册登录账号，添加好友自己为好友（[PushPlus 好友消息](https://www.pushplus.plus/liaison.html 'PushPlus 好友消息')）。若有其他用户，可添加其他用户为好友（官方默认采用 `微信公众号` 推送）
+      - 在 [PushPlus 官网](https://www.pushplus.plus/ 'PushPlus 官网') 上，注册登录账号，添加自己为好友（[PushPlus 好友消息](https://www.pushplus.plus/liaison.html 'PushPlus 好友消息')）。若有其他用户，可添加其他用户为好友（官方默认采用 `微信公众号` 推送）
 
       - 更改 `Push 配置`（`src/config/push.ts`），设置`enabled`为`true`，添加管理员`token`
 
