@@ -403,12 +403,30 @@ const handleQuestion = async (page: pup.Page, type: number) => {
     // 处理滑动验证
     if (exists) {
       shared.log.loading('正在处理滑动验证...');
+      // 显示滑动验证
+      await showSlideVerify(page);
+      // 处理滑动验证
       await handleSlideVerify(page);
       // 等待提交
       await sleep(3000);
       // 存在滑动验证
       const exists = await hasSlideVerify(page);
       if (exists) {
+        shared.log.fail('处理滑动验证失败!');
+        shared.log.loading('正在处理滑动验证...');
+        // 显示滑动验证
+        await showSlideVerify(page);
+        // 处理滑动验证
+        await handleSlideVerify(page);
+        // 等待提交
+        await sleep(3000);
+        // 存在滑动验证
+        const exists = await hasSlideVerify(page);
+        if (exists) {
+          shared.log.fail('再次处理滑动验证失败!');
+        } else {
+          shared.log.success('再次处理滑动验证成功!');
+        }
         shared.log.fail('处理滑动验证失败!');
       } else {
         shared.log.success('处理滑动验证成功!');
@@ -464,7 +482,7 @@ const getNextBtnText = async (page: pup.Page) => {
           }
           resolve(nextAll[0].innerText.replaceAll(' ', ''));
         }
-      }, 500);
+      }, 100);
     });
   });
 };
@@ -917,58 +935,58 @@ const hasSlideVerify = async (page: pup.Page) => {
     const mask = <HTMLElement>node;
     // 提升层级
     if (mask) {
-      mask.style.zIndex = '9999';
+      mask.style.zIndex = '999999';
     }
     return mask && getComputedStyle(mask).display !== 'none';
   });
-  // 存在滑块
-  if (exists) {
-    shared.log.info('处理滑动验证!');
-    await sleep(3000);
-    // 加载状态
-    let loadingStatus = false;
-    // 加载滑动验证
-    while (!loadingStatus) {
-      // 等待加载
-      loadingStatus = await page.evaluate((time) => {
-        return new Promise<boolean>((resolve) => {
-          // 定时器
-          const timer = setInterval(() => {
-            // nc_scale
-            const nc_scale = document.querySelector<HTMLElement>('.nc_scale');
-            const btn_slide = document.querySelector<HTMLElement>('.btn_slide');
-            // 加载成功
-            if (nc_scale && btn_slide) {
-              // 清除定时器
-              clearInterval(timer);
-              // 清除超时延迟
-              clearTimeout(timeout);
-              resolve(true);
-            }
-          }, 100);
-          // 超时
-          const timeout = setTimeout(() => {
+  return exists;
+};
+/**
+ * @description 显示滑动验证
+ * @param page
+ * @returns
+ */
+const showSlideVerify = async (page: pup.Page) => {
+  // 加载状态
+  let loadingStatus = false;
+  // 加载滑动验证
+  while (!loadingStatus) {
+    // 等待加载
+    loadingStatus = await page.evaluate((time) => {
+      return new Promise<boolean>((resolve) => {
+        // 定时器
+        const timer = setInterval(() => {
+          const nc_scale = document.querySelector<HTMLElement>('.nc_scale');
+          const btn_slide = document.querySelector<HTMLElement>('.btn_slide');
+          // 加载成功
+          if (nc_scale && btn_slide) {
             // 清除定时器
             clearInterval(timer);
-            resolve(false);
-          }, time);
-        });
-      }, STUDY_CONFIG.timeout);
-      // 滑动验证加载失败
-      if (!loadingStatus) {
-        // 关闭滑动验证
-        await page.$eval('.button-close', (node) => {
-          const btn = <HTMLElement>node;
-          btn.click();
-        });
-        await sleep(3000);
-        // 点击
-        await clickNextBtn(page);
-      }
+            // 清除超时延迟
+            clearTimeout(timeout);
+            resolve(true);
+          }
+        }, 100);
+        // 超时
+        const timeout = setTimeout(() => {
+          // 清除定时器
+          clearInterval(timer);
+          resolve(false);
+        }, time);
+      });
+    }, STUDY_CONFIG.timeout);
+    // 滑动验证加载失败
+    if (!loadingStatus) {
+      // 关闭滑动验证
+      await page.$eval('.button-close', (node) => {
+        const btn = <HTMLElement>node;
+        btn.click();
+      });
+      await sleep(3000);
+      // 点击
+      await clickNextBtn(page);
     }
-    return true;
   }
-  return false;
 };
 
 /**
@@ -990,7 +1008,7 @@ const handleSlideVerify = async (page: pup.Page) => {
       y: track.y + track.height / 2,
     };
     // 路径
-    const path = createRandomPath(start, end, 5);
+    const path = createRandomPath(start, end, 8);
     // 滑动到起点
     await page.mouse.move(start.x, start.y, { steps: 1 });
     // tap
