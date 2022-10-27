@@ -427,7 +427,6 @@ const handleQuestion = async (page: pup.Page, type: number) => {
         } else {
           shared.log.success('再次处理滑动验证成功!');
         }
-        shared.log.fail('处理滑动验证失败!');
       } else {
         shared.log.success('处理滑动验证成功!');
       }
