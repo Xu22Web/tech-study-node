@@ -11,7 +11,12 @@ import {
   TaskList,
   UserInfo,
 } from '../controller/user';
-import { installMouseHelper, installRemoveDialog, pushModal } from '../utils';
+import {
+  installMouseHelper,
+  installRemoveDialog,
+  pushModal,
+  sleep,
+} from '../utils';
 import { ModalOptions } from '../utils/interface';
 
 /**
@@ -292,6 +297,15 @@ const shared: Shared = {
       return this.taskList;
     }
     this.log.fail('获取任务列表失败!');
+    // 限制请求速率
+    await sleep(STUDY_CONFIG.rateLimit);
+    // 获取任务列表
+    this.taskList = await getTaskList();
+    if (this.taskList) {
+      this.log.success('再次获取任务列表成功!');
+      return this.taskList;
+    }
+    this.log.fail('再次获取任务列表失败!');
   },
   async getTotalScore() {
     shared.log.loading('正在获取总分...');
