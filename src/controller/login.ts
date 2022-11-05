@@ -64,7 +64,7 @@ const handleLogin = async () => {
  */
 const getLoginQRCode = async (page: pup.Page) => {
   // 刷新二维码
-  await RefreshQRCode(page);
+  await refreshQRCode(page);
   // 图片源
   const imgSrc = await page.$eval(
     '.login_qrcode_content img',
@@ -81,12 +81,32 @@ const getLoginQRCode = async (page: pup.Page) => {
  * @description 刷新登录二维码
  * @param page
  */
-const RefreshQRCode = async (page: pup.Page) => {
+const refreshQRCode = async (page: pup.Page) => {
   // 等待加载完毕
-  await page.waitForFunction(() => {
-    const loading = document.querySelector<HTMLDivElement>('.login_loading');
-    return loading && loading.style.display === 'none';
-  });
+  await page.evaluate((time) => {
+    return new Promise<boolean>((resolve) => {
+      // 定时器
+      const timer = setInterval(() => {
+        // 加载
+        const loading =
+          document.querySelector<HTMLDivElement>('.login_loading');
+        // 加载完毕
+        if (loading && loading.style.display === 'none') {
+          // 清除定时器
+          clearInterval(timer);
+          // 清除超时延迟
+          clearTimeout(timeout);
+          resolve(true);
+        }
+      }, 100);
+      // 超时
+      const timeout = setTimeout(() => {
+        // 清除定时器
+        clearInterval(timer);
+        resolve(false);
+      }, time);
+    });
+  }, STUDY_CONFIG.timeout);
   // 需要刷新
   const needFresh = await page.$eval(
     '.login_qrcode_refresh',
@@ -121,7 +141,7 @@ const getLoginStatus = (page: pup.Page) => {
         return;
       }
       // 刷新二维码
-      await RefreshQRCode(page);
+      await refreshQRCode(page);
     }, 100);
     // 超时延迟
     const timeout = setTimeout(() => {

@@ -232,6 +232,7 @@ const waitVideos = async () => {
           clearInterval(timer);
           // 是否可以播放
           video.addEventListener('canplay', () => {
+            // 清除超时
             clearTimeout(timeout);
             resolve(true);
           });
@@ -241,13 +242,6 @@ const waitVideos = async () => {
       const timeout = setTimeout(() => {
         // 清除定时器
         clearInterval(timer);
-        // 获取播放器
-        const video = document.querySelector<HTMLVideoElement>('video');
-        // 视频可播放
-        if (video) {
-          resolve(true);
-          return;
-        }
         resolve(false);
       }, time);
     });
@@ -336,12 +330,22 @@ const countDown = (duration: number, callback: (duration: number) => void) => {
         await page.evaluate(() => {
           const scrollLength = document.body.scrollHeight / 3;
           window.scrollTo(0, scrollLength);
+          // 模拟滚动
+          const scroll = new Event('scroll', {
+            bubbles: true,
+          });
+          document.dispatchEvent(scroll);
         });
       }
       // 回滚
       if (duration === endScoll) {
         await page.evaluate(() => {
           window.scrollTo(0, 0);
+          // 模拟滚动
+          const scroll = new Event('scroll', {
+            bubbles: true,
+          });
+          document.dispatchEvent(scroll);
         });
       }
       duration--;
