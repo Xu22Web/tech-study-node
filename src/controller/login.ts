@@ -189,9 +189,9 @@ const tryLogin = async (page: pup.Page) => {
     shared.log.info(`登录二维码保存路径: ${filePath}`);
   }
   // src
-  const imgSrc = `https://my.tv.sohu.com/user/a/wvideo/getQRCode.do?text=${encodeURIComponent(
+  const imgSrc = `https://api.qrserver.com/v1/create-qr-code/?size=${width}x${height}&data=${encodeURIComponent(
     data
-  )}&width=${width}&height=${height}`;
+  )}`;
   // 图片
   const imgWrap = `
      <div style="padding: 10px 0">
