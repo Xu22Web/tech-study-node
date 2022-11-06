@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import pup from 'puppeteer-core';
 import jimp from 'jimp';
-import decode, { QRCode } from 'jsqr';
+import decode from 'jsqr';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
@@ -51,10 +51,13 @@ const handleLogin = async () => {
   }
   // 是否删除二维码
   if (STUDY_CONFIG.qrcodeLocalEnabled && STUDY_CONFIG.qrcodeAutoClean) {
-    // 删除二维码
-    fs.unlink(filePath, () => {
-      shared.log.success('登录二维码已删除!');
-    });
+    // 文件存在
+    if (fs.existsSync(filePath)) {
+      // 删除二维码
+      fs.unlink(filePath, () => {
+        shared.log.success('登录二维码已删除!');
+      });
+    }
   }
   // 登录
   return result;
@@ -216,6 +219,7 @@ const tryLogin = async (page: pup.Page) => {
     type: 'info',
   });
 };
+
 /**
  * @description 解码
  * @param buffer
