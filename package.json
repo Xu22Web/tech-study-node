@@ -23,6 +23,8 @@
     "blueimp-md5": "^2.19.0",
     "chalk": "4.1.2",
     "cron-parser": "^4.6.0",
+    "jimp": "^0.16.2",
+    "jsqr": "^1.4.0",
     "node-schedule": "^2.1.0",
     "nodemon": "^2.0.19",
     "ora": "^5.4.1",

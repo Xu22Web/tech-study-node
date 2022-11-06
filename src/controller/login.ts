@@ -1,10 +1,12 @@
 import fs from 'fs';
 import path from 'path';
 import pup from 'puppeteer-core';
+import jimp from 'jimp';
+import decode, { QRCode } from 'jsqr';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
-import { getCookie } from '../utils';
+import { getCookie, sleep } from '../utils';
 /**
  * @description 二维码保存路径
  */
@@ -62,7 +64,14 @@ const handleLogin = async () => {
  * @description 获取登录二维码
  * @returns
  */
-const getLoginQRCode = async (page: pup.Page) => {
+const getLoginQRCode = async (
+  page: pup.Page
+): Promise<{
+  width: number;
+  height: number;
+  data: string;
+  buffer: Buffer;
+}> => {
   // 刷新二维码
   await refreshQRCode(page);
   // 图片源
@@ -74,7 +83,14 @@ const getLoginQRCode = async (page: pup.Page) => {
   const base64Data = imgSrc.replace(/^data:image\/\w+;base64,/, '');
   // buffer
   const dataBuffer = Buffer.from(base64Data, 'base64');
-  return { src: imgSrc, buffer: dataBuffer };
+  // 解码
+  const res = await decodeQRCode(dataBuffer);
+  if (res) {
+    return { ...res, buffer: dataBuffer };
+  }
+  await sleep(2000);
+  // 再次请求
+  return await getLoginQRCode(page);
 };
 
 /**
@@ -159,22 +175,25 @@ const getLoginStatus = (page: pup.Page) => {
 const tryLogin = async (page: pup.Page) => {
   // 获取二维码
   const qrData = await getLoginQRCode(page);
-  if (qrData) {
-    // 二维码信息
-    const { src, buffer } = qrData;
-    // 保存二维码
-    if (STUDY_CONFIG.qrcodeLocalEnabled) {
-      // 二维码文件夹不存在
-      if (!fs.existsSync(qrcodePath)) {
-        // 创建路径
-        fs.mkdirSync(qrcodePath);
-      }
-      // 写入文件
-      fs.writeFileSync(filePath, buffer);
-      shared.log.info(`登录二维码保存路径: ${filePath}`);
+  // 二维码信息
+  const { width, height, data, buffer } = qrData;
+  // 保存二维码
+  if (STUDY_CONFIG.qrcodeLocalEnabled) {
+    // 二维码文件夹不存在
+    if (!fs.existsSync(qrcodePath)) {
+      // 创建路径
+      fs.mkdirSync(qrcodePath);
     }
-    // 图片
-    const imgWrap = `
+    // 写入文件
+    fs.writeFileSync(filePath, buffer);
+    shared.log.info(`登录二维码保存路径: ${filePath}`);
+  }
+  // src
+  const imgSrc = `https://my.tv.sohu.com/user/a/wvideo/getQRCode.do?text=${encodeURIComponent(
+    data
+  )}&width=${width}&height=${height}`;
+  // 图片
+  const imgWrap = `
      <div style="padding: 10px 0">
      <div
        style="
@@ -186,17 +205,45 @@ const tryLogin = async (page: pup.Page) => {
          border-radius: 10px;
        "
      >
-         <img src="${src}" style="" />
+         <img src="${imgSrc}" style="" />
        </div>
      </div>
 `;
-    // 推送学习提示
-    shared.pushModal({
-      title: '学习提示',
-      content: ['扫一扫, 登录学习强国!', imgWrap],
-      type: 'info',
+  // 推送学习提示
+  shared.pushModal({
+    title: '学习提示',
+    content: ['扫一扫, 登录学习强国!', imgWrap],
+    type: 'info',
+  });
+};
+/**
+ * @description 解码
+ * @param buffer
+ * @returns
+ */
+const decodeQRCode = (buffer: Buffer) => {
+  return new Promise<
+    { width: number; height: number; data: string } | undefined
+  >((resolve) => {
+    jimp.read(buffer, (err, image) => {
+      if (!err) {
+        const { data, width, height } = image.bitmap;
+        // 转换为 unit8
+        const unit8 = new Uint8ClampedArray(data);
+        // 解码
+        const res = decode(unit8, width, height);
+        if (res) {
+          resolve({
+            width,
+            height,
+            data: res.data,
+          });
+          return;
+        }
+      }
+      resolve(undefined);
     });
-  }
+  });
 };
 
 export default handleLogin;
