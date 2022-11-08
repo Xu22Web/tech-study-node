@@ -187,28 +187,32 @@ export class Log {
       this.collect('finish', '关闭日志!');
       // 关闭日志
       this.enabled = false;
-      // 当天时间
-      const date = new Date();
       // 文件路径
-      const filePath = path.join(logsPath, `${formatDate(date)}.log`);
+      const filePath = path.join(logsPath, `${formatDate()}.log`);
       // 日志数据
       const logsData = this.logs.join('\n');
-      // 清除缓存日志
-      this.clear();
-      // 文件是否存在
-      if (fs.existsSync(filePath)) {
-        // 追加文件
-        fs.appendFileSync(filePath, `\n${logsData}\n`);
-      } else {
-        // 日志文件夹不存在
-        if (!fs.existsSync(logsPath)) {
-          // 创建路径
-          fs.mkdirSync(logsPath);
+      try {
+        // 文件是否存在
+        if (fs.existsSync(filePath)) {
+          // 追加文件
+          fs.appendFileSync(filePath, `\n${logsData}`);
+        } else {
+          // 日志文件夹不存在
+          if (!fs.existsSync(logsPath)) {
+            // 创建路径
+            fs.mkdirSync(logsPath);
+          }
+          // 写入文件
+          fs.writeFileSync(filePath, logsData);
         }
-        // 写入文件
-        fs.writeFileSync(filePath, logsData);
+        console.log(`日志文件保存路径: ${filePath}`);
+        // 清除缓存日志
+        this.clear();
+      } catch (e: any) {
+        // 错误
+        const err = new Error(e);
+        console.log('日志写入失败!', err.message, err.stack || 'unkown stack');
       }
-      console.log(`日志文件保存路径: ${filePath}`);
     }
   }
   /**

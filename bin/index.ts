@@ -15,6 +15,7 @@ import {
   getRestScheduleList,
   getTableHTML,
 } from '../src/utils';
+
 /**
  * @description 配置
  */
@@ -25,6 +26,7 @@ type Config = {
   studyConfig: Partial<typeof STUDY_CONFIG>;
   urlConfig: Partial<typeof URL_CONFIG>;
 };
+
 /**
  * @description 定义配置
  */
@@ -182,5 +184,6 @@ export const startSchedule = () => {
     });
   });
 };
+
 // 开始任务
 startSchedule();
