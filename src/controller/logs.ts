@@ -195,7 +195,7 @@ export class Log {
         // 文件是否存在
         if (fs.existsSync(filePath)) {
           // 追加文件
-          fs.appendFileSync(filePath, `\n${logsData}`);
+          fs.appendFileSync(filePath, `\n\n${logsData}`);
         } else {
           // 日志文件夹不存在
           if (!fs.existsSync(logsPath)) {
