@@ -100,10 +100,9 @@ const handleWatchVideo = async () => {
     );
     // 播放视频
     const waitRes = await waitVideos();
-    // 播放失败
+    // 播放失败， 不影响刷分
     if (!waitRes) {
-      shared.log.info('观看失败, 跳过此视频!');
-      continue;
+      shared.log.fail('观看失败, 继续观看!');
     }
     // 看视频时间
     const duration = ~~(Math.random() * 40 + 100);
