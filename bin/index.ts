@@ -158,30 +158,45 @@ export const startSchedule = () => {
   console.log('开始设置定时任务!');
   // 定时任务
   scheduleList.forEach((currentSchedule, i) => {
-    console.log(
-      `${i + 1} / ${SCHEDULE_CONFIG.length} | 时间: ${
-        currentSchedule.timeText
-      } | 用户: ${chalk.blueBright(currentSchedule.nick)} 已设置任务`
-    );
-    schedule.scheduleJob(currentSchedule.cron, async () => {
-      // 开始日志
-      shared.log.start();
-      shared.log.info(
-        `正在执行 ${chalk.blueBright(currentSchedule.nick)} 的定时任务...`
-      );
-      // 处理任务
-      await handleSchedule(currentSchedule);
-      shared.log.info(
-        `执行 ${chalk.blueBright(currentSchedule.nick)} 的定时任务完成!`
-      );
-      // 结束日志
-      shared.log.finish();
+    try {
       console.log(
-        `${i + 1} / ${SCHEDULE_CONFIG.length} | 用户: ${chalk.blueBright(
-          currentSchedule.nick
-        )} 任务执行完成!`
+        `${i + 1} / ${SCHEDULE_CONFIG.length} | 时间: ${
+          currentSchedule.timeText
+        } | 用户: ${chalk.blueBright(currentSchedule.nick)} 已设置任务`
       );
-    });
+      schedule.scheduleJob(currentSchedule.cron, async () => {
+        // 开始日志
+        shared.log.start();
+        shared.log.info(
+          `正在执行 ${chalk.blueBright(currentSchedule.nick)} 的定时任务...`
+        );
+        // 处理任务
+        await handleSchedule(currentSchedule);
+        shared.log.info(
+          `执行 ${chalk.blueBright(currentSchedule.nick)} 的定时任务完成!`
+        );
+        // 结束日志
+        shared.log.finish();
+        console.log(
+          `${i + 1} / ${SCHEDULE_CONFIG.length} | 用户: ${chalk.blueBright(
+            currentSchedule.nick
+          )} 任务执行完成!`
+        );
+      });
+    } catch (e: any) {
+      // 错误
+      const err = new Error(e);
+      shared.log.fail([
+        `${chalk.red(err.message)}`,
+        `${chalk.red(err.stack || 'unkown stack')}`,
+      ]);
+      // 推送服务提示
+      shared.pushModalTips({
+        title: '服务提示',
+        content: ['发生错误!', err.message, err.stack || 'unkown stack'],
+        type: 'fail',
+      });
+    }
   });
 };
 
