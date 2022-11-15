@@ -159,6 +159,7 @@ const shared: Shared = {
     // 获取浏览器
     const browser = this.getBrowser();
     if (browser) {
+      // 关闭浏览器
       await browser.close();
     }
   },

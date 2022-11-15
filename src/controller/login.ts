@@ -122,6 +122,8 @@ const refreshQRCode = async (page: pup.Page) => {
       const timeout = setTimeout(() => {
         // 清除定时器
         clearInterval(timer);
+        // 清除超时延迟
+        clearTimeout(timeout);
         resolve(false);
       }, time);
     });
@@ -164,8 +166,10 @@ const getLoginStatus = (page: pup.Page) => {
     }, 100);
     // 超时延迟
     const timeout = setTimeout(() => {
-      // 清除定时
+      // 清除定时器
       clearInterval(timer);
+      // 清除超时延迟
+      clearTimeout(timeout);
       shared.log.fail('登录超时, 请重试!');
       resolve(false);
     }, STUDY_CONFIG.loginTimeout);

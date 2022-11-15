@@ -55,13 +55,13 @@ export const handleSchedule = async (schedule: Schedule) => {
   try {
     // 处理浏览器
     await handleBrowser(browser);
+    shared.log.info('关闭浏览器!');
     // 关闭浏览器
     await shared.closeBrowser();
-    shared.log.info('已关闭浏览器!');
   } catch (e: any) {
+    shared.log.warn('发生错误，关闭浏览器!');
     // 关闭浏览器
     await shared.closeBrowser();
-    shared.log.warn('发生错误，已关闭浏览器!');
     // 错误
     const err = new Error(e);
     shared.log.fail([
