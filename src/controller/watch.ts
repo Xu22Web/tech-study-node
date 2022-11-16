@@ -144,8 +144,10 @@ const getTodayNews = async () => {
   if (shared.taskList) {
     // 最大新闻数
     const { maxNewsNum } = STUDY_CONFIG;
+    // 分数
+    const { dayMaxScore, currentScore } = shared.taskList[0];
     // 新闻数
-    const newsNum = shared.taskList[0].need;
+    const newsNum = dayMaxScore - currentScore;
     // 需要学习的新闻数量
     const need = newsNum < maxNewsNum ? newsNum : maxNewsNum;
     // 获取重要新闻
@@ -180,8 +182,10 @@ const getTodayVideos = async () => {
   if (shared.taskList) {
     // 最大视频数
     const { maxVideoNum } = STUDY_CONFIG;
+    // 分数
+    const { dayMaxScore, currentScore } = shared.taskList[1];
     // 视频数
-    const videoNum = shared.taskList[1].need;
+    const videoNum = dayMaxScore - currentScore;
     // 需要学习的视频数量
     const need = videoNum < maxVideoNum ? videoNum : maxVideoNum;
     // 获取重要视频

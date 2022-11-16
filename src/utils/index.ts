@@ -362,18 +362,15 @@ export const formatTask = (task: {
   // 当前分数、最大分数、链接
   const { currentScore, dayMaxScore } = task;
   // 进度
-  let rate = parseFloat(((100 * currentScore) / dayMaxScore).toFixed(2));
+  let rate = ~~((100 * currentScore) / dayMaxScore);
   // 成组任务
   if (dayMaxScore <= currentScore) {
     rate = 100;
   }
-  // 需要任务数
-  const need = rate === 100 ? 0 : dayMaxScore - currentScore;
   return {
     currentScore,
     dayMaxScore,
     rate,
-    need,
     status: rate === 100,
   };
 };

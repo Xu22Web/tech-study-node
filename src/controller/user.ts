@@ -21,7 +21,6 @@ export type TaskList = {
   currentScore: number;
   dayMaxScore: number;
   rate: number;
-  need: number;
   status: boolean;
   title: string;
 }[];
@@ -180,10 +179,23 @@ export const getTaskList = async () => {
           ...taskProgress[6],
         };
         // 每周答题
-        taskList[3] = {
-          title: '每周答题',
-          ...taskProgress[2],
-        };
+        const { currentScore, dayMaxScore } = taskProgress[2];
+        // 每周答题缺分补满
+        if (shared.schedule?.weeklyFill) {
+          taskList[3] = {
+            title: '每周答题',
+            ...taskProgress[2],
+            status: currentScore < dayMaxScore,
+          };
+        } else {
+          // 每周答题
+          taskList[3] = {
+            title: '每周答题',
+            ...taskProgress[2],
+            status: !!currentScore,
+            rate: currentScore ? 100 : 0,
+          };
+        }
         // 专项练习
         taskList[4] = {
           title: '专项练习',
