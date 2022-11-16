@@ -2,7 +2,7 @@ import pup from 'puppeteer-core';
 import PUSH_CONFIG from '../config/push';
 import { Schedule } from '../config/schedule';
 import STUDY_CONFIG from '../config/study';
-import { log, Log } from '../controller/logs';
+import { Log } from '../controller/logs';
 import {
   getTaskList,
   getTodayScore,
@@ -141,7 +141,7 @@ type Shared = {
  * @description 共享数据
  */
 const shared: Shared = {
-  log: log(),
+  log: new Log(),
   getBrowser() {
     if (this.broswer && this.broswer.isConnected()) {
       return this.broswer;

@@ -275,12 +275,3 @@ export class Log {
     });
   }
 }
-
-/**
- * @description 日志
- * @param text
- * @returns
- */
-export const log = (text?: string) => {
-  return new Log(text);
-};
