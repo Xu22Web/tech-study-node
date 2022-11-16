@@ -36,9 +36,7 @@ const handleLogin = async () => {
   // 登录结果
   let result = false;
   // 允许重试次数内
-  while (tryCount <= STUDY_CONFIG.maxTryLoginCount) {
-    // 登录次数
-    tryCount++;
+  while (tryCount < STUDY_CONFIG.maxTryLoginCount) {
     // 尝试登录
     await tryLogin(page);
     // 登录状态
@@ -48,6 +46,8 @@ const handleLogin = async () => {
       result = true;
       break;
     }
+    // 登录次数
+    tryCount++;
   }
   // 是否删除二维码
   if (STUDY_CONFIG.qrcodeLocalEnabled && STUDY_CONFIG.qrcodeAutoClean) {
