@@ -7,9 +7,9 @@ const STUDY_CONFIG = {
    */
   timeout: 10000,
   /**
-   * @description 最大登录重试次数
+   * @description 最大登录尝试次数
    */
-  maxRetryLoginCount: 10,
+  maxTryLoginCount: 10,
   /**
    * @description 最大登录等待时间
    */
