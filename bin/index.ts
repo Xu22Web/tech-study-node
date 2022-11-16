@@ -56,12 +56,8 @@ export const handleSchedule = async (schedule: Schedule) => {
     // 处理浏览器
     await handleBrowser(browser);
     shared.log.info('关闭浏览器!');
-    // 关闭浏览器
-    await shared.closeBrowser();
   } catch (e: any) {
     shared.log.warn('发生错误，关闭浏览器!');
-    // 关闭浏览器
-    await shared.closeBrowser();
     // 错误
     const err = new Error(e);
     shared.log.fail([
@@ -75,6 +71,8 @@ export const handleSchedule = async (schedule: Schedule) => {
       type: 'fail',
     });
   }
+  // 关闭浏览器
+  await shared.closeBrowser();
   // 剩余任务
   const rest = getRestScheduleList(SCHEDULE_CONFIG);
   // 存在下次任务
