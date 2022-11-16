@@ -30,6 +30,11 @@ export type Schedule = {
    * @example true 退出答题不提交 false 继续答题
    */
   paperExitAfterWrong: boolean;
+  /**
+   * @description 每周答题缺分补满
+   * @example true 此项未满分继续答题直到满分 false 此项未满分结束答题
+   */
+  weeklyFill: boolean;
 };
 
 /**
@@ -43,5 +48,6 @@ export const SCHEDULE_CONFIG: Schedule[] = [
     taskConfig: [true, true, true, true, true],
     weeklyExitAfterWrong: false,
     paperExitAfterWrong: false,
+    weeklyFill: false,
   },
 ];

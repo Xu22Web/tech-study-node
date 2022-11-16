@@ -89,6 +89,14 @@ const handleExam = async (type: number): Promise<boolean> => {
           type: 'fail',
         });
       }
+      // 任务列表
+      await shared.getTaskList();
+      // 继续做
+      if (shared.taskList && !shared.taskList[3].status) {
+        shared.log.info('未完成任务, 继续每周答题!');
+        // 重新答题
+        return await handleExam(1);
+      }
       return result;
     }
     shared.log.info('每周答题 页面跳转失败!');
