@@ -31,12 +31,14 @@ const handleLogin = async () => {
   if (!gotoRes || !page) {
     return false;
   }
-  // 重试次数
-  let retryCount = 0;
+  // 尝试次数
+  let tryCount = 0;
   // 登录结果
   let result = false;
   // 允许重试次数内
-  while (retryCount <= STUDY_CONFIG.maxRetryLoginCount) {
+  while (tryCount <= STUDY_CONFIG.maxTryLoginCount) {
+    // 登录次数
+    tryCount++;
     // 尝试登录
     await tryLogin(page);
     // 登录状态
@@ -46,8 +48,6 @@ const handleLogin = async () => {
       result = true;
       break;
     }
-    // 登录次数
-    retryCount++;
   }
   // 是否删除二维码
   if (STUDY_CONFIG.qrcodeLocalEnabled && STUDY_CONFIG.qrcodeAutoClean) {
@@ -122,8 +122,6 @@ const refreshQRCode = async (page: pup.Page) => {
       const timeout = setTimeout(() => {
         // 清除定时器
         clearInterval(timer);
-        // 清除超时延迟
-        clearTimeout(timeout);
         resolve(false);
       }, time);
     });
@@ -161,15 +159,11 @@ const getLoginStatus = (page: pup.Page) => {
         resolve(true);
         return;
       }
-      // 刷新二维码
-      await refreshQRCode(page);
     }, 100);
     // 超时延迟
     const timeout = setTimeout(() => {
       // 清除定时器
       clearInterval(timer);
-      // 清除超时延迟
-      clearTimeout(timeout);
       shared.log.fail('登录超时, 请重试!');
       resolve(false);
     }, STUDY_CONFIG.loginTimeout);

@@ -241,8 +241,6 @@ const waitVideos = async () => {
       const timeout = setTimeout(() => {
         // 清除定时器
         clearInterval(timer);
-        // 清除超时延迟
-        clearTimeout(timeout);
         resolve(false);
       }, time);
     });
@@ -289,8 +287,6 @@ const waitVideos = async () => {
       const timeout = setTimeout(() => {
         // 清除定时器
         clearInterval(timer);
-        // 清除超时延迟
-        clearTimeout(timeout);
         resolve(false);
       }, time);
     });

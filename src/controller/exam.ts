@@ -282,8 +282,6 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       const timeout = setTimeout(() => {
         // 清除定时器
         clearInterval(timer);
-        // 清除超时延迟
-        clearTimeout(timeout);
         resolve(false);
       }, time);
     });
@@ -972,8 +970,6 @@ const showSlideVerify = async (page: pup.Page) => {
         const timeout = setTimeout(() => {
           // 清除定时器
           clearInterval(timer);
-          // 清除超时延迟
-          clearTimeout(timeout);
           resolve(false);
         }, time);
       });
@@ -1060,8 +1056,6 @@ const waitResult = async (page: pup.Page) => {
       const timeout = setTimeout(() => {
         // 清除定时器
         clearInterval(timer);
-        // 清除超时延迟
-        clearTimeout(timeout);
         resolve(false);
       }, STUDY_CONFIG.timeout);
       return;
