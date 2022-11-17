@@ -126,7 +126,7 @@ type Shared = {
   /**
    * @description 获取任务列表
    */
-  getTaskList(): Promise<TaskList | undefined>;
+  getTaskList(): Promise<void>;
   /**
    * @description 获取总分
    */
@@ -295,18 +295,13 @@ const shared: Shared = {
     this.taskList = await getTaskList();
     if (this.taskList) {
       this.log.success('获取任务列表成功!');
-      return this.taskList;
+      return;
     }
     this.log.fail('获取任务列表失败!');
     // 限制请求速率
     await sleep(STUDY_CONFIG.rateLimit);
     // 获取任务列表
-    this.taskList = await getTaskList();
-    if (this.taskList) {
-      this.log.success('再次获取任务列表成功!');
-      return this.taskList;
-    }
-    this.log.fail('再次获取任务列表失败!');
+    await this.getTaskList();
   },
   async getTotalScore() {
     shared.log.loading('正在获取总分...');
