@@ -579,26 +579,32 @@ const handleChoiceBtn = async (page: pup.Page, answers: string[]) => {
           choices.forEach((choice) => {
             // 选项文本
             const choiceText = choice.innerText.trim();
-            // 无符号选项文本
-            const unsignedChoiceText = choiceText.replaceAll(/[、，,。 ]/g, '');
-            // 无符号答案
-            const unsignedAnswer = answer.replaceAll(/[、，,。 ]/g, '');
-            // 存在答案文本
-            if (
-              choiceText === answer ||
-              choiceText.includes(answer) ||
-              answer.includes(choiceText) ||
-              unsignedChoiceText.includes(unsignedAnswer)
-            ) {
-              // 最小长度选项有值
-              if (minLengthChoice) {
-                // 最短长度选项与当前选项比较长度
-                if (minLengthChoice.innerText.length > choiceText.length) {
+            // 答案选项存在
+            if (answer && choiceText) {
+              // 无符号选项文本
+              const unsignedChoiceText = choiceText.replaceAll(
+                /[、，,。 ]/g,
+                ''
+              );
+              // 无符号答案
+              const unsignedAnswer = answer.replaceAll(/[、，,。 ]/g, '');
+              // 存在答案文本
+              if (
+                choiceText === answer ||
+                choiceText.includes(answer) ||
+                answer.includes(choiceText) ||
+                unsignedChoiceText.includes(unsignedAnswer)
+              ) {
+                // 最小长度选项有值
+                if (minLengthChoice) {
+                  // 最短长度选项与当前选项比较长度
+                  if (minLengthChoice.innerText.length > choiceText.length) {
+                    minLengthChoice = choice;
+                  }
+                } else {
+                  // 最小长度选项赋值
                   minLengthChoice = choice;
                 }
-              } else {
-                // 最小长度选项赋值
-                minLengthChoice = choice;
               }
             }
           });
