@@ -60,14 +60,11 @@ export const handleSchedule = async (schedule: Schedule) => {
     shared.log.warn('发生错误，关闭浏览器!');
     // 错误
     const err = new Error(e);
-    shared.log.fail([
-      `${chalk.red(err.message)}`,
-      `${chalk.red(err.stack || 'unkown stack')}`,
-    ]);
+    shared.log.fail([`${chalk.red(err.stack || 'unkown stack')}`]);
     // 推送服务提示
     shared.pushModalTips({
       title: '服务提示',
-      content: ['发生错误!', err.message, err.stack || 'unkown stack'],
+      content: ['发生错误!', err.stack || 'unkown stack'],
       type: 'fail',
     });
   }
@@ -184,14 +181,11 @@ export const startSchedule = () => {
     } catch (e: any) {
       // 错误
       const err = new Error(e);
-      shared.log.fail([
-        `${chalk.red(err.message)}`,
-        `${chalk.red(err.stack || 'unkown stack')}`,
-      ]);
+      shared.log.fail([`${chalk.red(err.stack || 'unkown stack')}`]);
       // 推送服务提示
       shared.pushModalTips({
         title: '服务提示',
-        content: ['发生错误!', err.message, err.stack || 'unkown stack'],
+        content: ['发生错误!', err.stack || 'unkown stack'],
         type: 'fail',
       });
     }
