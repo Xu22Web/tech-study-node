@@ -271,12 +271,12 @@ pnpm install
         *    *    *    *    *    *
         ┬    ┬    ┬    ┬    ┬    ┬
         │    │    │    │    │    │
-        │    │    │    │    │    └ day of week (0 - 7) (0 or 7 is Sun)
-        │    │    │    │    └───── month (1 - 12)
-        │    │    │    └────────── day of month (1 - 31)
-        │    │    └─────────────── hour (0 - 23)
-        │    └──────────────────── minute (0 - 59)
-        └───────────────────────── second (0 - 59, OPTIONAL)
+        │    │    │    │    │    └ 星期 (0 - 7) (0 或 7 是星期天)
+        │    │    │    │    └───── 月 (1 - 12)
+        │    │    │    └────────── 日 (1 - 31)
+        │    │    └─────────────── 时 (0 - 23)
+        │    └──────────────────── 分 (0 - 59)
+        └───────────────────────── 秒 (0 - 59，可选)
       ```
 
    3. 查看更改 `Study 配置`（`src/config/study.ts`），需要注意的配置项
@@ -289,9 +289,9 @@ pnpm install
 
    4. 启用 `PushPlus` 推送步骤（不需要推送请跳过）
 
-      - 在 [PushPlus 官网](https://www.pushplus.plus/ 'PushPlus 官网') 上，注册登录账号，添加自己为好友（[PushPlus 好友消息](https://www.pushplus.plus/liaison.html 'PushPlus 好友消息')）。若有其他用户，可添加其他用户为好友（官方默认采用 `微信公众号` 推送）
+      - 在 [PushPlus 官网](https://www.pushplus.plus/ 'PushPlus 官网') 上，注册登录账号。若有其他用户，可添加其他用户为好友。（[PushPlus 好友消息](https://www.pushplus.plus/liaison.html 'PushPlus 好友消息')，官方默认采用 `微信公众号` 推送）
 
-      - 更改 `Push 配置`（`src/config/push.ts`），设置`enabled`为`true`，添加管理员`token`
+      - 更改 `Push 配置`（`src/config/push.ts`），设置`enabled`为`true`，添加管理员`token`（`管理员`能接收到服务推送以及错误推送，`用户`只能接受到自己的学习通知）
 
         ```js
           {
@@ -309,9 +309,9 @@ pnpm install
              */
             from: '卑微的服务器',
             /**
-             * @description 管理员的token
+             * @description 管理员的 token
              */
-            token: '自己的 token',
+            token: '管理员 token',
           }
 
         ```
@@ -324,12 +324,14 @@ pnpm install
         [
           {
             /**
-             * @description 自己或者好友 token
+             * @description 管理员或者好友 token
              */
             token: '用户 token',
           },
         ];
         ```
+
+        ![管理员token](./administrator.png)
 
         ![好友消息token](./user.png)
 
@@ -367,7 +369,7 @@ pnpm start
 
 ### 附加 Addition
 
-- 在 `./test` 文件夹下，依赖 `vitest` 完成基础功能的单元测试
+- 在 `test` 文件夹下，依赖 `vitest` 完成基础功能的单元测试
 
   - `login` 用户登录
 
