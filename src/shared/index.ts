@@ -251,6 +251,11 @@ const shared: Shared = {
     const { token, from, enabled } = PUSH_CONFIG;
     // 启用推送
     if (enabled) {
+      if (token === this.schedule?.token) {
+        // 管理员推送
+        await pushModal({ title, subTitle, to, content, type, from }, token);
+        return;
+      }
       // 推送
       await pushModal(
         { title, subTitle, to, content, type, from },
