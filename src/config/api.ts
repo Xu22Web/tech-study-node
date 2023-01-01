@@ -41,11 +41,6 @@ const API_CONFIG = {
     'https://www.xuexi.cn/lgdata/1novbsbi47k.json'
   ],
   /**
-   * @description 每周答题列表
-   */
-  weeklyList:
-    'https://pc-proxy-api.xuexi.cn/api/exam/service/practice/pc/weekly/more',
-  /**
    * @description 专项练习列表
    */
   paperList: 'https://pc-proxy-api.xuexi.cn/api/exam/service/paper/pc/list',
@@ -56,7 +51,7 @@ const API_CONFIG = {
   /**
    * @description 答案搜素
    */
-  answerSearch: 'https://api.answer.uu988.xyz/answer/search',
+  answerSearch: 'https://api.answer.redfish.top/answer/search',
   /**
    * @description 推送
    */

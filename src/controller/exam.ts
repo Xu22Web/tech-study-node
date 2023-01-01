@@ -1,7 +1,7 @@
 import md5 from 'blueimp-md5';
 import chalk from 'chalk';
 import pup from 'puppeteer-core';
-import { examPaper, examWeekly, getAnswer, postAnswer } from '../apis';
+import { examPaper, getAnswer, postAnswer } from '../apis';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
@@ -27,7 +27,7 @@ import {
 const handleExam = async (type: number): Promise<boolean> => {
   // 每日答题
   if (type === 0) {
-    // 跳转每周答题
+    // 跳转每日答题
     const gotoRes = await shared.gotoPage(URL_CONFIG.examPractice, {
       waitUntil: 'domcontentloaded',
     });
@@ -50,60 +50,8 @@ const handleExam = async (type: number): Promise<boolean> => {
     shared.log.info('每日答题 页面跳转失败!');
     return false;
   }
-  // 每周答题
-  if (type === 1) {
-    // 查找题号
-    const examWeekly = await findExamWeekly();
-    // 不存在习题
-    if (!examWeekly) {
-      return true;
-    }
-    // 题号 名称
-    const { id, name } = examWeekly;
-    // 每周答题链接
-    const url = `${URL_CONFIG.examWeekly}?id=${id}`;
-    shared.log.warn('每周答题, 题目信息');
-    shared.log.info(`标题: ${chalk.yellow(name)}`);
-    shared.log.info(`链接: ${chalk.yellow(url)}`);
-    // 跳转每周答题
-    const gotoRes = await shared.gotoPage(url, {
-      waitUntil: 'domcontentloaded',
-    });
-    // 页面
-    const page = shared.getPage();
-    // 跳转成功
-    if (gotoRes && page) {
-      // 答题结果
-      const result = await handleQuestion(page, 1);
-      // 答题失败
-      if (!result) {
-        shared.log.fail('每周答题, 答题错误或失败!');
-        // 推送学习提示
-        shared.pushModal({
-          title: '学习提示',
-          content: [
-            '每周答题, 答题错误或失败!',
-            `标题: ${getHighlightHTML(name)}`,
-            `链接: ${getHighlightHTML(url)}`,
-          ],
-          type: 'fail',
-        });
-      }
-      // 任务列表
-      await shared.getTaskList();
-      // 继续做
-      if (shared.taskList && !shared.taskList[3].status) {
-        shared.log.info('未完成任务, 继续每周答题!');
-        // 重新答题
-        return await handleExam(1);
-      }
-      return result;
-    }
-    shared.log.info('每周答题 页面跳转失败!');
-    return false;
-  }
   // 专项练习
-  if (type === 2) {
+  if (type === 1) {
     // 查找题号
     const examPaper = await findExamPaper();
     // 不存在习题
@@ -153,74 +101,15 @@ const handleExam = async (type: number): Promise<boolean> => {
  * @description 初始化答题
  * @returns
  */
-const initExam = async (type: number) => {
-  // 每周答题
-  if (type === 0) {
-    // 请求第一页
-    const res = await getExamWeekly(1);
-    if (res) {
-      // 总页数
-      const { totalPageCount } = res;
-      // 请求速率限制
-      await sleep(STUDY_CONFIG.rateLimit);
-      return totalPageCount;
-    }
-  }
-  // 专项练习
-  if (type === 1) {
-    // 请求第一页
-    const res = await getExamPaper(1);
-    if (res) {
-      // 总页数
-      const { totalPageCount } = res;
-      // 请求速率限制
-      await sleep(STUDY_CONFIG.rateLimit);
-      return totalPageCount;
-    }
-  }
-};
-
-/**
- * @description 获取每周答题
- * @returns
- */
-const findExamWeekly = async () => {
-  // 总页数
-  const total = await initExam(0);
-  // 当前页数
-  let current = STUDY_CONFIG.weeklyReverse ? total : 1;
-  if (total && current) {
-    while (current <= total && current) {
-      // 当前页数数据
-      const res = await getExamWeekly(current);
-      if (res) {
-        const examWeeks = res.list;
-        // 逆序每周列表
-        if (STUDY_CONFIG.weeklyReverse) {
-          examWeeks.reverse();
-        }
-        for (const i in examWeeks) {
-          // 获取每周列表
-          const examWeek = examWeeks[i].practices;
-          // 逆序每周列表
-          if (STUDY_CONFIG.weeklyReverse) {
-            examWeek.reverse();
-          }
-          // 查询每周的测试列表
-          for (const j in examWeek) {
-            // 遍历查询有没有没做过的 1为"开始答题" , 2为"重新答题"
-            if (examWeek[j].status === 1) {
-              return examWeek[j];
-            }
-          }
-        }
-        current += STUDY_CONFIG.weeklyReverse ? -1 : 1;
-        // 请求速率限制
-        await sleep(STUDY_CONFIG.rateLimit);
-      } else {
-        break;
-      }
-    }
+const initExam = async () => {
+  // 请求第一页
+  const res = await getExamPaper(1);
+  if (res) {
+    // 总页数
+    const { totalPageCount } = res;
+    // 请求速率限制
+    await sleep(STUDY_CONFIG.rateLimit);
+    return totalPageCount;
   }
 };
 
@@ -230,7 +119,7 @@ const findExamWeekly = async () => {
  */
 const findExamPaper = async () => {
   // 总页数
-  const total = await initExam(1);
+  const total = await initExam();
   // 当前页数
   let current = STUDY_CONFIG.paperReverse ? total : 1;
   if (total && current) {
@@ -354,10 +243,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       shared.log.loading(`${chalk.blueBright(current)} / ${total} 答题失败!`);
       // 可能答错且无答案
       result = false;
-      if (type === 1 && shared.schedule?.weeklyExitAfterWrong) {
-        return result;
-      }
-      if (type === 2 && shared.schedule?.paperExitAfterWrong) {
+      if (type === 1 && shared.schedule?.paperExitAfterWrong) {
         return result;
       }
       // 随机答题
@@ -389,9 +275,6 @@ const handleQuestion = async (page: pup.Page, type: number) => {
           await saveAnswerFromWrong(page);
           // 可能答错
           result = false;
-          if (type === 1 && shared.schedule?.weeklyExitAfterWrong) {
-            return result;
-          }
         }
       }
     }
@@ -1141,41 +1024,6 @@ type ExamPractices = {
   status: number;
   startDate: string;
 }[];
-
-/**
- * @description 每周答题数据
- * @param pageNo 页码
- * @returns
- */
-export const getExamWeekly = async (pageNo: number) => {
-  // 获取页面
-  const page = shared.getPage();
-  if (!page) {
-    return;
-  }
-  try {
-    // 获取 cookies
-    const cookies = await getCookieIncludesDomain(page, '.xuexi.cn');
-    // cookie
-    const cookie = stringfyCookie(cookies);
-    // 每周答题
-    const data = await examWeekly(cookie, pageNo);
-    // 答题数据
-    const paperJson = decodeURIComponent(
-      escape(atob(data.data_str.replace(/-/g, '+').replace(/_/g, '/')))
-    );
-    // JSON格式化
-    const paper = <
-      {
-        list: {
-          practices: ExamPractices;
-        }[];
-        totalPageCount: number;
-      }
-    >JSON.parse(paperJson);
-    return paper;
-  } catch (e) {}
-};
 
 /**
  * @description 专项练习数据

@@ -17,24 +17,14 @@ export type Schedule = {
   cron: string;
   /**
    * @description 学习任务配置
-   * @example [文章选读, 视听学习, 每日答题, 每周答题, 专项练习]
+   * @example [文章选读, 视听学习, 每日答题, 专项练习]
    */
-  taskConfig: [boolean, boolean, boolean, boolean, boolean];
-  /**
-   * @description 每周答题 答题失败（包含答题错误或异常或无答案）是否退出不提交
-   * @example true 退出答题不提交 false 继续答题
-   */
-  weeklyExitAfterWrong: boolean;
+  taskConfig: [boolean, boolean, boolean, boolean];
   /**
    * @description 专项练习 答题失败（由于答完结算，仅包含答题异常或无答案）是否退出不提交
    * @example true 退出答题不提交 false 继续答题
    */
   paperExitAfterWrong: boolean;
-  /**
-   * @description 每周答题缺分补满
-   * @example true 此项未满分继续答题直到满分 false 此项未满分结束答题
-   */
-  weeklyFill: boolean;
 };
 
 /**
@@ -45,9 +35,7 @@ export const SCHEDULE_CONFIG: Schedule[] = [
     nick: 'xxx',
     token: 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
     cron: '0 0 12 * * ?',
-    taskConfig: [true, true, true, true, true],
-    weeklyExitAfterWrong: false,
+    taskConfig: [true, true, true, true],
     paperExitAfterWrong: false,
-    weeklyFill: false,
   },
 ];

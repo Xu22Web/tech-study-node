@@ -132,33 +132,6 @@ export const videoList = async () => {
 };
 
 /**
- * @description 每周答题数据
- * @param cookie
- * @param pageNo
- * @returns
- */
-export const examWeekly = async (cookie: string, pageNo: number) => {
-  try {
-    // 获取专项练习
-    const res = await axios.get(API_CONFIG.weeklyList, {
-      withCredentials: true,
-      headers: {
-        Cookie: cookie,
-      },
-      params: {
-        pageSize: 50,
-        pageNo,
-      },
-    });
-    // 请求成功
-    if (res.status === 200) {
-      const { data } = res;
-      return data;
-    }
-  } catch (e) {}
-};
-
-/**
  * @description 专项练习数据
  * @param cookie
  * @param pageNo

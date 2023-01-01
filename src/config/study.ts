@@ -47,11 +47,6 @@ const STUDY_CONFIG = {
    */
   rateLimit: 3000,
   /**
-   * @description 每周答题的开启逆序
-   * @example true 逆序 false 顺序
-   */
-  weeklyReverse: true,
-  /**
    * @description 专项练习的开启逆序
    * @example true 逆序 false 顺序
    */

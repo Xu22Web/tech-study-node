@@ -248,14 +248,9 @@ pnpm install
           cron: '0 0 12 * * ?',
           /**
            * @description 学习项目配置
-           * @example  [文章选读, 视听学习, 每日答题, 每周答题, 专项练习]
+           * @example  [文章选读, 视听学习, 每日答题, 专项练习]
            */
-          taskConfig: [true, true, true, true, true],
-          /**
-           * @description 每周答题 答题失败（包含答题错误或异常或无答案）退出不提交
-           * @example true 退出答题不提交 false 继续答题
-           */
-          weeklyExitAfterWrong: false,
+          taskConfig: [true, true, true, true],
           /**
            * @description 专项练习 答题失败（由于答完结算，仅包含答题异常或无答案）退出不提交
            * @example true 退出答题不提交 false 继续答题
@@ -282,8 +277,6 @@ pnpm install
    3. 查看更改 `Study 配置`（`src/config/study.ts`），需要注意的配置项
 
       - `qrcodeLocalEnabled` 登录二维码本地保存，便于在无头模式登录（开启推送后，自行关闭）
-
-      - `weeklyReverse` 每周答题的开启逆序
 
       - `paperReverse` 专项练习的开启逆序
 
@@ -375,7 +368,7 @@ pnpm start
 
   - `watch` 文章选读，视听学习
 
-  - `exam` 每日答题，每周答题，专项练习
+  - `exam` 每日答题，专项练习
 
   - `error` 错误测试
 

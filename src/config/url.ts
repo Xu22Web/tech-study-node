@@ -12,10 +12,6 @@ const URL_CONFIG = {
    */
   examPractice: 'https://pc.xuexi.cn/points/exam-practice.html',
   /**
-   * @description 每周答题页面
-   */
-  examWeekly: 'https://pc.xuexi.cn/points/exam-weekly-detail.html',
-  /**
    * @description 专项练习页面
    */
   examPaper: 'https://pc.xuexi.cn/points/exam-paper-detail.html',

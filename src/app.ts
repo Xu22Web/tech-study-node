@@ -6,6 +6,7 @@ import {
   renderScoreData,
   renderTasksData,
   renderUserData,
+  TaskType,
 } from './controller/user';
 import handleWatch from './controller/watch';
 import shared from './shared';
@@ -111,7 +112,10 @@ const study = async () => {
   await shared.getTaskList();
   if (shared.taskList) {
     // 是否读新闻
-    if (shared.schedule?.taskConfig[0] && !shared.taskList[0].status) {
+    if (
+      shared.schedule?.taskConfig[TaskType.READ] &&
+      !shared.taskList[TaskType.READ].status
+    ) {
       shared.log.info(`任务一: ${chalk.blueBright('文章选读')} 开始`);
       // 读新闻
       await handleWatch(0);
@@ -119,7 +123,10 @@ const study = async () => {
     shared.log.success(`任务一: ${chalk.blueBright('文章选读')} 已完成!`);
 
     // 是否看视频
-    if (shared.schedule?.taskConfig[1] && !shared.taskList[1].status) {
+    if (
+      shared.schedule?.taskConfig[TaskType.WATCH] &&
+      !shared.taskList[TaskType.WATCH].status
+    ) {
       shared.log.info(`任务二: ${chalk.blueBright('视听学习')} 开始`);
       // 看视频
       await handleWatch(1);
@@ -127,7 +134,10 @@ const study = async () => {
     shared.log.success(`任务二: ${chalk.blueBright('视听学习')} 已完成!`);
 
     // 是否每日答题
-    if (shared.schedule?.taskConfig[2] && !shared.taskList[2].status) {
+    if (
+      shared.schedule?.taskConfig[TaskType.PRACTICE] &&
+      !shared.taskList[TaskType.PRACTICE].status
+    ) {
       shared.log.info(`任务三: ${chalk.blueBright('每日答题')} 开始`);
       // 每日答题
       const res = await handleExam(0);
@@ -138,29 +148,20 @@ const study = async () => {
     }
     shared.log.success(`任务三: ${chalk.blueBright('每日答题')} 已完成!`);
 
-    // 是否每周答题
-    if (shared.schedule?.taskConfig[3] && !shared.taskList[3].status) {
-      shared.log.info(`任务四: ${chalk.blueBright('每周答题')} 开始`);
-      // 每周答题
+    // 是否专项练习
+    if (
+      shared.schedule?.taskConfig[TaskType.PAPER] &&
+      !shared.taskList[TaskType.PAPER].status
+    ) {
+      shared.log.info(`任务四: ${chalk.blueBright('专项练习')} 开始`);
+      // 专项练习
       const res = await handleExam(1);
       // 答题出错
       if (!res) {
-        shared.log.fail(`任务四: ${chalk.blueBright('每周答题')} 答题出错!`);
+        shared.log.fail(`任务四: ${chalk.blueBright('专项练习')} 答题出错!`);
       }
     }
-    shared.log.success(`任务四: ${chalk.blueBright('每周答题')} 已完成!`);
-
-    // 是否每日答题
-    if (shared.schedule?.taskConfig[4] && !shared.taskList[4].status) {
-      shared.log.info(`任务五: ${chalk.blueBright('专项练习')} 开始`);
-      // 专项练习
-      const res = await handleExam(2);
-      // 答题出错
-      if (!res) {
-        shared.log.fail(`任务五: ${chalk.blueBright('专项练习')} 答题出错!`);
-      }
-    }
-    shared.log.success(`任务五: ${chalk.blueBright('专项练习')} 已完成!`);
+    shared.log.success(`任务四: ${chalk.blueBright('专项练习')} 已完成!`);
     return;
   }
   // 重新学习

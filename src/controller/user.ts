@@ -23,8 +23,18 @@ export type TaskList = {
   rate: number;
   status: boolean;
   title: string;
+  type: TaskType;
 }[];
 
+/**
+ * @description 任务类型
+ */
+export enum TaskType {
+  READ,
+  WATCH,
+  PRACTICE,
+  PAPER,
+}
 /**
  * @description 渲染用户信息
  * @param userInfo
@@ -51,11 +61,12 @@ export const renderScoreData = (score: number, total: number) => {
  */
 export const renderTasksData = (taskList: TaskList) => {
   shared.log.warn(`任务进度`);
-  shared.log.info(`文章选读: ${chalk.yellow(taskList[0].rate)} %`);
-  shared.log.info(`视听学习: ${chalk.yellow(taskList[1].rate)} %`);
-  shared.log.info(`每日答题: ${chalk.yellow(taskList[2].rate)} %`);
-  shared.log.info(`每周答题: ${chalk.yellow(taskList[3].rate)} %`);
-  shared.log.info(`专项练习: ${chalk.yellow(taskList[4].rate)} %`);
+  shared.log.info(`文章选读: ${chalk.yellow(taskList[TaskType.READ].rate)} %`);
+  shared.log.info(`视听学习: ${chalk.yellow(taskList[TaskType.WATCH].rate)} %`);
+  shared.log.info(
+    `每日答题: ${chalk.yellow(taskList[TaskType.PRACTICE].rate)} %`
+  );
+  shared.log.info(`专项练习: ${chalk.yellow(taskList[TaskType.PAPER].rate)} %`);
 };
 
 /**
@@ -159,47 +170,33 @@ export const getTaskList = async () => {
         // 任务列表
         const taskList: TaskList = [];
         // 文章选读
-        taskList[0] = {
+        taskList[TaskType.READ] = {
           title: '文章选读',
           ...taskProgress[0],
+          type: TaskType.READ,
         };
         // 视听学习
-        taskList[1] = {
+        taskList[TaskType.WATCH] = {
           title: '视听学习',
           ...formatTask({
             currentScore:
-              taskProgress[1].currentScore + taskProgress[3].currentScore,
+              taskProgress[1].currentScore + taskProgress[2].currentScore,
             dayMaxScore:
-              taskProgress[1].dayMaxScore + taskProgress[3].dayMaxScore,
+              taskProgress[1].dayMaxScore + taskProgress[2].dayMaxScore,
           }),
+          type: TaskType.WATCH,
         };
         // 每日答题
-        taskList[2] = {
+        taskList[TaskType.PRACTICE] = {
           title: '每日答题',
-          ...taskProgress[6],
-        };
-        // 每周答题
-        const { currentScore, dayMaxScore } = taskProgress[2];
-        // 每周答题缺分补满
-        if (shared.schedule?.weeklyFill) {
-          taskList[3] = {
-            title: '每周答题',
-            ...taskProgress[2],
-            status: currentScore < dayMaxScore,
-          };
-        } else {
-          // 每周答题
-          taskList[3] = {
-            title: '每周答题',
-            ...taskProgress[2],
-            status: !!currentScore,
-            rate: currentScore ? 100 : 0,
-          };
-        }
-        // 专项练习
-        taskList[4] = {
-          title: '专项练习',
           ...taskProgress[5],
+          type: TaskType.PRACTICE,
+        };
+        // 专项练习
+        taskList[TaskType.PAPER] = {
+          title: '专项练习',
+          ...taskProgress[4],
+          type: TaskType.PAPER,
         };
         return taskList;
       }
