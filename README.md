@@ -191,27 +191,7 @@ pnpm install
          │  1xx.0.xxx.xxx.manifest           ✔
          │  1xx.0.xxx.xxx.manifest           ✔
          │  chrome.dll                       ✔
-         │  chrome.dll.sig                   ✔
-         │  chrome.exe.sig                   ✔
-         │  chrome_100_percent.pak           ✔
-         │  chrome_200_percent.pak           ✔
-         │  chrome_elf.dll                   ✔
-         │  chrome_pwa_launcher.exe          ✔
-         │  d3dcompiler_47.dll               ✔
-         │  elevation_service.exe            ✔
-         │  eventlog_provider.dll            ✔
-         │  icudtl.dat                       ✔
-         │  libEGL.dll                       ✔
-         │  libGLESv2.dll                    ✔
-         │  mojo_core.dll                    ✔
-         │  nacl_irt_x86_64.nexe             ✔
-         │  notification_helper.exe          ✔
-         │  optimization_guide_internal.dll  ✔
-         │  resources.pak                    ✔
-         │  v8_context_snapshot.bin          ✔
-         │  vk_swiftshader.dll               ✔
-         │  vk_swiftshader_icd.json          ✔
-         │  vulkan-1.dll                     ✔
+         │  ... ...                          ✔
          │
          └─Locales                           ✔
     ```
@@ -244,6 +224,7 @@ pnpm install
           token: '用户 token',
           /**
            * @description cron 表达式
+           * @example '0 0 12 * * ?' 表示12点, ['0 0 12 * * ?', '0 0 13 * * ?'] 表示十二点和十三点
            */
           cron: '0 0 12 * * ?',
           /**
@@ -277,8 +258,6 @@ pnpm install
    3. 查看更改 `Study 配置`（`src/config/study.ts`），需要注意的配置项
 
       - `qrcodeLocalEnabled` 登录二维码本地保存，便于在无头模式登录（开启推送后，自行关闭）
-
-      - `paperReverse` 专项练习的开启逆序
 
    4. 启用 `PushPlus` 推送步骤（不需要推送请跳过）
 
@@ -348,7 +327,7 @@ pnpm start
 
 ### 配置 Configuration
 
-- Puppeteer 配置 `src/config/pup.ts` （[官方文档配置](http://www.puppeteerjs.com/#?product=Puppeteer&version=v16.2.0&show=api-puppeteerlaunchoptions 'Puppeteer 使用和配置')）
+- Puppeteer 配置 `src/config/pup.ts` （[官方文档配置](https://pptr.dev/api/puppeteer.launchoptions 'Puppeteer 使用和配置')）
 
 - Study 配置 `src/config/study.ts` （学习配置）
 
