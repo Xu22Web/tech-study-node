@@ -1,7 +1,7 @@
-import pup from 'puppeteer-core';
+import * as pup from 'puppeteer-core';
 /**
  * @description puppeteer 配置
- * @link {@link http://www.puppeteerjs.com/#?product=Puppeteer&version=v16.2.0&show=api-puppeteerlaunchoptions puppeteer 官方配置文档}
+ * @link {@link https://pptr.dev/api/puppeteer.launchoptions puppeteer 官方配置文档}
  */
 const PUP_CONFIG: pup.PuppeteerLaunchOptions = {
   /**

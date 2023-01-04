@@ -1,4 +1,4 @@
-import pup from 'puppeteer-core';
+import * as pup from 'puppeteer-core';
 import PUSH_CONFIG from '../config/push';
 import { Schedule } from '../config/schedule';
 import STUDY_CONFIG from '../config/study';

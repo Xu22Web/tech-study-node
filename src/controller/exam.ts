@@ -1,6 +1,6 @@
 import md5 from 'blueimp-md5';
 import chalk from 'chalk';
-import pup from 'puppeteer-core';
+import * as pup from 'puppeteer-core';
 import { examPaper, getAnswer, postAnswer } from '../apis';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';

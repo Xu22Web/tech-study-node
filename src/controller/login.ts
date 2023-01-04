@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import pup from 'puppeteer-core';
+import * as pup from 'puppeteer-core';
 import jimp from 'jimp';
 import decode from 'jsqr';
 import STUDY_CONFIG from '../config/study';
