@@ -14,7 +14,7 @@ export type Schedule = {
   /**
    * @description 定时时间
    */
-  cron: string;
+  cron: string | string[];
   /**
    * @description 学习任务配置
    * @example [文章选读, 视听学习, 每日答题, 专项练习]

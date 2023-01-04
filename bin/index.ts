@@ -1,6 +1,6 @@
 import chalk from 'chalk';
 import schedule from 'node-schedule';
-import pup from 'puppeteer-core';
+import * as pup from 'puppeteer-core';
 import handleBrowser from '../src/app';
 import API_CONFIG from '../src/config/api';
 import PUP_CONFIG from '../src/config/pup';
@@ -70,8 +70,10 @@ export const handleSchedule = async (schedule: Schedule) => {
   }
   // 关闭浏览器
   await shared.closeBrowser();
+  // 任务列表
+  const scheduleList = formatScheduleList(SCHEDULE_CONFIG);
   // 剩余任务
-  const rest = getRestScheduleList(SCHEDULE_CONFIG);
+  const rest = getRestScheduleList(scheduleList);
   // 存在下次任务
   if (rest.length) {
     shared.log.warn('服务提示');
@@ -117,8 +119,10 @@ export const handleSchedule = async (schedule: Schedule) => {
  * @description 开始定时任务
  */
 export const startSchedule = () => {
+  // 任务列表
+  const scheduleList = formatScheduleList(SCHEDULE_CONFIG);
   // 剩余任务
-  const restSchedule = getRestScheduleList(SCHEDULE_CONFIG);
+  const restSchedule = getRestScheduleList(scheduleList);
   // 存在剩余任务
   if (restSchedule.length) {
     // 推送服务提示
@@ -148,34 +152,44 @@ export const startSchedule = () => {
     // 清除日志
     shared.log.autoClean();
   });
-  // 任务列表
-  const scheduleList = formatScheduleList(SCHEDULE_CONFIG);
   console.log('开始设置定时任务!');
   // 定时任务
-  scheduleList.forEach((currentSchedule, i) => {
+  scheduleList.forEach((currentSchedule) => {
     try {
       console.log(
-        `${i + 1} / ${SCHEDULE_CONFIG.length} | 时间: ${
+        `时间: ${chalk.yellow(
           currentSchedule.timeText
-        } | 用户: ${chalk.blueBright(currentSchedule.nick)} 已设置任务`
+        )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 已设置任务`
       );
+
       schedule.scheduleJob(currentSchedule.cron, async () => {
+        console.log(
+          `时间: ${chalk.yellow(
+            currentSchedule.timeText
+          )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 定时任务开始!`
+        );
+
         // 开始日志
         shared.log.start();
         shared.log.info(
-          `正在执行 ${chalk.blueBright(currentSchedule.nick)} 的定时任务...`
+          `正在执行 时间: ${chalk.yellow(
+            currentSchedule.timeText
+          )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 的定时任务...`
         );
         // 处理任务
         await handleSchedule(currentSchedule);
         shared.log.info(
-          `执行 ${chalk.blueBright(currentSchedule.nick)} 的定时任务完成!`
+          `执行完成 时间: ${chalk.yellow(
+            currentSchedule.timeText
+          )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 的定时任务!`
         );
         // 结束日志
         shared.log.finish();
+
         console.log(
-          `${i + 1} / ${SCHEDULE_CONFIG.length} | 用户: ${chalk.blueBright(
-            currentSchedule.nick
-          )} 任务执行完成!`
+          `时间: ${chalk.yellow(
+            currentSchedule.timeText
+          )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 定时任务完成!`
         );
       });
     } catch (e: any) {

@@ -1,5 +1,5 @@
 import paser from 'cron-parser';
-import pup from 'puppeteer-core';
+import * as pup from 'puppeteer-core';
 import { pushPlus } from '../apis';
 import { Schedule } from '../config/schedule';
 import { Bounds, ModalOptions, Point, PushOptions } from './interface';
@@ -662,7 +662,13 @@ export const getHighlightHTML = (text: string | number) => {
  * @description 获取剩余任务
  * @returns
  */
-export const getRestScheduleList = (scheduleList: Schedule[]) => {
+export const getRestScheduleList = (
+  scheduleList: (Schedule & {
+    timeText: string;
+    time: number;
+    cron: string;
+  })[]
+) => {
   // 剩余任务
   const rest = scheduleList
     .map((schedule) => {
@@ -695,23 +701,50 @@ export const getRestScheduleList = (scheduleList: Schedule[]) => {
  */
 export const formatScheduleList = (scheduleList: Schedule[]) => {
   // 格式化任务
-  const formattedScheduleList = scheduleList
-    .map((schedule) => {
-      // 任务时间
-      const time = paser.parseExpression(schedule.cron);
-      // 下次任务时间
-      const nextTime = time.next().toDate();
-      // 时间文本
-      const timeText = formatTime(nextTime);
-      // 日期时间
-      const timeDate = new Date(timeText);
-      return {
-        ...schedule,
-        timeText,
-        timeDate: timeDate.getTime(),
-      };
-    })
-    .sort((a, b) => a.timeDate - b.timeDate);
+  const formattedScheduleList: (Schedule & {
+    timeText: string;
+    time: number;
+    cron: string;
+  })[] = [];
+  scheduleList.forEach((schedule) => {
+    // 多定时
+    if (Array.isArray(schedule.cron)) {
+      // 去重
+      [...new Set(schedule.cron)].forEach((cron) => {
+        // 任务时间
+        const time = paser.parseExpression(cron);
+        // 下次任务时间
+        const nextTime = time.next().toDate();
+        // 时间文本
+        const timeText = formatTime(nextTime);
+        // 日期时间
+        const timeDate = new Date(timeText);
+        formattedScheduleList.push({
+          ...schedule,
+          timeText,
+          time: timeDate.getTime(),
+          cron,
+        });
+      });
+      return;
+    }
+    // 任务时间
+    const time = paser.parseExpression(schedule.cron);
+    // 下次任务时间
+    const nextTime = time.next().toDate();
+    // 时间文本
+    const timeText = formatTime(nextTime);
+    // 日期时间
+    const timeDate = new Date(timeText);
+
+    formattedScheduleList.push({
+      ...schedule,
+      timeText,
+      time: timeDate.getTime(),
+      cron: schedule.cron,
+    });
+  });
+  formattedScheduleList.sort((a, b) => a.time - b.time);
   return formattedScheduleList;
 };
 /**
