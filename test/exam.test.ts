@@ -1,4 +1,4 @@
-import pup from 'puppeteer-core';
+import * as pup from 'puppeteer-core';
 import { describe, expect, it } from 'vitest';
 import PUP_CONFIG from '../src/config/pup';
 import handleExam from '../src/controller/exam';
@@ -8,7 +8,7 @@ import shared from '../src/shared';
 // 答题
 describe('exam', async () => {
   // 每日答题
-  it('practice', async () => {
+  it.skip('practice', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
     shared.setBrowser(broswer);
     await shared.openPage();

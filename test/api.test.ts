@@ -1,4 +1,4 @@
-import pup from 'puppeteer-core';
+import * as pup from 'puppeteer-core';
 import { describe, expect, it } from 'vitest';
 import PUP_CONFIG from '../src/config/pup';
 import { SCHEDULE_CONFIG } from '../src/config/schedule';
