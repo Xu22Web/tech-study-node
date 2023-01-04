@@ -667,6 +667,7 @@ export const getRestScheduleList = (
     timeText: string;
     time: number;
     cron: string;
+    nextDate: Date;
   })[]
 ) => {
   // 剩余任务
@@ -674,20 +675,17 @@ export const getRestScheduleList = (
     .map((schedule) => {
       // 任务时间
       const time = paser.parseExpression(schedule.cron);
-      // 下次任务时间
-      const nextTime = time.next().toDate();
       // 当前时间
       const date = new Date();
       // 当前任务是否结束
       const done = !time.hasNext();
       // 下个任务是否在今天
-      const isToday = !done && nextTime.getDate() === date.getDate();
+      const isToday =
+        !done && formatDate(schedule.nextDate) === formatDate(date);
       return {
         ...schedule,
         isToday,
         done,
-        timeText: formatDateTime(nextTime),
-        time: nextTime.getTime(),
       };
     })
     .filter((sendInfo) => sendInfo.isToday)
@@ -705,6 +703,7 @@ export const formatScheduleList = (scheduleList: Schedule[]) => {
     timeText: string;
     time: number;
     cron: string;
+    nextDate: Date;
   })[] = [];
   scheduleList.forEach((schedule) => {
     // 多定时
@@ -717,13 +716,13 @@ export const formatScheduleList = (scheduleList: Schedule[]) => {
         const nextTime = time.next().toDate();
         // 时间文本
         const timeText = formatTime(nextTime);
-        // 日期时间
-        const timeDate = new Date(timeText);
+
         formattedScheduleList.push({
           ...schedule,
           timeText,
-          time: timeDate.getTime(),
           cron,
+          time: nextTime.getTime(),
+          nextDate: nextTime,
         });
       });
       return;
@@ -734,17 +733,15 @@ export const formatScheduleList = (scheduleList: Schedule[]) => {
     const nextTime = time.next().toDate();
     // 时间文本
     const timeText = formatTime(nextTime);
-    // 日期时间
-    const timeDate = new Date(timeText);
 
     formattedScheduleList.push({
       ...schedule,
       timeText,
-      time: timeDate.getTime(),
       cron: schedule.cron,
+      time: nextTime.getTime(),
+      nextDate: nextTime,
     });
   });
-  formattedScheduleList.sort((a, b) => a.time - b.time);
   return formattedScheduleList;
 };
 /**
