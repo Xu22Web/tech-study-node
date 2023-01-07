@@ -6,7 +6,7 @@ import decode from 'jsqr';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
-import { getCookie, sleep } from '../utils';
+import { getCookie, getHighlightHTML, sleep } from '../utils';
 /**
  * @description 二维码保存路径
  */
@@ -210,10 +210,23 @@ const tryLogin = async (page: pup.Page) => {
        </div>
      </div>
 `;
+  // 跳转链接
+  const aWrap = `
+   <div>
+      或在浏览器
+      <a
+        href="dtxuexi://appclient/page/study_feeds?url=${encodeURIComponent(
+          data
+        )}"
+        style="text-decoration: none"
+        >${getHighlightHTML('打开学习强国APP')}</a
+      >
+    </div>
+  `;
   // 推送学习提示
   shared.pushModal({
     title: '学习提示',
-    content: ['扫一扫, 登录学习强国!', imgWrap],
+    content: ['扫一扫, 登录学习强国!', aWrap, imgWrap],
     type: 'info',
   });
 };
