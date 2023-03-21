@@ -18,7 +18,7 @@ const API_CONFIG = {
    * @description 任务列表
    */
   taskList:
-    'https://pc-proxy-api.xuexi.cn/api/score/days/listScoreProgress?sence=score&deviceType=2',
+    'https://pc-proxy-api.xuexi.cn/delegate/score/days/listScoreProgress?sence=score&deviceType=2',
   /**
    * @description 新闻数据
    */
