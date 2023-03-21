@@ -9,11 +9,11 @@ const API_CONFIG = {
   /**
    * @description 总分
    */
-  totalScore: 'https://pc-api.xuexi.cn/open/api/score/get',
+  totalScore: 'https://pc-proxy-api.xuexi.cn/delegate/score/get',
   /**
    * @description 当天分数
    */
-  todayScore: 'https://pc-api.xuexi.cn/open/api/score/today/query',
+  todayScore: 'https://pc-proxy-api.xuexi.cn/delegate/score/today/query',
   /**
    * @description 任务列表
    */
