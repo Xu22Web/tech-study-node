@@ -16,7 +16,6 @@ import {
   getText,
   sleep,
   stringfyCookie,
-  stringfyData,
 } from '../utils';
 
 /**
@@ -1004,13 +1003,7 @@ const handleRandAnswers = async (page: pup.Page, questionType: string) => {
  */
 export type AnswerData = {
   status: number;
-  data: {
-    question: string;
-    answers: string[];
-    from: string;
-  };
-  message: string;
-  errno: number;
+  data: { txt_content: string; txt_name: string };
 };
 /**
  * @description 答题
@@ -1076,9 +1069,9 @@ export const saveAnswer = async (key: string, value: string) => {
       v_id: '',
     };
     // 请求体
-    const body = stringfyData(data);
+    const params = new URLSearchParams(data);
     // 保存答案
-    const res = await postAnswer(body);
+    const res = await postAnswer(params.toString());
     return res;
   } catch (e) {}
 };
@@ -1090,14 +1083,23 @@ export const saveAnswer = async (key: string, value: string) => {
  */
 export const getAnswerSearch = async (question: string) => {
   try {
+    // 数据
+    const data = {
+      txt_name: md5(question),
+      password: '',
+    };
+    const params = new URLSearchParams(data);
     // 保存答案
-    const res = await getAnswer(question);
+    const res = await getAnswer(params.toString());
     if (res) {
-      // 结果
-      const { status, data } = <AnswerData>res;
-      if (status !== -1) {
+      const { data, status } = <AnswerData>res;
+      if (status !== 0) {
         // 答案列表
-        const { answers } = data;
+        const answerList: { content: string; title: string }[] = JSON.parse(
+          data.txt_content
+        );
+        // 答案
+        const answers = answerList[0].content.split(/[;\s]/);
         return answers;
       }
     }

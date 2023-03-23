@@ -51,7 +51,7 @@ const API_CONFIG = {
   /**
    * @description 答案搜素
    */
-  answerSearch: 'https://api.answer.redfish.top/answer/search',
+  answerSearch: 'https://a6.qikekeji.com/txt/data/detail',
   /**
    * @description 推送
    */

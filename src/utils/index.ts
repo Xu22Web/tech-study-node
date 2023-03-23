@@ -331,26 +331,6 @@ export const stringfyCookie = (cookies: pup.Protocol.Network.Cookie[]) => {
 };
 
 /**
- * @description 字符串化请求数据
- * @param data
- * @returns
- */
-export const stringfyData = (data: object) => {
-  // 数据键
-  const dataKeys = Object.keys(data);
-  // 请求体
-  const dataText = dataKeys
-    .map((key) => {
-      return `${encodeURIComponent(key)}=${encodeURIComponent(
-        data[<keyof typeof data>key]
-      )}`;
-    })
-    .join('&');
-
-  return dataText;
-};
-
-/**
  * @description 格式化任务
  * @param task
  * @returns
