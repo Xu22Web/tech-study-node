@@ -25,6 +25,12 @@ export type Schedule = {
    * @example true 退出答题不提交 false 继续答题
    */
   paperExitAfterWrong: boolean;
+
+  /**
+   * @description 刷新页面 cookie 的随机时间间隔，单位为分钟页面 cookie 过期时间大概是 4 个小时，设置小于 4 个小时都行
+   * @example  [60, 120] 则表示随机取 60 ~ 120 分钟刷新一次
+   */
+  refreshCookieInterval: [number, number];
 };
 
 /**
@@ -37,5 +43,6 @@ export const SCHEDULE_CONFIG: Schedule[] = [
     cron: '0 0 12 * * ?',
     taskConfig: [true, true, true, true],
     paperExitAfterWrong: false,
+    refreshCookieInterval: [60, 120],
   },
 ];
