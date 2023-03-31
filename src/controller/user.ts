@@ -1,4 +1,5 @@
 import chalk from 'chalk';
+import * as pup from 'puppeteer-core';
 import { taskProgress, todayScore, totalScore, userInfo } from '../apis';
 import shared from '../shared';
 import { formatTask, getCookieIncludesDomain, stringfyCookie } from '../utils';
@@ -51,9 +52,7 @@ export const renderUserData = (userInfo: UserInfo) => {
  */
 export const renderScoreData = (score: number, total: number) => {
   shared.log.warn(`积分信息`);
-  shared.log.info(
-    `当天积分: ${chalk.yellow(score)} 分 | 总积分: ${chalk.yellow(total)} 分`
-  );
+  shared.log.info(`当天积分: ${chalk.yellow(score)} 分 | 总积分: ${chalk.yellow(total)} 分`);
 };
 /**
  * @description 渲染用户任务数据
@@ -63,10 +62,23 @@ export const renderTasksData = (taskList: TaskList) => {
   shared.log.warn(`任务进度`);
   shared.log.info(`文章选读: ${chalk.yellow(taskList[TaskType.READ].rate)} %`);
   shared.log.info(`视听学习: ${chalk.yellow(taskList[TaskType.WATCH].rate)} %`);
-  shared.log.info(
-    `每日答题: ${chalk.yellow(taskList[TaskType.PRACTICE].rate)} %`
-  );
+  shared.log.info(`每日答题: ${chalk.yellow(taskList[TaskType.PRACTICE].rate)} %`);
   shared.log.info(`专项练习: ${chalk.yellow(taskList[TaskType.PAPER].rate)} %`);
+};
+
+/**
+ * @description 获取用户信息
+ */
+export const getUserData = async (cookies: pup.Protocol.Network.Cookie[]) => {
+  try {
+    // cookie
+    const cookie = stringfyCookie(cookies);
+    const data = await userInfo(cookie);
+    if (data) {
+      return data as UserInfo;
+    }
+  } catch (e) {}
+  return;
 };
 
 /**
@@ -83,12 +95,12 @@ export const getUserInfo = async () => {
     // 获取 cookies
     const cookies = await getCookieIncludesDomain(page, '.xuexi.cn');
     // cookie
-    const cookie = stringfyCookie(cookies);
-    const data = await userInfo(cookie);
+    const data = await getUserData(cookies);
     if (data) {
-      return <UserInfo>data;
+      return data as UserInfo;
     }
   } catch (e) {}
+  return;
 };
 
 /**
@@ -179,10 +191,8 @@ export const getTaskList = async () => {
         taskList[TaskType.WATCH] = {
           title: '视听学习',
           ...formatTask({
-            currentScore:
-              taskProgress[1].currentScore + taskProgress[2].currentScore,
-            dayMaxScore:
-              taskProgress[1].dayMaxScore + taskProgress[2].dayMaxScore,
+            currentScore: taskProgress[1].currentScore + taskProgress[2].currentScore,
+            dayMaxScore: taskProgress[1].dayMaxScore + taskProgress[2].dayMaxScore,
           }),
           type: TaskType.WATCH,
         };

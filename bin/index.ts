@@ -10,11 +10,15 @@ import STUDY_CONFIG from '../src/config/study';
 import URL_CONFIG from '../src/config/url';
 import shared from '../src/shared';
 import {
-  formatScheduleList,
+  generateStudyJobParams,
+  generateRefreshCookieJobs,
   getHighlightHTML,
-  getRestScheduleList,
   getTableHTML,
+  formatDate,
+  formatDateTime,
 } from '../src/utils';
+
+import type { Job, StudyJob, RefreshCookieJob } from '../src/utils/interface';
 
 /**
  * @description 配置
@@ -45,7 +49,7 @@ export const defineConfig = (config: Config) => {
  * @param token
  * @param nick
  */
-export const handleSchedule = async (schedule: Schedule) => {
+export const handleSchedule = async (schedule: Schedule, restJobs: Job[]) => {
   // 初始化消息当前用户token
   shared.setSchedule(schedule);
   shared.log.loading('正在打开浏览器...');
@@ -70,20 +74,21 @@ export const handleSchedule = async (schedule: Schedule) => {
   }
   // 关闭浏览器
   await shared.closeBrowser();
-  // 任务列表
-  const scheduleList = formatScheduleList(SCHEDULE_CONFIG);
-  // 剩余任务
-  const rest = getRestScheduleList(scheduleList);
+
+  const currentTime = new Date();
+  // 获取今天剩余任务
+  const rest = restJobs.filter((item) => {
+    return item.type === 'study' && formatDate(item.time) === formatDate(currentTime);
+  }) as StudyJob[];
+
   // 存在下次任务
   if (rest.length) {
     shared.log.warn('服务提示');
-    shared.log.info(
-      `用户: ${chalk.yellow(schedule.nick)}, 定时任务已执行完毕!`
-    );
+    shared.log.info(`用户: ${chalk.yellow(schedule.nick)}, 定时任务已执行完毕!`);
     shared.log.info(`今天剩余任务数: ${chalk.yellow(rest.length)} 个`);
     shared.log.warn(`下次任务信息`);
-    shared.log.info(`用户: ${chalk.yellow(rest[0].nick)}`);
-    shared.log.info(`时间: ${chalk.yellow(rest[0].timeText)}`);
+    shared.log.info(`用户: ${chalk.yellow(rest[0].params.nick)}`);
+    shared.log.info(`时间: ${chalk.yellow(rest[0].params.timeText)}`);
     // 推送服务提示
     shared.pushModalTips({
       title: '服务提示',
@@ -93,118 +98,245 @@ export const handleSchedule = async (schedule: Schedule) => {
         '剩余任务信息: ',
         getTableHTML(
           ['用户', '时间'],
-          rest.map((item) => [`${item.nick}`, `${item.timeText}`])
+          rest.map((item) => [`${item.params.nick}`, `${item.params.timeText}`])
         ),
       ],
       type: 'info',
     });
   } else {
     shared.log.warn('服务提示');
-    shared.log.info(
-      `用户: ${chalk.yellow(schedule.nick)}, 定时任务已执行完毕!`
-    );
+    shared.log.info(`用户: ${chalk.yellow(schedule.nick)}, 定时任务已执行完毕!`);
     shared.log.success(`今天定时任务均已完成!`);
     shared.pushModalTips({
       title: '服务提示',
-      content: [
-        `用户: ${getHighlightHTML(schedule.nick)}, 定时任务完成!`,
-        `今天定时任务均已完成!`,
-      ],
+      content: [`用户: ${getHighlightHTML(schedule.nick)}, 定时任务完成!`, `今天定时任务均已完成!`],
       type: 'info',
     });
   }
 };
 
 /**
- * @description 开始定时任务
+ * 初始任务列表，包含刷新任务与学习任务
+ * @returns
  */
-export const startSchedule = () => {
-  // 任务列表
-  const scheduleList = formatScheduleList(SCHEDULE_CONFIG);
-  // 剩余任务
-  const restSchedule = getRestScheduleList(scheduleList);
-  // 存在剩余任务
-  if (restSchedule.length) {
+const createJobs = (scheduleList: Schedule[] = SCHEDULE_CONFIG) => {
+  const refreshJobs: RefreshCookieJob[] = [];
+  const studyJobs: StudyJob[] = [];
+
+  const studyJobParams = generateStudyJobParams(scheduleList);
+  studyJobParams.forEach((params) => {
+    const refreshCookieJobs = generateRefreshCookieJobs({
+      endTime: params.nextDate,
+      intervalRange: params.refreshCookieInterval,
+      cookieId: params.nick,
+    });
+    refreshJobs.push(...refreshCookieJobs);
+    studyJobs.push({
+      type: 'study',
+      time: params.nextDate.getTime(),
+      params: params,
+    });
+  });
+
+  const jobs: Job[] = [...refreshJobs, ...studyJobs];
+
+  jobs.sort((a, b) => a.time - b.time);
+
+  return { jobs, studyJobs, refreshJobs };
+};
+
+/**
+ * 刷新任务
+ * @param jobConfig
+ * @param restJobs
+ */
+const runRefreshJob = async (jobConfig: RefreshCookieJob, restJobs: Job[]) => {
+  console.log(
+    chalk.blueBright(
+      `时间: ${new Date(jobConfig.time).toLocaleString()} | CookieId: ${
+        jobConfig.params.cookieId
+      } 刷新任务开始!`
+    )
+  );
+
+  shared.log.start();
+  shared.log.loading('正在打开浏览器...');
+  // 浏览器
+  const browser = await pup.launch(PUP_CONFIG);
+  // 设置浏览器
+  shared.setBrowser(browser);
+  // 打开页面
+  await shared.openPage();
+  shared.log.success('已打开浏览器!');
+
+  const success = await shared.refreshCookie(jobConfig.params.cookieId);
+
+  if (success) {
+    console.log(
+      chalk.greenBright(
+        `时间: ${new Date(jobConfig.time).toLocaleString()} | CookieId: ${
+          jobConfig.params.cookieId
+        } 刷新任务成功!`
+      )
+    );
+  } else {
+    console.log(
+      chalk.redBright(
+        `时间: ${new Date(jobConfig.time).toLocaleString()} | CookieId: ${
+          jobConfig.params.cookieId
+        } 刷新任务失败!`
+      )
+    );
+
+    // 刷新任务失效后，后续的刷新任务标识为无效
+    restJobs.forEach((job) => {
+      if (job.type === 'freshCookie' && job.params.cookieId === jobConfig.params.cookieId) {
+        job.effective = false;
+      }
+    });
+  }
+
+  // 关闭浏览器
+  await shared.closeBrowser();
+  shared.log.finish();
+};
+
+/**
+ * 学习任务
+ * @param jobConfig
+ * @param restJobs
+ */
+const runStudyJob = async (jobConfig: StudyJob, restJobs: Job[]) => {
+  const { params } = jobConfig;
+  console.log(
+    `时间: ${chalk.yellow(params.timeText)} | 用户: ${chalk.blueBright(params.nick)} 定时任务开始!`
+  );
+
+  // 开始日志
+  shared.log.start();
+  shared.log.info(
+    `正在执行 时间: ${chalk.yellow(params.timeText)} | 用户: ${chalk.blueBright(
+      params.nick
+    )} 的定时任务...`
+  );
+
+  // 处理任务
+  await handleSchedule(params, restJobs);
+
+  shared.log.info(
+    `执行完成 时间: ${chalk.yellow(params.timeText)} | 用户: ${chalk.blueBright(
+      params.nick
+    )} 的定时任务!`
+  );
+  // 结束日志
+  shared.log.finish();
+
+  // 学习任务结束后，往任务列表加入新一轮的任务
+  const { jobs: newJobs } = createJobs([jobConfig.params]);
+
+  restJobs.push(...newJobs);
+  // 重新排序
+  restJobs.sort((a, b) => a.time - b.time);
+};
+
+const startScheduleJobs = () => {
+  const { jobs, studyJobs, refreshJobs } = createJobs();
+
+  let effectiveJobs = jobs;
+
+  console.log(
+    `开始设置定时任务: ${chalk.bgYellowBright(studyJobs.length)} 个学习任务，${chalk.bgYellowBright(
+      refreshJobs.length
+    )} 个刷新任务`
+  );
+
+  effectiveJobs.forEach((job, index) => {
+    if (job.type === 'study') {
+      console.log(
+        chalk.bgYellow(
+          `${index + 1} 预定任务时间: [${formatDateTime(job.time)}] | ${job.params.nick} - 学习任务`
+        )
+      );
+    } else {
+      console.log(
+        chalk.bgBlue(
+          `${index + 1} 预定任务时间: [${formatDateTime(job.time)}] | ${
+            job.params.cookieId
+          } - 刷新任务`
+        )
+      );
+    }
+  });
+
+  if (studyJobs.length) {
     // 推送服务提示
     shared.pushModalTips({
       title: '服务提示',
       content: [
-        '已运行定时任务!',
-        `今天剩余任务数: ${getHighlightHTML(restSchedule.length)} 个`,
+        '已开启定时任务!',
+        `今天剩余任务数: ${getHighlightHTML(studyJobs.length)} 个`,
         '剩余任务信息: ',
         getTableHTML(
           ['用户', '时间'],
-          restSchedule.map((item) => [`${item.nick}`, `${item.timeText}`])
+          studyJobs.map((item) => [`${item.params.nick}`, `${item.params.timeText}`])
         ),
       ],
       type: 'info',
     });
-  } else {
-    // 推送服务提示
-    shared.pushModalTips({
-      title: '服务提示',
-      content: ['已运行定时任务!', '今天定时任务均已完成!'],
-      type: 'info',
-    });
   }
+
+  const runJob = () => {
+    // 过滤掉无效的任务
+    effectiveJobs = effectiveJobs.filter((it) => it.type === 'study' || it.effective);
+
+    const jobConfig = effectiveJobs.shift();
+    // 所有任务已完成
+    if (!jobConfig) {
+      // 推送服务提示
+      shared.pushModalTips({
+        title: '服务提示',
+        content: ['已运行定时任务!', '今天定时任务均已完成!'],
+        type: 'info',
+      });
+
+      // 重启新一轮任务
+      startScheduleJobs();
+      return;
+    }
+
+    // 运行下一个任务，如果任务已经过期，则以当前时间往后 3 秒运行
+    const currentTime = Date.now();
+    const jobRunTime =
+      jobConfig.time <= currentTime ? new Date(currentTime + 1000 * 3) : new Date(jobConfig.time);
+
+    console.log(
+      chalk.bgBlueBright(
+        `设置定时任务: [${formatDateTime(jobRunTime)}] | 任务类型：[${jobConfig.type}]`
+      )
+    );
+
+    schedule.scheduleJob(jobRunTime, async () => {
+      if (jobConfig.type === 'study') {
+        await runStudyJob(jobConfig, effectiveJobs).catch((err) => {
+          console.log('runStudyJob error', err);
+        });
+      } else {
+        await runRefreshJob(jobConfig, effectiveJobs).catch((err) => {
+          console.log('runRefreshJob', err);
+        });
+      }
+      runJob();
+    });
+  };
+
+  runJob();
+};
+
+(async function () {
+  startScheduleJobs();
   // 执行清除日志任务
   schedule.scheduleJob('0 0 0 * * ?', () => {
     // 清除日志
     shared.log.autoClean();
   });
-  console.log('开始设置定时任务!');
-  // 定时任务
-  scheduleList.forEach((currentSchedule) => {
-    try {
-      console.log(
-        `时间: ${chalk.yellow(
-          currentSchedule.timeText
-        )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 已设置任务`
-      );
-
-      schedule.scheduleJob(currentSchedule.cron, async () => {
-        console.log(
-          `时间: ${chalk.yellow(
-            currentSchedule.timeText
-          )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 定时任务开始!`
-        );
-
-        // 开始日志
-        shared.log.start();
-        shared.log.info(
-          `正在执行 时间: ${chalk.yellow(
-            currentSchedule.timeText
-          )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 的定时任务...`
-        );
-        // 处理任务
-        await handleSchedule(currentSchedule);
-        shared.log.info(
-          `执行完成 时间: ${chalk.yellow(
-            currentSchedule.timeText
-          )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 的定时任务!`
-        );
-        // 结束日志
-        shared.log.finish();
-
-        console.log(
-          `时间: ${chalk.yellow(
-            currentSchedule.timeText
-          )} | 用户: ${chalk.blueBright(currentSchedule.nick)} 定时任务完成!`
-        );
-      });
-    } catch (e: any) {
-      // 错误
-      const err = new Error(e);
-      shared.log.fail([`${chalk.red(err.stack || 'unkown stack')}`]);
-      // 推送服务提示
-      shared.pushModalTips({
-        title: '服务提示',
-        content: ['发生错误!', err.stack || 'unkown stack'],
-        type: 'fail',
-      });
-    }
-  });
-};
-
-// 开始任务
-startSchedule();
+})();

@@ -11,12 +11,8 @@ import {
   TaskList,
   UserInfo,
 } from '../controller/user';
-import {
-  installMouseHelper,
-  installRemoveDialog,
-  pushModal,
-  sleep,
-} from '../utils';
+import { tryLoginByCacheCookie } from '../controller/login';
+import { installMouseHelper, installRemoveDialog, pushModal, sleep } from '../utils';
 import { ModalOptions } from '../utils/interface';
 
 /**
@@ -106,6 +102,12 @@ type Shared = {
       referer?: string | undefined;
     }
   ): Promise<boolean>;
+
+  /**
+   * @description 刷新页面 cookie
+   */
+  refreshCookie(cookieId: string): Promise<boolean>;
+
   /**
    * @description 推送
    */
@@ -238,15 +240,18 @@ const shared: Shared = {
     }
     return false;
   },
+
+  async refreshCookie(cookieId: string) {
+    try {
+      return tryLoginByCacheCookie(cookieId);
+    } catch (_) {
+      return false;
+    }
+  },
+
   async pushModal(options) {
     // 配置
-    const {
-      title,
-      subTitle = '',
-      to = this.schedule?.nick,
-      content,
-      type,
-    } = options;
+    const { title, subTitle = '', to = this.schedule?.nick, content, type } = options;
     // 推送配置
     const { token, from, enabled } = PUSH_CONFIG;
     // 启用推送
@@ -257,11 +262,7 @@ const shared: Shared = {
         return;
       }
       // 推送
-      await pushModal(
-        { title, subTitle, to, content, type, from },
-        token,
-        this.schedule?.token
-      );
+      await pushModal({ title, subTitle, to, content, type, from }, token, this.schedule?.token);
     }
   },
   async pushModalTips(options) {
@@ -272,10 +273,7 @@ const shared: Shared = {
     // 启用推送
     if (enabled) {
       // 推送
-      await pushModal(
-        { title, subTitle, to: nick, content, type, from },
-        token
-      );
+      await pushModal({ title, subTitle, to: nick, content, type, from }, token);
     }
   },
   setSchedule(schedule) {

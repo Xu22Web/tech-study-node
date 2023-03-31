@@ -31,6 +31,10 @@ const STUDY_CONFIG = {
    */
   logsPath: 'src/logs/',
   /**
+   * @description 登录后 cookie 缓存路径
+   */
+  cookieCachePath: 'src/cookie/',
+  /**
    * @description 日志自动清理间隔天数
    */
   logsAutoCleanInterval: 7,

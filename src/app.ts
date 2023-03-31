@@ -2,12 +2,7 @@ import chalk from 'chalk';
 import * as pup from 'puppeteer-core';
 import handleExam from './controller/exam';
 import handleLogin from './controller/login';
-import {
-  renderScoreData,
-  renderTasksData,
-  renderUserData,
-  TaskType,
-} from './controller/user';
+import { renderScoreData, renderTasksData, renderUserData, TaskType } from './controller/user';
 import handleWatch from './controller/watch';
 import shared from './shared';
 import { getHighlightHTML, getProgressHTML } from './utils';
@@ -61,9 +56,7 @@ const handleBrowser = async (browser: pup.Browser) => {
         '学习强国, 登录成功!',
         `当天积分:  ${getHighlightHTML(shared.todayScore)} 分`,
         `总积分: ${getHighlightHTML(shared.totalScore)} 分`,
-        ...shared.taskList.map((task) =>
-          getProgressHTML(task.title, task.rate)
-        ),
+        ...shared.taskList.map((task) => getProgressHTML(task.title, task.rate)),
       ],
       type: 'success',
     });
@@ -75,11 +68,7 @@ const handleBrowser = async (browser: pup.Browser) => {
     await shared.getTodayScore();
     // 任务进度
     await shared.getTaskList();
-    if (
-      shared.totalScore !== undefined &&
-      shared.todayScore !== undefined &&
-      shared.taskList
-    ) {
+    if (shared.totalScore !== undefined && shared.todayScore !== undefined && shared.taskList) {
       shared.log.info('学习完成!');
       // 用户信息数据
       await renderUserData(shared.userInfo);
@@ -94,9 +83,7 @@ const handleBrowser = async (browser: pup.Browser) => {
           '学习强国, 学习完成!',
           `当天积分:  ${getHighlightHTML(shared.todayScore)} 分`,
           `总积分: ${getHighlightHTML(shared.totalScore)} 分`,
-          ...shared.taskList.map((task) =>
-            getProgressHTML(task.title, task.rate)
-          ),
+          ...shared.taskList.map((task) => getProgressHTML(task.title, task.rate)),
         ],
         type: 'success',
       });
@@ -112,10 +99,7 @@ const study = async () => {
   await shared.getTaskList();
   if (shared.taskList) {
     // 是否读新闻
-    if (
-      shared.schedule?.taskConfig[TaskType.READ] &&
-      !shared.taskList[TaskType.READ].status
-    ) {
+    if (shared.schedule?.taskConfig[TaskType.READ] && !shared.taskList[TaskType.READ].status) {
       shared.log.info(`任务一: ${chalk.blueBright('文章选读')} 开始`);
       // 读新闻
       await handleWatch(0);
@@ -123,10 +107,7 @@ const study = async () => {
     shared.log.success(`任务一: ${chalk.blueBright('文章选读')} 已完成!`);
 
     // 是否看视频
-    if (
-      shared.schedule?.taskConfig[TaskType.WATCH] &&
-      !shared.taskList[TaskType.WATCH].status
-    ) {
+    if (shared.schedule?.taskConfig[TaskType.WATCH] && !shared.taskList[TaskType.WATCH].status) {
       shared.log.info(`任务二: ${chalk.blueBright('视听学习')} 开始`);
       // 看视频
       await handleWatch(1);
@@ -149,10 +130,7 @@ const study = async () => {
     shared.log.success(`任务三: ${chalk.blueBright('每日答题')} 已完成!`);
 
     // 是否专项练习
-    if (
-      shared.schedule?.taskConfig[TaskType.PAPER] &&
-      !shared.taskList[TaskType.PAPER].status
-    ) {
+    if (shared.schedule?.taskConfig[TaskType.PAPER] && !shared.taskList[TaskType.PAPER].status) {
       shared.log.info(`任务四: ${chalk.blueBright('专项练习')} 开始`);
       // 专项练习
       const res = await handleExam(1);

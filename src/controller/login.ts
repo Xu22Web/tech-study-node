@@ -6,22 +6,105 @@ import decode from 'jsqr';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
-import { getCookie, getHighlightHTML, sleep } from '../utils';
+import { getCookie, getHighlightHTML, sleep, getCookieIncludesDomain } from '../utils';
+import { getUserInfo } from './user';
+
 /**
  * @description 二维码保存路径
  */
-const { qrcodePath } = STUDY_CONFIG;
+const { qrcodePath, cookieCachePath } = STUDY_CONFIG;
+
 /**
  * @description 二维码文件保存路径
  */
 const filePath = path.join(qrcodePath, 'login.png');
 
 /**
+ * 写入用户的 cookie 缓存
+ * @param page
+ * @param schedule
+ */
+export const readCookieCache = async (cookieId: string) => {
+  const cookieFileCachePath = path.join(cookieCachePath, `${cookieId}.json`);
+  if (!fs.existsSync(cookieFileCachePath)) return null;
+
+  const cookiesJSON = await fs.promises.readFile(cookieFileCachePath, 'utf-8');
+  const cookies = JSON.parse(cookiesJSON) as pup.Protocol.Network.Cookie[];
+  return cookies;
+};
+
+/**
+ * 写入用户的 cookie 缓存
+ * @param page
+ * @param schedule
+ */
+export const writeCookieCache = async (cookieId: string) => {
+  const gotoRes = await shared.gotoPage(URL_CONFIG.home, {
+    waitUntil: 'domcontentloaded',
+  });
+
+  // 页面
+  const page = shared.getPage();
+  // 跳转失败
+  if (!gotoRes || !page) {
+    return;
+  }
+
+  if (!fs.existsSync(cookieCachePath)) {
+    await fs.promises.mkdir(cookieCachePath);
+  }
+
+  // 获取 cookies
+  const cookies = await getCookieIncludesDomain(page, 'xuexi.cn');
+  const cookieFileCachePath = path.join(cookieCachePath, `${cookieId}.json`);
+  await fs.promises.writeFile(cookieFileCachePath, JSON.stringify(cookies));
+  shared.log.info('cookie 缓存写入');
+};
+
+/**
+ * 尝试先用缓存的 cookie 登录
+ */
+export const tryLoginByCacheCookie = async (cookieId: string) => {
+  const gotoRes = await shared.gotoPage(URL_CONFIG.home, {
+    waitUntil: 'domcontentloaded',
+  });
+  // 页面
+  const page = shared.getPage();
+  // 跳转失败
+  if (!gotoRes || !page) {
+    return false;
+  }
+
+  const cookies = await readCookieCache(cookieId);
+  if (!cookies) {
+    return false;
+  }
+
+  await page.setCookie(...cookies);
+  await page.reload({ waitUntil: 'domcontentloaded' });
+  const res = await getUserInfo();
+  if (!res) {
+    shared.log.info('cookie 缓存过期');
+    return false;
+  }
+
+  shared.log.info('使用 cookie 缓存登录成功');
+  await writeCookieCache(cookieId);
+  return true;
+};
+
+/**
  * @description 处理登录
  * @param broswer 浏览器
  */
 const handleLogin = async () => {
-  // 获取页面
+  if (!shared.schedule) return false;
+
+  const succeed = await tryLoginByCacheCookie(shared.schedule.nick);
+  if (succeed) {
+    return true;
+  }
+
   const gotoRes = await shared.gotoPage(URL_CONFIG.login, {
     waitUntil: 'domcontentloaded',
   });
@@ -31,6 +114,7 @@ const handleLogin = async () => {
   if (!gotoRes || !page) {
     return false;
   }
+
   // 尝试次数
   let tryCount = 0;
   // 登录结果
@@ -44,6 +128,7 @@ const handleLogin = async () => {
     // 登录成功
     if (loginStatus) {
       result = true;
+      await writeCookieCache(shared.schedule.nick);
       break;
     }
     // 登录次数
@@ -107,8 +192,7 @@ const refreshQRCode = async (page: pup.Page) => {
       // 定时器
       const timer = setInterval(() => {
         // 加载
-        const loading =
-          document.querySelector<HTMLDivElement>('.login_loading');
+        const loading = document.querySelector<HTMLDivElement>('.login_loading');
         // 加载完毕
         if (loading && loading.style.display === 'none') {
           // 清除定时器
@@ -215,9 +299,7 @@ const tryLogin = async (page: pup.Page) => {
    <div>
       或在浏览器
       <a
-        href="dtxuexi://appclient/page/study_feeds?url=${encodeURIComponent(
-          data
-        )}"
+        href="dtxuexi://appclient/page/study_feeds?url=${encodeURIComponent(data)}"
         style="text-decoration: none"
         >${getHighlightHTML('打开学习强国APP')}</a
       >
@@ -237,9 +319,7 @@ const tryLogin = async (page: pup.Page) => {
  * @returns
  */
 const decodeQRCode = (buffer: Buffer) => {
-  return new Promise<
-    { width: number; height: number; data: string } | undefined
-  >((resolve) => {
+  return new Promise<{ width: number; height: number; data: string } | undefined>((resolve) => {
     jimp.read(buffer, (err, image) => {
       if (!err) {
         const { data, width, height } = image.bitmap;

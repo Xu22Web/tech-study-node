@@ -2,7 +2,15 @@ import paser from 'cron-parser';
 import * as pup from 'puppeteer-core';
 import { pushPlus } from '../apis';
 import { Schedule } from '../config/schedule';
-import { Bounds, ModalOptions, Point, PushOptions } from './interface';
+import {
+  Bounds,
+  ModalOptions,
+  Point,
+  PushOptions,
+  RefreshCookieJob,
+  StudyJobParams,
+} from './interface';
+
 /**
  * @description 延迟
  * @param time 延迟时间
@@ -187,11 +195,7 @@ const createModal = (options: ModalOptions) => {
  * @param toToken
  * @returns
  */
-export const pushModal = async (
-  options: ModalOptions,
-  fromToken: string,
-  toToken?: string
-) => {
+export const pushModal = async (options: ModalOptions, fromToken: string, toToken?: string) => {
   // html
   const html = createModal(options);
   // 推送
@@ -300,10 +304,7 @@ export const getCookie = async (page: pup.Page, name: string) => {
  * @param name 属性名
  * @returns
  */
-export const getCookieIncludesDomain = async (
-  page: pup.Page,
-  domain: string
-) => {
+export const getCookieIncludesDomain = async (page: pup.Page, domain: string) => {
   // 获取当前所有cookie
   const cookies = await page.cookies();
   if (cookies.length) {
@@ -322,9 +323,7 @@ export const stringfyCookie = (cookies: pup.Protocol.Network.Cookie[]) => {
   // 存在
   if (cookies && cookies.length) {
     // cookie
-    const cookie = cookies
-      .map((cookie) => `${cookie.name}=${cookie.value}`)
-      .join('; ');
+    const cookie = cookies.map((cookie) => `${cookie.name}=${cookie.value}`).join('; ');
     return cookie;
   }
   return '';
@@ -335,10 +334,7 @@ export const stringfyCookie = (cookies: pup.Protocol.Network.Cookie[]) => {
  * @param task
  * @returns
  */
-export const formatTask = (task: {
-  currentScore: number;
-  dayMaxScore: number;
-}) => {
+export const formatTask = (task: { currentScore: number; dayMaxScore: number }) => {
   // 当前分数、最大分数、链接
   const { currentScore, dayMaxScore } = task;
   // 进度
@@ -419,10 +415,7 @@ export const getCount = async (page: pup.Page, selectors: string) => {
  * @param selector
  * @returns
  */
-export const getBounds = async (
-  page: pup.Page,
-  selector: string
-): Promise<Bounds> => {
+export const getBounds = async (page: pup.Page, selector: string): Promise<Bounds> => {
   // 滑块
   const bounds = await page.$eval(selector, (node) => {
     // 获取范围
@@ -476,10 +469,7 @@ export const createRandomPath = (start: Point, end: Point, steps: number) => {
     // 横坐标
     const x = path[i].x + Math.random() * 5 + minDeltaX;
     // 纵坐标
-    const y =
-      path[i].y +
-      Math.random() * 5 * Math.pow(-1, ~~(Math.random() * 2 + 1)) +
-      maxDeltaY;
+    const y = path[i].y + Math.random() * 5 * Math.pow(-1, ~~(Math.random() * 2 + 1)) + maxDeltaY;
     path.push({
       x,
       y,
@@ -541,8 +531,7 @@ export const installMouseHelper = async (page: pup.Page) => {
     `;
         // 更新按钮
         const updateButtons = (buttons: number) => {
-          for (let i = 0; i < 5; i++)
-            box.classList.toggle('button-' + i, !!(buttons & (1 << i)));
+          for (let i = 0; i < 5; i++) box.classList.toggle('button-' + i, !!(buttons & (1 << i)));
         };
         document.head.appendChild(styleElement);
         document.body.appendChild(box);
@@ -660,8 +649,7 @@ export const getRestScheduleList = (
       // 当前任务是否结束
       const done = !time.hasNext();
       // 下个任务是否在今天
-      const isToday =
-        !done && formatDate(schedule.nextDate) === formatDate(date);
+      const isToday = !done && formatDate(schedule.nextDate) === formatDate(date);
       return {
         ...schedule,
         isToday,
@@ -672,58 +660,76 @@ export const getRestScheduleList = (
     .sort((a, b) => a.time - b.time);
   return rest;
 };
+
+/**
+ * 生成刷新任务列表，生成当前时间到下次学习任务区间的刷新任务
+ * @param options
+ * @returns
+ */
+export const generateRefreshCookieJobs = (options: {
+  endTime: Date;
+  intervalRange: [number, number];
+  cookieId: string;
+}) => {
+  const { endTime, intervalRange, cookieId } = options;
+  const now = Date.now();
+  const oneMinute = 1000 * 60;
+
+  let intervalTime =
+    (Math.random() * (intervalRange[1] - intervalRange[0]) + intervalRange[0]) * oneMinute;
+  let currentJobTime = endTime.getTime() - intervalTime;
+
+  const jobs: RefreshCookieJob[] = [];
+  while (currentJobTime >= now) {
+    jobs.push({
+      time: currentJobTime,
+      type: 'freshCookie',
+      effective: true,
+      params: { cookieId },
+    });
+
+    intervalTime =
+      (Math.random() * (intervalRange[1] - intervalRange[0]) + intervalRange[0]) * oneMinute;
+    currentJobTime = currentJobTime - intervalTime;
+  }
+
+  return jobs;
+};
+
 /**
  * @description 格式化任务列表
  * @param scheduleList
  * @returns
  */
-export const formatScheduleList = (scheduleList: Schedule[]) => {
+export const generateStudyJobParams = (scheduleList: Schedule[]) => {
   // 格式化任务
-  const formattedScheduleList: (Schedule & {
-    timeText: string;
-    time: number;
-    cron: string;
-    nextDate: Date;
-  })[] = [];
+  const studyJobsParams: StudyJobParams[] = [];
+
   scheduleList.forEach((schedule) => {
-    // 多定时
-    if (Array.isArray(schedule.cron)) {
-      // 去重
-      [...new Set(schedule.cron)].forEach((cron) => {
-        // 任务时间
-        const time = paser.parseExpression(cron);
-        // 下次任务时间
-        const nextTime = time.next().toDate();
-        // 时间文本
-        const timeText = formatTime(nextTime);
+    const cronList = Array.isArray(schedule.cron) ? schedule.cron : [schedule.cron];
+    cronList.forEach((cron) => {
+      // 任务时间
+      const time = paser.parseExpression(cron);
+      // 下次任务时间
+      const nextDate = time.next().toDate();
+      // 时间文本
+      const timeText = formatTime(nextDate);
 
-        formattedScheduleList.push({
-          ...schedule,
-          timeText,
-          cron,
-          time: nextTime.getTime(),
-          nextDate: nextTime,
-        });
+      studyJobsParams.push({
+        ...schedule,
+        timeText,
+        cron,
+        time: nextDate.getTime(),
+        nextDate,
       });
-      return;
-    }
-    // 任务时间
-    const time = paser.parseExpression(schedule.cron);
-    // 下次任务时间
-    const nextTime = time.next().toDate();
-    // 时间文本
-    const timeText = formatTime(nextTime);
-
-    formattedScheduleList.push({
-      ...schedule,
-      timeText,
-      cron: schedule.cron,
-      time: nextTime.getTime(),
-      nextDate: nextTime,
     });
   });
-  return formattedScheduleList;
+
+  studyJobsParams.sort((a, b) => a.time - b.time);
+
+  return studyJobsParams;
 };
+
 /**
  * @description 创建表格
  * @param theadData

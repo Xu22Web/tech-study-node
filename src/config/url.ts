@@ -3,6 +3,10 @@
  */
 const URL_CONFIG = {
   /**
+   * 首页
+   */
+  home: 'https://www.xuexi.cn/index.html',
+  /**
    * @description 登录页面
    */
   login:

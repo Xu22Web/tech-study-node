@@ -1,3 +1,5 @@
+import type { Schedule } from '../config/schedule';
+
 /**
  * @description 点
  */
@@ -11,12 +13,7 @@ export type Bounds = { x: number; y: number; width: number; height: number };
 /**
  * @description 消息模板类型
  */
-export type TemplateType =
-  | 'html'
-  | 'txt'
-  | 'json'
-  | 'markdown'
-  | 'cloudMonitor';
+export type TemplateType = 'html' | 'txt' | 'json' | 'markdown' | 'cloudMonitor';
 
 /**
  * @description 推送选项
@@ -45,3 +42,25 @@ export type ModalOptions = {
  * @description 类型
  */
 export type ModalType = 'info' | 'warn' | 'fail' | 'success';
+
+export interface StudyJobParams extends Schedule {
+  timeText: string;
+  time: number;
+  cron: string;
+  nextDate: Date;
+}
+
+export interface StudyJob {
+  time: number;
+  type: 'study';
+  params: StudyJobParams;
+}
+
+export interface RefreshCookieJob {
+  time: number;
+  type: 'freshCookie';
+  effective: boolean;
+  params: { cookieId: string };
+}
+
+export type Job = StudyJob | RefreshCookieJob;
