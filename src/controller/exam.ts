@@ -5,18 +5,18 @@ import { examPaper, getAnswer, postAnswer } from '../apis';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
+import { getHighlightHTML } from '../utils/html';
+import { StudyParams } from '../utils/job';
+import { createRandomPath, createRandomPoint } from '../utils/random';
 import {
-  createRandomPath,
-  createRandomPoint,
   getBatchText,
   getBounds,
   getCookieIncludesDomain,
   getCount,
-  getHighlightHTML,
   getText,
   sleep,
   stringfyCookie,
-} from '../utils';
+} from '../utils/utils';
 
 /**
  * @description 练习测试
@@ -242,7 +242,7 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       shared.log.loading(`${chalk.blueBright(current)} / ${total} 答题失败!`);
       // 可能答错且无答案
       result = false;
-      if (type === 1 && shared.schedule?.paperExitAfterWrong) {
+      if (type === 1 && (<StudyParams>shared.params).paperExitAfterWrong) {
         return result;
       }
       // 随机答题

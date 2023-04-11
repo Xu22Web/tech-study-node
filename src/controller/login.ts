@@ -1,18 +1,18 @@
 import fs from 'fs';
 import path from 'path';
 import * as pup from 'puppeteer-core';
-import jimp from 'jimp';
-import decode from 'jsqr';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
-import { getCookie, getHighlightHTML, sleep, getCookieIncludesDomain } from '../utils';
+import { readCookieCache, writeCookieCache } from '../utils/cookieCache';
+import { getHighlightHTML } from '../utils/html';
+import { decodeQRCode, getCookie, sleep } from '../utils/utils';
 import { getUserInfo } from './user';
 
 /**
  * @description 二维码保存路径
  */
-const { qrcodePath, cookieCachePath } = STUDY_CONFIG;
+const { qrcodePath } = STUDY_CONFIG;
 
 /**
  * @description 二维码文件保存路径
@@ -20,91 +20,68 @@ const { qrcodePath, cookieCachePath } = STUDY_CONFIG;
 const filePath = path.join(qrcodePath, 'login.png');
 
 /**
- * 写入用户的 cookie 缓存
- * @param page
- * @param schedule
- */
-export const readCookieCache = async (cookieId: string) => {
-  const cookieFileCachePath = path.join(cookieCachePath, `${cookieId}.json`);
-  if (!fs.existsSync(cookieFileCachePath)) return null;
-
-  const cookiesJSON = await fs.promises.readFile(cookieFileCachePath, 'utf-8');
-  const cookies = JSON.parse(cookiesJSON) as pup.Protocol.Network.Cookie[];
-  return cookies;
-};
-
-/**
- * 写入用户的 cookie 缓存
- * @param page
- * @param schedule
- */
-export const writeCookieCache = async (cookieId: string) => {
-  const gotoRes = await shared.gotoPage(URL_CONFIG.home, {
-    waitUntil: 'domcontentloaded',
-  });
-
-  // 页面
-  const page = shared.getPage();
-  // 跳转失败
-  if (!gotoRes || !page) {
-    return;
-  }
-
-  if (!fs.existsSync(cookieCachePath)) {
-    await fs.promises.mkdir(cookieCachePath);
-  }
-
-  // 获取 cookies
-  const cookies = await getCookieIncludesDomain(page, 'xuexi.cn');
-  const cookieFileCachePath = path.join(cookieCachePath, `${cookieId}.json`);
-  await fs.promises.writeFile(cookieFileCachePath, JSON.stringify(cookies));
-  shared.log.info('cookie 缓存写入');
-};
-
-/**
- * 尝试先用缓存的 cookie 登录
- */
-export const tryLoginByCacheCookie = async (cookieId: string) => {
-  const gotoRes = await shared.gotoPage(URL_CONFIG.home, {
-    waitUntil: 'domcontentloaded',
-  });
-  // 页面
-  const page = shared.getPage();
-  // 跳转失败
-  if (!gotoRes || !page) {
-    return false;
-  }
-
-  const cookies = await readCookieCache(cookieId);
-  if (!cookies) {
-    return false;
-  }
-
-  await page.setCookie(...cookies);
-  await page.reload({ waitUntil: 'domcontentloaded' });
-  const res = await getUserInfo();
-  if (!res) {
-    shared.log.info('cookie 缓存过期');
-    return false;
-  }
-
-  shared.log.info('使用 cookie 缓存登录成功');
-  await writeCookieCache(cookieId);
-  return true;
-};
-
-/**
  * @description 处理登录
  * @param broswer 浏览器
  */
 const handleLogin = async () => {
-  if (!shared.schedule) return false;
-
-  const succeed = await tryLoginByCacheCookie(shared.schedule.nick);
-  if (succeed) {
+  // 缓存 cookie 登录
+  const res = await handleLoginByCacheCookie();
+  if (res) {
     return true;
   }
+  // 二维码登录
+  return await handleLoginByQRCode();
+};
 
+/**
+ * @description 缓存的 cookie 登录
+ */
+export const handleLoginByCacheCookie = async () => {
+  // 打开首页
+  const gotoRes = await shared.gotoPage(URL_CONFIG.home, {
+    waitUntil: 'domcontentloaded',
+  });
+  // 页面
+  const page = shared.getPage();
+  // 跳转失败
+  if (!gotoRes || !page) {
+    return false;
+  }
+  // cookie id
+  const cookieId = shared.pushOptions!.nick;
+  // 读取缓存 cookie
+  const cookies = await readCookieCache(cookieId);
+  if (!cookies) {
+    shared.log.info(`CookieId: ${cookieId} 的 cookie 缓存不存在`);
+    return false;
+  }
+  // 设置 cookie
+  await page.setCookie(...cookies);
+  // 重载页面
+  await page.reload({ waitUntil: 'domcontentloaded' });
+
+  // 尝试获取用户信息
+  const res = await getUserInfo();
+  if (!res) {
+    shared.log.info(`CookieId: ${cookieId} 的 cookie 缓存过期`);
+    return false;
+  }
+
+  shared.log.success('使用 cookie 缓存登录成功');
+  // 写入新的 cookie
+  const success = await writeCookieCache(page, cookieId);
+  if (success) {
+    shared.log.info('更新 cookie 缓存');
+  }
+  return true;
+};
+
+/**
+ * @description 尝试二维码登录
+ * @returns
+ */
+const handleLoginByQRCode = async () => {
+  // 访问登录页
   const gotoRes = await shared.gotoPage(URL_CONFIG.login, {
     waitUntil: 'domcontentloaded',
   });
@@ -121,14 +98,18 @@ const handleLogin = async () => {
   let result = false;
   // 允许重试次数内
   while (tryCount < STUDY_CONFIG.maxTryLoginCount) {
-    // 尝试登录
-    await tryLogin(page);
+    // 尝试二维码登录
+    await tryLoginByQRCode(page);
     // 登录状态
     const loginStatus = await getLoginStatus(page);
     // 登录成功
     if (loginStatus) {
       result = true;
-      await writeCookieCache(shared.schedule.nick);
+      // 写入缓存
+      const res = await writeCookieCache(page, shared.pushOptions!.nick);
+      if (res) {
+        shared.log.info('写入 cookie 缓存');
+      }
       break;
     }
     // 登录次数
@@ -192,7 +173,8 @@ const refreshQRCode = async (page: pup.Page) => {
       // 定时器
       const timer = setInterval(() => {
         // 加载
-        const loading = document.querySelector<HTMLDivElement>('.login_loading');
+        const loading =
+          document.querySelector<HTMLDivElement>('.login_loading');
         // 加载完毕
         if (loading && loading.style.display === 'none') {
           // 清除定时器
@@ -257,7 +239,7 @@ const getLoginStatus = (page: pup.Page) => {
 /**
  * @description 登录
  */
-const tryLogin = async (page: pup.Page) => {
+const tryLoginByQRCode = async (page: pup.Page) => {
   // 获取二维码
   const qrData = await getLoginQRCode(page);
   // 二维码信息
@@ -299,7 +281,9 @@ const tryLogin = async (page: pup.Page) => {
    <div>
       或在浏览器
       <a
-        href="dtxuexi://appclient/page/study_feeds?url=${encodeURIComponent(data)}"
+        href="dtxuexi://appclient/page/study_feeds?url=${encodeURIComponent(
+          data
+        )}"
         style="text-decoration: none"
         >${getHighlightHTML('打开学习强国APP')}</a
       >
@@ -310,34 +294,6 @@ const tryLogin = async (page: pup.Page) => {
     title: '学习提示',
     content: ['扫一扫, 登录学习强国!', aWrap, imgWrap],
     type: 'info',
-  });
-};
-
-/**
- * @description 解码
- * @param buffer
- * @returns
- */
-const decodeQRCode = (buffer: Buffer) => {
-  return new Promise<{ width: number; height: number; data: string } | undefined>((resolve) => {
-    jimp.read(buffer, (err, image) => {
-      if (!err) {
-        const { data, width, height } = image.bitmap;
-        // 转换为 unit8
-        const unit8 = new Uint8ClampedArray(data);
-        // 解码
-        const res = decode(unit8, width, height);
-        if (res) {
-          resolve({
-            width,
-            height,
-            data: res.data,
-          });
-          return;
-        }
-      }
-      resolve(undefined);
-    });
   });
 };
 

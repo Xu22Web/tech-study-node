@@ -177,7 +177,7 @@ describe('api', () => {
     `);
   });
   it.skip('sharedpush', async () => {
-    shared.setSchedule(SCHEDULE_CONFIG[0]);
+    shared.setPushOptions(SCHEDULE_CONFIG[0]);
     const res = await shared.pushModal({
       title: '普通提示',
       content: ['发生错误!', '测试'],

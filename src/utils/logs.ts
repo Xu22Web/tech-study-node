@@ -2,12 +2,13 @@ import fs from 'fs';
 import ora from 'ora';
 import path from 'path';
 import STUDY_CONFIG from '../config/study';
-import { formatDate, formatDateTime } from '../utils';
+import { formatDate, formatDateTime } from './fomat';
 
 /**
  * @description 日志保存路径
  */
 const { logsPath } = STUDY_CONFIG;
+
 /**
  * @description 日志类型
  */

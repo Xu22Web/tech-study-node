@@ -26,7 +26,7 @@ const API_CONFIG = {
     'https://www.xuexi.cn/lgdata/35il6fpn0ohq.json',
     'https://www.xuexi.cn/lgdata/1ap1igfgdn2.json',
     'https://www.xuexi.cn/lgdata/vdppiu92n1.json',
-    'https://www.xuexi.cn/lgdata/152mdtl3qn1.json'
+    'https://www.xuexi.cn/lgdata/152mdtl3qn1.json',
   ],
   /**
    * @description 视频数据
@@ -38,7 +38,7 @@ const API_CONFIG = {
     'https://www.xuexi.cn/lgdata/3o3ufqgl8rsn.json',
     'https://www.xuexi.cn/lgdata/591ht3bc22pi.json',
     'https://www.xuexi.cn/lgdata/1742g60067k.json',
-    'https://www.xuexi.cn/lgdata/1novbsbi47k.json'
+    'https://www.xuexi.cn/lgdata/1novbsbi47k.json',
   ],
   /**
    * @description 专项练习列表

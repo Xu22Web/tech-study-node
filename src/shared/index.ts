@@ -1,8 +1,6 @@
 import * as pup from 'puppeteer-core';
 import PUSH_CONFIG from '../config/push';
-import { Schedule } from '../config/schedule';
 import STUDY_CONFIG from '../config/study';
-import { Log } from '../controller/logs';
 import {
   getTaskList,
   getTodayScore,
@@ -11,9 +9,10 @@ import {
   TaskList,
   UserInfo,
 } from '../controller/user';
-import { tryLoginByCacheCookie } from '../controller/login';
-import { installMouseHelper, installRemoveDialog, pushModal, sleep } from '../utils';
-import { ModalOptions } from '../utils/interface';
+import { RefreshParams, StudyParams } from '../utils/job';
+import { Log } from '../utils/logs';
+import { ModalOptions, pushModal } from '../utils/push';
+import { installMouseHelper, installRemoveDialog, sleep } from '../utils/utils';
 
 /**
  * @description 共享数据
@@ -30,7 +29,14 @@ type Shared = {
   /**
    * @description 定时任务
    */
-  schedule?: Schedule;
+  params: StudyParams | RefreshParams | undefined;
+  /**
+   * @description 推送配置
+   */
+  pushOptions?: {
+    nick: string;
+    token: string;
+  };
   /**
    * @description 进度
    */
@@ -102,12 +108,6 @@ type Shared = {
       referer?: string | undefined;
     }
   ): Promise<boolean>;
-
-  /**
-   * @description 刷新页面 cookie
-   */
-  refreshCookie(cookieId: string): Promise<boolean>;
-
   /**
    * @description 推送
    */
@@ -117,10 +117,15 @@ type Shared = {
    */
   pushModalTips(options: Omit<ModalOptions, 'to' | 'from'>): Promise<void>;
   /**
+   * @description 设置参数
+   * @param schedule
+   */
+  setParams(params: StudyParams | RefreshParams): void;
+  /**
    * @description 设置定时任务
    * @param schedule
    */
-  setSchedule(schedule: Schedule): void;
+  setPushOptions(options: { nick: string; token: string }): void;
   /**
    * @description 获取用户信息
    */
@@ -144,6 +149,7 @@ type Shared = {
  */
 const shared: Shared = {
   log: new Log(),
+  params: undefined,
   getBrowser() {
     if (this.broswer && this.broswer.isConnected()) {
       return this.broswer;
@@ -240,29 +246,30 @@ const shared: Shared = {
     }
     return false;
   },
-
-  async refreshCookie(cookieId: string) {
-    try {
-      return tryLoginByCacheCookie(cookieId);
-    } catch (_) {
-      return false;
-    }
-  },
-
   async pushModal(options) {
     // 配置
-    const { title, subTitle = '', to = this.schedule?.nick, content, type } = options;
+    const {
+      title,
+      subTitle = '',
+      to = this.pushOptions!.nick,
+      content,
+      type,
+    } = options;
     // 推送配置
     const { token, from, enabled } = PUSH_CONFIG;
     // 启用推送
     if (enabled) {
-      if (token === this.schedule?.token) {
+      if (token === this.pushOptions!.token) {
         // 管理员推送
         await pushModal({ title, subTitle, to, content, type, from }, token);
         return;
       }
       // 推送
-      await pushModal({ title, subTitle, to, content, type, from }, token, this.schedule?.token);
+      await pushModal(
+        { title, subTitle, to, content, type, from },
+        token,
+        this.pushOptions!.token
+      );
     }
   },
   async pushModalTips(options) {
@@ -273,17 +280,24 @@ const shared: Shared = {
     // 启用推送
     if (enabled) {
       // 推送
-      await pushModal({ title, subTitle, to: nick, content, type, from }, token);
+      await pushModal(
+        { title, subTitle, to: nick, content, type, from },
+        token
+      );
     }
   },
-  setSchedule(schedule) {
-    if (schedule) {
-      this.schedule = schedule;
-      return;
+  setParams(params) {
+    if (params) {
+      this.params = params;
+    }
+  },
+  setPushOptions(options) {
+    if (options) {
+      this.pushOptions = options;
     }
   },
   async getUserInfo() {
-    shared.log.loading('正在获取用户信息...');
+    this.log.loading('正在获取用户信息...');
     // 获取用户信息
     this.userInfo = await getUserInfo();
     if (this.userInfo) {
@@ -293,7 +307,7 @@ const shared: Shared = {
     this.log.fail('获取用户信息失败!');
   },
   async getTaskList() {
-    shared.log.loading('正在获取任务列表...');
+    this.log.loading('正在获取任务列表...');
     // 获取任务列表
     this.taskList = await getTaskList();
     if (this.taskList) {
@@ -307,7 +321,7 @@ const shared: Shared = {
     await this.getTaskList();
   },
   async getTotalScore() {
-    shared.log.loading('正在获取总分...');
+    this.log.loading('正在获取总分...');
     // 获取总分
     this.totalScore = await getTotalScore();
     if (this.totalScore !== undefined) {
@@ -317,7 +331,7 @@ const shared: Shared = {
     this.log.fail('获取总分失败!');
   },
   async getTodayScore() {
-    shared.log.loading('正在获取当天分数...');
+    this.log.loading('正在获取当天分数...');
     // 获取当天分数
     this.todayScore = await getTodayScore();
     if (this.todayScore !== undefined) {

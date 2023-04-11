@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { newsList, videoList } from '../apis';
 import STUDY_CONFIG from '../config/study';
 import shared from '../shared';
+
 /**
  * @description 读文章 | 看视频
  * @returns
@@ -369,6 +370,7 @@ export type NewsVideoList = {
   dataValid: boolean;
   itemType: string;
 }[];
+
 /**
  * @description 获取视频
  * @returns
@@ -381,6 +383,7 @@ export const getVideos = async () => {
   }
   return [];
 };
+
 /**
  * @description 获取文章
  * @returns

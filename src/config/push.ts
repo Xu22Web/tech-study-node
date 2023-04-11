@@ -15,7 +15,7 @@ const PUSH_CONFIG = {
   /**
    * @description 发送服务消息来源
    */
-  from: '卑微的服务器',
+  from: 'tech-study-node',
   /**
    * @description 管理员的token
    */
