@@ -178,7 +178,7 @@ pnpm install
      md .local_chromium
     ```
 
-  - `Google Chrome` 安装根目录 `C:/Program Files/Google/Chrome/Application` （不 一定是这个路径，根据自身情况而定），安装根目录里的 `chrome.exe` 等文件（不含文件夹）、 文件夹 `1xx.0.xxx.xxx` 里的 `1xx.0.xxx.xxx.manifest` 等文件（不含文件夹）以及 `1xx. 0.xxx.xxx`里的`Locales` 文件夹（即标记 `✔` 的文件及文件夹），复制到 `.local_chromium`
+  - `Google Chrome` 安装根目录 `C:/Program Files/Google/Chrome/Application` （不一定是这个路径，根据自身情况而定），安装根目录里的 `chrome.exe` 等文件（不含文件夹）、 文件夹 `1xx.0.xxx.xxx` 里的 `1xx.0.xxx.xxx.manifest` 等文件（不含文件夹）以及 `1xx.0.xxx.xxx`里的`Locales` 文件夹（即标记 `✔` 的文件及文件夹），复制到 `.local_chromium`
 
     ```
      Application
