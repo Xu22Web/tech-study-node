@@ -42,12 +42,10 @@ export type Job = StudyJob | RefreshJob;
  * @returns
  */
 export const generateRefreshJobs = (studyJob: StudyJob) => {
-  // 任务信息
-  const { time: endTime, params } = studyJob;
   // 任务参数
-  const { token, nick: cookieId } = params;
+  const { token, nick: cookieId } = studyJob.params;
   // 刷新间隔
-  const { refreshCookieInterval: intervalRange } = SCHEDULE_CONFIG.find(
+  const { refreshCookieInterval: intervalRange, cron } = SCHEDULE_CONFIG.find(
     (schedule) => schedule.nick === cookieId
   )!;
   // 当前时间
@@ -58,22 +56,28 @@ export const generateRefreshJobs = (studyJob: StudyJob) => {
   // 随机刷新任务
   const refreshJobs: RefreshJob[] = [];
   // 当前任务时间
-  let currentJobTime = endTime;
+  let currentJobTime = paser.parseExpression(cron).next().getTime();
+  // 随机间隔时间
+  let intervalTime =
+    (Math.random() * (intervalRange[1] - intervalRange[0]) + intervalRange[0]) *
+    unit;
+  // 当前任务时间
+  currentJobTime -= intervalTime;
   // 至少相差 30min
-  while (currentJobTime > now + 30 * unit) {
-    // 随机间隔时间
-    const intervalTime =
-      (Math.random() * (intervalRange[1] - intervalRange[0]) +
-        intervalRange[0]) *
-      unit;
-    // 当前任务时间
-    currentJobTime -= intervalTime;
+  while (currentJobTime > now + 10 * unit) {
     refreshJobs.push({
       time: currentJobTime,
       type: 'freshCookie',
       effective: true,
       params: { cookieId, token },
     });
+    // 随机间隔时间
+    intervalTime =
+      (Math.random() * (intervalRange[1] - intervalRange[0]) +
+        intervalRange[0]) *
+      unit;
+    // 当前任务时间
+    currentJobTime -= intervalTime;
   }
   refreshJobs.sort((a, b) => a.time - b.time);
   return refreshJobs;
@@ -142,6 +146,16 @@ export const createRefreshJobs = (studyJobs: StudyJob[]) => {
  * @returns
  */
 export const createJobs = (scheduleList: Schedule[]) => {
+  // 检测昵称唯一性
+  const res = scheduleList.some(
+    (schedule) =>
+      scheduleList.filter(
+        (matchSchedule) => schedule.nick === matchSchedule.nick
+      ).length > 1
+  );
+  if (res) {
+    throw new Error('nick 必须唯一, 请重新配置');
+  }
   // 学习任务
   const studyJobs = createStudyJobs(scheduleList);
   // 刷新任务
