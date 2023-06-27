@@ -196,7 +196,7 @@ export const getTaskList = async () => {
         // 每日答题
         taskList[TaskType.PRACTICE] = {
           title: '每日答题',
-          ...taskProgress[5],
+          ...taskProgress[3],
           type: TaskType.PRACTICE,
         };
         // 专项练习
