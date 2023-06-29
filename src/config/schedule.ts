@@ -34,7 +34,7 @@ export const SCHEDULE_CONFIG: Schedule[] = [
   {
     nick: 'xxx',
     token: 'xxxxxxxxxxxxxxxxxxxxxxxxxx',
-    cron: '0 12 20 * * ?',
+    cron: '0 0 12 * * ?',
     taskConfig: [true, true, true],
     refreshCookieInterval: [60, 120],
   },
