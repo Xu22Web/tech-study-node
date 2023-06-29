@@ -77,17 +77,10 @@ export const formatTask = (task: {
 }) => {
   // 当前分数、最大分数、链接
   const { currentScore, dayMaxScore } = task;
-  // 进度
-  let rate = ~~((100 * currentScore) / dayMaxScore);
-  // 成组任务
-  if (dayMaxScore <= currentScore) {
-    rate = 100;
-  }
   return {
     currentScore,
     dayMaxScore,
-    rate,
-    status: rate === 100,
+    status: currentScore >= dayMaxScore,
   };
 };
 
@@ -286,27 +279,20 @@ export const installRemoveDialog = async (page: pup.Page) => {
  * @param buffer
  * @returns
  */
-export const decodeQRCode = (buffer: Buffer) => {
-  return new Promise<
-    { width: number; height: number; data: string } | undefined
-  >((resolve) => {
-    jimp.read(buffer, (err, image) => {
-      if (!err) {
-        const { data, width, height } = image.bitmap;
-        // 转换为 unit8
-        const unit8 = new Uint8ClampedArray(data);
-        // 解码
-        const res = decode(unit8, width, height);
-        if (res) {
-          resolve({
-            width,
-            height,
-            data: res.data,
-          });
-          return;
-        }
-      }
-      resolve(undefined);
-    });
-  });
+export const decodeQRCode = async (buffer: Buffer) => {
+  //  图像数据
+  const image = await jimp.read(buffer);
+  // 图像信息
+  const { data, width, height } = image.bitmap;
+  // 转换为 unit8
+  const unit8 = new Uint8ClampedArray(data);
+  // 解码
+  const res = decode(unit8, width, height);
+  if (res) {
+    return {
+      width,
+      height,
+      data: res.data,
+    };
+  }
 };

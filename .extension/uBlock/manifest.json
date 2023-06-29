@@ -1,0 +1,73 @@
+{
+   "author": "Raymond Hill & contributors",
+   "background": {
+      "page": "background.html"
+   },
+   "browser_action": {
+      "default_icon": {
+         "16": "img/icon_16.png",
+         "32": "img/icon_32.png",
+         "64": "img/icon_64.png"
+      },
+      "default_popup": "popup-fenix.html",
+      "default_title": "uBlock Origin"
+   },
+   "commands": {
+      "launch-element-picker": {
+         "description": "__MSG_popupTipPicker__"
+      },
+      "launch-element-zapper": {
+         "description": "__MSG_popupTipZapper__"
+      },
+      "launch-logger": {
+         "description": "__MSG_popupTipLog__"
+      },
+      "open-dashboard": {
+         "description": "__MSG_popupTipDashboard__"
+      },
+      "relax-blocking-mode": {
+         "description": "__MSG_relaxBlockingMode__"
+      },
+      "toggle-cosmetic-filtering": {
+         "description": "__MSG_toggleCosmeticFiltering__"
+      }
+   },
+   "content_scripts": [ {
+      "all_frames": true,
+      "js": [ "/js/vapi.js", "/js/vapi-client.js", "/js/contentscript.js" ],
+      "match_about_blank": true,
+      "matches": [ "http://*/*", "https://*/*" ],
+      "run_at": "document_start"
+   }, {
+      "all_frames": false,
+      "js": [ "/js/scriptlets/subscriber.js" ],
+      "matches": [ "https://easylist.to/*", "https://*.fanboy.co.nz/*", "https://filterlists.com/*", "https://forums.lanik.us/*", "https://github.com/*", "https://*.github.io/*", "https://*.letsblock.it/*" ],
+      "run_at": "document_idle"
+   } ],
+   "content_security_policy": "script-src 'self'; object-src 'self'",
+   "default_locale": "en",
+   "description": "__MSG_extShortDesc__",
+   "icons": {
+      "128": "img/icon_128.png",
+      "16": "img/icon_16.png",
+      "32": "img/icon_32.png",
+      "64": "img/icon_64.png"
+   },
+   "incognito": "split",
+   "key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtej8nZ6GDzzNjLD1WCjkbCf15gZlrgzMn9To0ef+6Tiyk6uDSePSaaiMG+8rNgTCQM1ES6Hy8XzTJf8o19ldg1GXHE4MAdjjzDNv3ya05Vj71r/dzI9OyL45DnshMYdW7lyzHp7nt1L5uWtmZs4MiOO43RrWzrGuvhhUdQm9rz4nOgu9q7FWqZP6kUYL42TJgQ6Sc0Qu25TshDdJME3uK5z/kV3BNlmQFDhuAXQZKP/KCV2ogG7R/VcHj1a2ETjRFMQxtQUaWtCmpDYw7URD4CuRNy9LBTylNASfFCHLAEc9MWqFD1Alj63o+WsqBP/h81Vs7nH6PnXQg9+fOCpMyQIDAQAB",
+   "manifest_version": 2,
+   "minimum_chrome_version": "73.0",
+   "name": "uBlock Origin",
+   "options_ui": {
+      "open_in_tab": true,
+      "page": "dashboard.html"
+   },
+   "permissions": [ "contextMenus", "privacy", "storage", "tabs", "unlimitedStorage", "webNavigation", "webRequest", "webRequestBlocking", "\u003Call_urls>" ],
+   "short_name": "uBlock₀",
+   "storage": {
+      "managed_schema": "managed_storage.json"
+   },
+   "update_url": "https://edge.microsoft.com/extensionwebstorebase/v1/crx",
+   "version": "1.49.2",
+   "web_accessible_resources": [ "/web_accessible_resources/*" ]
+}

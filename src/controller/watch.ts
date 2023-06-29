@@ -2,6 +2,7 @@ import chalk from 'chalk';
 import { newsList, videoList } from '../apis';
 import STUDY_CONFIG from '../config/study';
 import shared from '../shared';
+import { TaskType } from './user';
 
 /**
  * @description 读文章 | 看视频
@@ -30,8 +31,10 @@ const handleReadNews = async () => {
     const gotoRes = await shared.gotoPage(news[i].url, {
       waitUntil: 'domcontentloaded',
     });
-    //  跳过跳转失败
-    if (!gotoRes) {
+    // 页面
+    const page = shared.getPage();
+    // 跳转失败
+    if (!gotoRes || !page) {
       shared.log.fail(
         `${chalk.blueBright(Number(i) + 1)} / ${
           news.length
@@ -44,10 +47,18 @@ const handleReadNews = async () => {
         news.length
       } | 标题: ${chalk.blueBright(news[i].title)}`
     );
-    // 看新闻时间
-    const duration = ~~(Math.random() * 40 + 80);
+    // 最大段落字数
+    const maxTextCount = await page.$$eval('section', (sections) => {
+      // 最大字数
+      return Math.max(...sections.map((s) => s.innerText.length), 200);
+    });
+    // 总时长
+    const duration = (60 * maxTextCount) / 1000;
+    // 预计时间
+    // min(duration,  maxWatch.value) 秒后关闭页面
+    const predictTime = ~~Math.min(duration, Math.random() * 40 + 40);
     // 倒计时
-    await countDown(duration, (duration) => {
+    await countDown(predictTime, (duration) => {
       // 倒计时存在
       if (duration) {
         shared.log.loading(`观看剩余时间: ${chalk.blueBright(duration)} s`);
@@ -58,14 +69,14 @@ const handleReadNews = async () => {
     // 任务进度
     await shared.getTaskList();
     // 提前完成
-    if (shared.taskList && shared.taskList[0].status) {
+    if (shared.taskList && shared.taskList[TaskType.READ].status) {
       break;
     }
   }
   // 任务进度
   await shared.getTaskList();
   // 未完成
-  if (shared.taskList && !shared.taskList[0].status) {
+  if (shared.taskList && !shared.taskList[TaskType.READ].status) {
     shared.log.info('未完成任务, 继续看新闻!');
     // 继续观看
     await handleReadNews();
@@ -84,8 +95,10 @@ const handleWatchVideo = async () => {
     const gotoRes = await shared.gotoPage(videos[i].url, {
       waitUntil: 'domcontentloaded',
     });
+    // 页面
+    const page = shared.getPage();
     // 跳转失败
-    if (!gotoRes) {
+    if (!gotoRes || !page) {
       shared.log.fail(
         `${chalk.blueBright(Number(i) + 1)} / ${
           videos.length
@@ -105,10 +118,15 @@ const handleWatchVideo = async () => {
     if (!waitRes) {
       shared.log.fail('观看失败, 继续观看!');
     }
-    // 看视频时间
-    const duration = ~~(Math.random() * 40 + 100);
+    // 总时长
+    const duration = await page.$eval('video', (video) => {
+      return video.duration;
+    });
+    // 预计时间
+    // min(duration,  maxWatch.value) 秒后关闭页面
+    const predictTime = ~~Math.min(duration, Math.random() * 40 + 80);
     // 倒计时
-    await countDown(duration, (current) => {
+    await countDown(predictTime, (current) => {
       // 倒计时存在
       if (current) {
         shared.log.loading(`观看剩余时间: ${chalk.blueBright(current)} s`);
@@ -119,14 +137,14 @@ const handleWatchVideo = async () => {
     // 任务进度
     await shared.getTaskList();
     // 提前完成
-    if (shared.taskList && shared.taskList[1].status) {
+    if (shared.taskList && shared.taskList[TaskType.WATCH].status) {
       break;
     }
   }
   // 任务进度
   await shared.getTaskList();
   // 未完成
-  if (shared.taskList && !shared.taskList[1].status) {
+  if (shared.taskList && !shared.taskList[TaskType.WATCH].status) {
     shared.log.info('未完成任务, 继续看视频!');
     // 继续观看
     await handleWatchVideo();
@@ -146,7 +164,7 @@ const getTodayNews = async () => {
     // 最大新闻数
     const { maxNewsNum } = STUDY_CONFIG;
     // 分数
-    const { dayMaxScore, currentScore } = shared.taskList[0];
+    const { dayMaxScore, currentScore } = shared.taskList[TaskType.READ];
     // 新闻数
     const newsNum = dayMaxScore - currentScore;
     // 需要学习的新闻数量
@@ -155,15 +173,21 @@ const getTodayNews = async () => {
     const newsList = await getNews();
     // 存在新闻列表
     if (newsList && newsList.length) {
-      // 数量补足需要数量
-      while (news.length < need) {
-        // 随便取
-        const randomIndex = ~~(Math.random() * newsList.length);
+      // 索引
+      let i = 0;
+      // 最新新闻
+      const latestItems = newsList.slice(0, 100);
+      // 当前年份
+      const currentYear = new Date().getFullYear().toString();
+      // 查找今年新闻
+      while (i < need) {
+        const randomIndex = ~~(Math.random() * latestItems.length);
         // 新闻
-        const item = newsList[randomIndex];
-        // 是否存在新闻
-        if (item.dataValid && item.type === 'tuwen') {
-          news.push(item);
+        const item = latestItems[randomIndex];
+        // 是否存在
+        if (item.publishTime.startsWith(currentYear) && item.type === 'tuwen') {
+          news[i] = item;
+          i++;
         }
       }
     }
@@ -184,7 +208,7 @@ const getTodayVideos = async () => {
     // 最大视频数
     const { maxVideoNum } = STUDY_CONFIG;
     // 分数
-    const { dayMaxScore, currentScore } = shared.taskList[1];
+    const { dayMaxScore, currentScore } = shared.taskList[TaskType.WATCH];
     // 视频数
     const videoNum = dayMaxScore - currentScore;
     // 需要学习的视频数量
@@ -193,18 +217,24 @@ const getTodayVideos = async () => {
     const videoList = await getVideos();
     // 存在视频列表
     if (videoList && videoList.length) {
-      // 数量补足需要数量
-      while (videos.length < need) {
-        // 随便取
-        const randomIndex = ~~(Math.random() * videoList.length);
-        // 视频
-        const item = videoList[randomIndex];
-        // 是否存在视频
+      // 索引
+      let i = 0;
+      // 最新视频
+      const latestItems = videoList.slice(0, 100);
+      // 当前年份
+      const currentYear = new Date().getFullYear().toString();
+      // 查找今年视频
+      while (i < need) {
+        const randomIndex = ~~(Math.random() * latestItems.length);
+        // 新闻
+        const item = latestItems[randomIndex];
+        // 是否存在
         if (
-          item.dataValid &&
+          item.publishTime.startsWith(currentYear) &&
           (item.type === 'shipin' || item.type === 'juji')
         ) {
-          videos.push(item);
+          videos[i] = item;
+          i++;
         }
       }
     }

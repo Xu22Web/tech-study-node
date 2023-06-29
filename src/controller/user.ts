@@ -24,7 +24,6 @@ export type UserInfo = {
 export type TaskList = {
   currentScore: number;
   dayMaxScore: number;
-  rate: number;
   status: boolean;
   title: string;
   type: TaskType;
@@ -34,10 +33,10 @@ export type TaskList = {
  * @description 任务类型
  */
 export enum TaskType {
+  LOGIN,
   READ,
   WATCH,
   PRACTICE,
-  PAPER,
 }
 
 /**
@@ -47,7 +46,7 @@ export enum TaskType {
  */
 export const renderUserData = (userInfo: UserInfo) => {
   shared.log.warn(`用户信息`);
-  shared.log.info(`昵称: ${chalk.yellow(userInfo.nick)}`);
+  shared.log.info(`用户名: ${chalk.yellow(userInfo.nick)}`);
 };
 
 /**
@@ -66,12 +65,11 @@ export const renderScoreData = (score: number, total: number) => {
  */
 export const renderTasksData = (taskList: TaskList) => {
   shared.log.warn(`任务进度`);
-  shared.log.info(`文章选读: ${chalk.yellow(taskList[TaskType.READ].rate)} %`);
-  shared.log.info(`视听学习: ${chalk.yellow(taskList[TaskType.WATCH].rate)} %`);
-  shared.log.info(
-    `每日答题: ${chalk.yellow(taskList[TaskType.PRACTICE].rate)} %`
+  taskList.forEach((task) =>
+    shared.log.info(
+      `${task.title}: ${chalk.yellow(task.currentScore)} / ${task.dayMaxScore}`
+    )
   );
-  shared.log.info(`专项练习: ${chalk.yellow(taskList[TaskType.PAPER].rate)} %`);
 };
 
 /**
@@ -177,6 +175,12 @@ export const getTaskList = async () => {
         // 任务列表
         const taskList: TaskList = [];
         // 文章选读
+        taskList[TaskType.LOGIN] = {
+          title: '登录',
+          ...taskProgress[2],
+          type: TaskType.LOGIN,
+        };
+        // 文章选读
         taskList[TaskType.READ] = {
           title: '文章选读',
           ...taskProgress[0],
@@ -185,25 +189,14 @@ export const getTaskList = async () => {
         // 视听学习
         taskList[TaskType.WATCH] = {
           title: '视听学习',
-          ...formatTask({
-            currentScore:
-              taskProgress[1].currentScore + taskProgress[2].currentScore,
-            dayMaxScore:
-              taskProgress[1].dayMaxScore + taskProgress[2].dayMaxScore,
-          }),
+          ...taskProgress[1],
           type: TaskType.WATCH,
         };
         // 每日答题
         taskList[TaskType.PRACTICE] = {
           title: '每日答题',
-          ...taskProgress[5],
+          ...taskProgress[3],
           type: TaskType.PRACTICE,
-        };
-        // 专项练习
-        taskList[TaskType.PAPER] = {
-          title: '专项练习',
-          ...taskProgress[4],
-          type: TaskType.PAPER,
         };
         return taskList;
       }

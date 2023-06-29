@@ -5,8 +5,6 @@ import { examPaper, getAnswer, postAnswer } from '../apis';
 import STUDY_CONFIG from '../config/study';
 import URL_CONFIG from '../config/url';
 import shared from '../shared';
-import { getHighlightHTML } from '../utils/html';
-import { StudyParams } from '../utils/job';
 import { createRandomPath, createRandomPoint } from '../utils/random';
 import {
   getBatchText,
@@ -23,130 +21,29 @@ import {
  * @param type
  * @returns
  */
-const handleExam = async (type: number): Promise<boolean> => {
-  // 每日答题
-  if (type === 0) {
-    // 跳转每日答题
-    const gotoRes = await shared.gotoPage(URL_CONFIG.examPractice, {
-      waitUntil: 'domcontentloaded',
-    });
-    // 页面
-    const page = shared.getPage();
-    // 跳转成功
-    if (gotoRes && page) {
-      // 开始答题
-      await handleQuestion(page, 0);
-      // 任务列表
-      await shared.getTaskList();
-      // 继续做
-      if (shared.taskList && !shared.taskList[2].status) {
-        shared.log.info('未完成任务, 继续每日答题!');
-        // 重新答题
-        return await handleExam(0);
-      }
-      return true;
+const handleExam = async (): Promise<boolean> => {
+  // 跳转每日答题
+  const gotoRes = await shared.gotoPage(URL_CONFIG.examPractice, {
+    waitUntil: 'domcontentloaded',
+  });
+  // 页面
+  const page = shared.getPage();
+  // 跳转成功
+  if (gotoRes && page) {
+    // 开始答题
+    await handleQuestion(page);
+    // 任务列表
+    await shared.getTaskList();
+    // 继续做
+    if (shared.taskList && !shared.taskList[2].status) {
+      shared.log.info('未完成任务, 继续每日答题!');
+      // 重新答题
+      return await handleExam();
     }
-    shared.log.info('每日答题 页面跳转失败!');
-    return false;
+    return true;
   }
-  // 专项练习
-  if (type === 1) {
-    // 查找题号
-    const examPaper = await findExamPaper();
-    // 不存在习题
-    if (!examPaper) {
-      return true;
-    }
-    // 题号 名称
-    const { id, name } = examPaper;
-    // 专项练习链接
-    const url = `${URL_CONFIG.examPaper}?id=${id}`;
-    shared.log.warn('专项练习, 题目信息');
-    shared.log.info(`标题: ${chalk.yellow(name)}`);
-    shared.log.info(`链接: ${chalk.yellow(url)}`);
-    // 跳转专项练习
-    const gotoRes = await shared.gotoPage(url, {
-      waitUntil: 'domcontentloaded',
-    });
-    // 页面
-    const page = shared.getPage();
-    // 请求成功
-    if (gotoRes && page) {
-      // 答题结果
-      const result = await handleQuestion(page, 2);
-      // 答题失败
-      if (!result) {
-        shared.log.fail('专项练习, 答题错误或失败!');
-        // 推送学习提示
-        shared.pushModal({
-          title: '学习提示',
-          content: [
-            '专项练习, 答题错误或失败!',
-            `标题: ${getHighlightHTML(name)}`,
-            `链接: ${getHighlightHTML(url)}`,
-          ],
-          type: 'fail',
-        });
-      }
-      return result;
-    }
-    shared.log.info('专项练习 页面跳转失败!');
-    return false;
-  }
+  shared.log.info('每日答题 页面跳转失败!');
   return false;
-};
-
-/**
- * @description 初始化答题
- * @returns
- */
-const initExam = async () => {
-  // 请求第一页
-  const res = await getExamPaper(1);
-  if (res) {
-    // 总页数
-    const { totalPageCount } = res;
-    // 请求速率限制
-    await sleep(STUDY_CONFIG.rateLimit);
-    return totalPageCount;
-  }
-};
-
-/**
- * @description 获取专项练习
- * @returns
- */
-const findExamPaper = async () => {
-  // 总页数
-  const total = await initExam();
-  // 当前页数
-  let current = STUDY_CONFIG.paperReverse ? total : 1;
-  if (total && current) {
-    while (current <= total && current) {
-      // 当前页数数据
-      const res = await getExamPaper(current);
-      if (res) {
-        // 专项练习列表
-        const examPapers = res.list;
-        // 逆序专项练习列表
-        if (STUDY_CONFIG.paperReverse) {
-          examPapers.reverse();
-        }
-        // 遍历专项练习列表
-        for (const i in examPapers) {
-          // 1为"开始答题" , 2为"重新答题"
-          if (examPapers[i].status === 1) {
-            return examPapers[i];
-          }
-        }
-        current += STUDY_CONFIG.paperReverse ? -1 : 1;
-        // 请求速率限制
-        await sleep(STUDY_CONFIG.rateLimit);
-      } else {
-        break;
-      }
-    }
-  }
 };
 
 /**
@@ -155,7 +52,7 @@ const findExamPaper = async () => {
  * @param type 类型
  * @returns
  */
-const handleQuestion = async (page: pup.Page, type: number) => {
+const handleQuestion = async (page: pup.Page) => {
   // 题目加载
   shared.log.loading('正在加载题目...');
   // 等待题目加载完成
@@ -242,9 +139,6 @@ const handleQuestion = async (page: pup.Page, type: number) => {
       shared.log.loading(`${chalk.blueBright(current)} / ${total} 答题失败!`);
       // 可能答错且无答案
       result = false;
-      if (type === 1 && (<StudyParams>shared.params).paperExitAfterWrong) {
-        return result;
-      }
       // 随机答题
       await handleRandAnswers(page, questionType);
     }

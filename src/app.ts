@@ -61,7 +61,7 @@ export const handleStudy = async () => {
         `当天积分:  ${getHighlightHTML(shared.todayScore)} 分`,
         `总积分: ${getHighlightHTML(shared.totalScore)} 分`,
         ...shared.taskList.map((task) =>
-          getProgressHTML(task.title, task.rate)
+          getProgressHTML(task.title, task.currentScore, task.dayMaxScore)
         ),
       ],
       type: 'success',
@@ -94,7 +94,7 @@ export const handleStudy = async () => {
           `当天积分:  ${getHighlightHTML(shared.todayScore)} 分`,
           `总积分: ${getHighlightHTML(shared.totalScore)} 分`,
           ...shared.taskList.map((task) =>
-            getProgressHTML(task.title, task.rate)
+            getProgressHTML(task.title, task.currentScore, task.dayMaxScore)
           ),
         ],
         type: 'success',
@@ -112,7 +112,7 @@ const study = async () => {
   if (shared.taskList) {
     // 是否读新闻
     if (
-      (<StudyParams>shared.params).taskConfig[TaskType.READ] &&
+      (<StudyParams>shared.params).taskConfig[TaskType.READ - 1] &&
       !shared.taskList[TaskType.READ].status
     ) {
       shared.log.info(`任务一: ${chalk.blueBright('文章选读')} 开始`);
@@ -123,7 +123,7 @@ const study = async () => {
 
     // 是否看视频
     if (
-      (<StudyParams>shared.params).taskConfig[TaskType.WATCH] &&
+      (<StudyParams>shared.params).taskConfig[TaskType.WATCH - 1] &&
       !shared.taskList[TaskType.WATCH].status
     ) {
       shared.log.info(`任务二: ${chalk.blueBright('视听学习')} 开始`);
@@ -134,33 +134,18 @@ const study = async () => {
 
     // 是否每日答题
     if (
-      (<StudyParams>shared.params).taskConfig[TaskType.PRACTICE] &&
+      (<StudyParams>shared.params).taskConfig[TaskType.PRACTICE - 1] &&
       !shared.taskList[TaskType.PRACTICE].status
     ) {
       shared.log.info(`任务三: ${chalk.blueBright('每日答题')} 开始`);
       // 每日答题
-      const res = await handleExam(0);
+      const res = await handleExam();
       // 答题出错
       if (!res) {
         shared.log.fail(`任务三: ${chalk.blueBright('每日答题')} 答题出错!`);
       }
     }
     shared.log.success(`任务三: ${chalk.blueBright('每日答题')} 已完成!`);
-
-    // 是否专项练习
-    if (
-      (<StudyParams>shared.params).taskConfig[TaskType.PAPER] &&
-      !shared.taskList[TaskType.PAPER].status
-    ) {
-      shared.log.info(`任务四: ${chalk.blueBright('专项练习')} 开始`);
-      // 专项练习
-      const res = await handleExam(1);
-      // 答题出错
-      if (!res) {
-        shared.log.fail(`任务四: ${chalk.blueBright('专项练习')} 答题出错!`);
-      }
-    }
-    shared.log.success(`任务四: ${chalk.blueBright('专项练习')} 已完成!`);
     return;
   }
   // 重新学习

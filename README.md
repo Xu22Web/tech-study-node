@@ -288,7 +288,7 @@ pnpm install
 
         ```
 
-        ![管理员token](./administrator.png)
+        ![管理员token](./images/administrator.png)
 
       - 更改 `Schedule 配置`（`src/config/schedule.ts`），添加用户`token`
 
@@ -303,9 +303,9 @@ pnpm install
         ];
         ```
 
-        ![管理员token](./administrator.png)
+        ![管理员token](./images/administrator.png)
 
-        ![好友消息token](./user.png)
+        ![好友消息token](./images/user.png)
 
 5. 运行
 
@@ -317,7 +317,7 @@ pnpm start
 
    - 未开启 `PushPlus` 推送
 
-     > 注意：`Puppeteer 配置`（`src/config/pup.ts`）中的 headless 字段（true 非图形界面，false 图形界面）
+     > 注意：`Puppeteer 配置`（`src/config/pup.ts`）中的 headless 字段（new 非图形界面，false 图形界面）
 
      - 对于图形界面，可直接扫码登陆
 

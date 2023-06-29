@@ -12,6 +12,7 @@ import {
 } from '../src/controller/user';
 import { getNews, getVideos } from '../src/controller/watch';
 import shared from '../src/shared';
+import { sleep } from '../src/utils/utils';
 
 describe('api', () => {
   it.skip('news', async () => {
@@ -82,8 +83,12 @@ describe('api', () => {
   });
   it.skip('score', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
+    // 等待浏览器准备完成
+    await sleep(2000);
     shared.setBrowser(broswer);
     await shared.openPage();
+    // 推送参数
+    await shared.setPushOptions({ nick: '', token: '' });
     // 登录
     await handleLogin();
     const res = await getTodayScore();
@@ -91,8 +96,12 @@ describe('api', () => {
   });
   it.skip('total', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
+    // 等待浏览器准备完成
+    await sleep(2000);
     shared.setBrowser(broswer);
     await shared.openPage();
+    // 推送参数
+    await shared.setPushOptions({ nick: '', token: '' });
     // 登录
     await handleLogin();
     const res = await getTotalScore();
@@ -100,8 +109,12 @@ describe('api', () => {
   });
   it.skip('userInfo', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
+    // 等待浏览器准备完成
+    await sleep(2000);
     shared.setBrowser(broswer);
     await shared.openPage();
+    // 推送参数
+    await shared.setPushOptions({ nick: '', token: '' });
     // 登录
     await handleLogin();
     const res = await getUserInfo();
@@ -120,43 +133,43 @@ describe('api', () => {
   });
   it.skip('taskList', async () => {
     const broswer = await pup.launch(PUP_CONFIG);
+    // 等待浏览器准备完成
+    await sleep(2000);
     shared.setBrowser(broswer);
     await shared.openPage();
+    // 推送参数
+    await shared.setPushOptions({ nick: '', token: '' });
     // 登录
     await handleLogin();
     const res = await getTaskList();
     expect(res).toMatchInlineSnapshot(`
       [
         {
-          "currentScore": 12,
-          "dayMaxScore": 12,
-          "rate": 100,
+          "currentScore": 1,
+          "dayMaxScore": 1,
           "status": true,
-          "title": "文章选读",
+          "title": "登录",
           "type": 0,
         },
         {
-          "currentScore": 12,
+          "currentScore": 0,
           "dayMaxScore": 12,
-          "rate": 100,
-          "status": true,
-          "title": "视听学习",
+          "status": false,
+          "title": "文章选读",
           "type": 1,
         },
         {
-          "currentScore": 5,
-          "dayMaxScore": 5,
-          "rate": 100,
-          "status": true,
-          "title": "每日答题",
+          "currentScore": 0,
+          "dayMaxScore": 12,
+          "status": false,
+          "title": "视听学习",
           "type": 2,
         },
         {
-          "currentScore": 10,
-          "dayMaxScore": 1,
-          "rate": 100,
-          "status": true,
-          "title": "专项练习",
+          "currentScore": 0,
+          "dayMaxScore": 5,
+          "status": false,
+          "title": "每日答题",
           "type": 3,
         },
       ]

@@ -10,7 +10,7 @@ const URL_CONFIG = {
    * @description 登录页面
    */
   login:
-    'https://login.xuexi.cn/login/xuexiWeb?appid=dingoankubyrfkttorhpou&goto=https%3A%2F%2Foa.xuexi.cn&type=1&state=ffdea2ded23f45ab%2FKQreTlDFe1Id3B7BVdaaYcTMp6lsTBB%2Fs3gGevuMKfvpbABDEl9ymG3bbOgtpSN&check_login=https%3A%2F%2Fpc-api.xuexi.cn',
+    'https://login.xuexi.cn/login/xuexiWeb?appid=dingoankubyrfkttorhpou&goto=https%3A%2F%2Foa.xuexi.cn&type=1&state=f6bc5df911df4142Y0NK5sXKipkJJL1BpZKBXsXDx4RbKCm-nSVFMgALG4dk2raOLCRPc0wgQ%2FxWP6U3&check_login=https%3A%2F%2Fpc-api.xuexi.cn',
   /**
    * @description 每日答题页面
    */

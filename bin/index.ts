@@ -8,6 +8,7 @@ import shared from '../src/shared';
 import { formatDate, formatDateTime, formatTime } from '../src/utils/fomat';
 import { getHighlightHTML, getTableHTML } from '../src/utils/html';
 import { Job, RefreshJob, StudyJob, createJobs } from '../src/utils/job';
+import { sleep } from '../src/utils/utils';
 
 /**
  * @description 处理学习任务
@@ -18,6 +19,8 @@ export const handleStudyJob = async (job: StudyJob, jobs: Job[]) => {
   shared.log.loading('正在打开浏览器...');
   // 浏览器
   const browser = await pup.launch(PUP_CONFIG);
+  // 等待浏览器准备完成
+  await sleep(2000);
   // 设置浏览器
   shared.setBrowser(browser);
   // 打开页面
@@ -117,6 +120,8 @@ const handleRefreshJob = async (job: RefreshJob, jobs: Job[]) => {
   shared.log.loading('正在打开浏览器...');
   // 浏览器
   const browser = await pup.launch(PUP_CONFIG);
+  // 等待浏览器准备完成
+  await sleep(2000);
   // 设置浏览器
   shared.setBrowser(browser);
   // 打开页面

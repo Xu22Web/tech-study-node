@@ -1,4 +1,8 @@
 import * as pup from 'puppeteer-core';
+
+// 扩展路径
+const pathToExtension = '../.extension/uBlock';
+
 /**
  * @description puppeteer 配置
  * @link {@link https://pptr.dev/api/puppeteer.launchoptions puppeteer 官方配置文档}
@@ -6,9 +10,9 @@ import * as pup from 'puppeteer-core';
 const PUP_CONFIG: pup.PuppeteerLaunchOptions = {
   /**
    * @description 无头模式
-   * @example true 非图形界面 false 图形界面
+   * @example new 非图形界面 false 图形界面
    */
-  headless: true,
+  headless: 'new',
   /**
    * @description 开发工具
    */
@@ -27,6 +31,8 @@ const PUP_CONFIG: pup.PuppeteerLaunchOptions = {
     '--no-sandbox',
     '--disable-setuid-sandbox',
     '--disable-blink-features=AutomationControlled',
+    `--disable-extensions-except=${pathToExtension}`,
+    `--load-extension=${pathToExtension}`,
   ],
   /**
    * @description 显示浏览器进程信息
