@@ -229,9 +229,9 @@ pnpm install
           cron: '0 0 12 * * ?',
           /**
            * @description 学习项目配置
-           * @example  [文章选读, 视听学习, 每日答题, 专项练习]
+           * @example  [文章选读, 视听学习, 每日答题]
            */
-          taskConfig: [true, true, true, true],
+          taskConfig: [true, true, true],
           /**
            * @description 专项练习 答题失败（由于答完结算，仅包含答题异常或无答案）退出不提交
            * @example true 退出答题不提交 false 继续答题
@@ -279,7 +279,7 @@ pnpm install
             /**
              * @description 发送服务消息来源
              */
-            from: '卑微的服务器',
+            from: 'tech-study-node',
             /**
              * @description 管理员的 token
              */
@@ -354,3 +354,5 @@ pnpm start
   - `api` 测试 API 可用性
 
   - `log` 测试日志生成保存和自动删除
+
+  - `extension` 浏览器插件测试
