@@ -393,6 +393,10 @@ const startScheduleJobs = () => {
 };
 
 (() => {
+  if (SCHEDULE_CONFIG.length === 0) {
+    console.warn('当前没有配置的任务信息，中断执行。');
+    return;
+  }
   // 开始定时任务
   startScheduleJobs();
   // 执行清除日志任务

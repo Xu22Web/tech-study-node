@@ -1,2 +1,6 @@
 .local_chromium
 node_modules
+dist
+.history
+src/logs/*.log
+package-lock.json
