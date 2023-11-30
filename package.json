@@ -6,6 +6,7 @@
   "scripts": {
     "start": "ts-node bin/index.ts",
     "dev": "nodemon bin/index.ts",
+    "build": "./node_modules/typescript/bin/tsc",
     "test": "vitest"
   },
   "keywords": [],

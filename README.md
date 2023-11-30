@@ -26,6 +26,8 @@
 
 ### 安装与运行 Install and Run
 
+#### 手动安装 Manual installation
+
 1. 安装依赖
 
 ```
@@ -324,6 +326,26 @@ pnpm start
      - 对于非图形界面，扫描 src/qrcode 目录下的二维码
 
    - 开启 `PushPlus` 推送，保存微信公众发送消息里的二维码，扫码登录
+
+#### Docker
+
+    ```
+    docker run --name=xuexiqiangguo -d \
+      -e SCHEDULE_CONFIG='{"nick":"nick","token":"xxxxxxxx","cron":"0 0 12 * * ?","taskConfig":[true,true,true],"paperExitAfterWrong":false,"refreshCookieInterval":[60,120]}' \
+      -e PUSH_PLUS_ENABLED=true \
+      -e PUSH_PLUS_NICK=nick \
+      -e PUSH_PLUS_SERVER_NAME=server \
+      -e PUSH_PLUS_ADMIN_TOKEN=xxxxxx \
+      helios74/ilovestudysomuch 
+    ```
+    参数说明：
+    SCHEDULE_CONFIG: `src/config/schedule.ts` 中的任务配置。注意是单个的序列化后的配置
+    PUSH_PLUS_ENABLED: 是否启用 pushplus
+    PUSH_PLUS_NICK: pushplus 的配置，nick
+    PUSH_PLUS_SERVER_NAME: pushplus 的配置，服务器名称
+    PUSH_PLUS_ADMIN_TOKEN: pushplus 的配置，管理员 token
+    
+    请注意，这个镜像只支持了配置 pushplus ，如果你需要使用其他的方式，请参照 `Dockerfile` 自行构建。
 
 ### 配置 Configuration
 
